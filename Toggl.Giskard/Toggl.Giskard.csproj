@@ -697,6 +697,7 @@
     <AndroidResource Include="Resources\drawable-xhdpi\date_light.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\date_light.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\date_light.png" />
+    <AndroidResource Include="Resources\drawable\TagRoundedRectangle.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation\Toggl.Foundation.csproj">
