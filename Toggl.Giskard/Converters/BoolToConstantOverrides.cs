@@ -76,4 +76,9 @@ namespace Toggl.Giskard.Converters
     {
         public SelectedTabAlphaValueConverter() : base(1, 0.7f) { }
     }
+
+    public sealed class MainFooterHeightValueConverter : BoolToConstantValueConverter<int>
+    {
+        public MainFooterHeightValueConverter() : base (104, 70) { }
+    }
 }

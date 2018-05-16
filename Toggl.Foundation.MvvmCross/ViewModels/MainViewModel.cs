@@ -61,6 +61,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(SyncingProgress))]
         public bool ShowSyncIndicator => SyncingProgress == SyncProgress.Syncing;
 
+        public bool IsTimeEntryRunning => CurrentTimeEntryId.HasValue;
+
         public bool IsAddDescriptionLabelVisible =>
             string.IsNullOrEmpty(CurrentTimeEntryDescription)
             && string.IsNullOrEmpty(CurrentTimeEntryProject);
@@ -169,7 +171,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .CurrentlyRunningTimeEntry
                 .Throttle(currentTimeEntryDueTime, scheduler) // avoid overwhelming the UI with frequent updates
                 .Subscribe(setRunningEntry);
-            
+
             var syncManagerDisposable = dataSource
                 .SyncManager
                 .ProgressObservable
@@ -235,6 +237,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTimeEntryCommand.RaiseCanExecuteChanged();
             StartTimeEntryCommand.RaiseCanExecuteChanged();
             EditTimeEntryCommand.RaiseCanExecuteChanged();
+
+            RaisePropertyChanged(nameof(IsTimeEntryRunning));
         }
 
         private void refresh()
@@ -257,7 +261,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var parameter = IsInManualMode
                 ? StartTimeEntryParameters.ForManualMode(timeService.CurrentDateTime)
-                : StartTimeEntryParameters.ForTimerMode(timeService.CurrentDateTime); 
+                : StartTimeEntryParameters.ForTimerMode(timeService.CurrentDateTime);
             return navigationService.Navigate<StartTimeEntryViewModel, StartTimeEntryParameters>(parameter);
         }
 

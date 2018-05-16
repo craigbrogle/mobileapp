@@ -241,8 +241,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public override void Prepare(SelectTimeParameters parameter)
         {
-            StartTime = parameter.Start;
-            StopTime = parameter.Stop;
+            StartTime = parameter.Start.ToLocalTime();
+            StopTime = parameter.Stop?.ToLocalTime();
 
             DateFormat = parameter.DateFormat;
             TimeFormat = parameter.TimeFormat;
@@ -300,7 +300,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task save()
         {
-            var results = new SelectTimeResultsParameters(StartTime, StopTime);
+            var results = new SelectTimeResultsParameters(StartTime.ToUniversalTime(), StopTime?.ToUniversalTime());
             await navigationService.Close(this, results);
         }
     }

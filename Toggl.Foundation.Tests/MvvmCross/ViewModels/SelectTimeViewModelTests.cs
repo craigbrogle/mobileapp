@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck;
 using FsCheck.Xunit;
 using MvvmCross.Core.ViewModels;
+using NSubstitute;
+using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Multivac;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
@@ -14,6 +20,16 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             protected override SelectTimeViewModel CreateViewModel()
                 => new SelectTimeViewModel(NavigationService, TimeService);
+
+            protected SelectTimeParameters CreateParameter(DateTimeOffset start, DateTimeOffset? stop)
+            {
+                var dateFormat = DateFormat.FromLocalizedDateFormat("MM.DD.YYYY");
+                var timeFormat = TimeFormat.FromLocalizedTimeFormat("H:mm");
+
+                return SelectTimeParameters
+                    .CreateFromBindingString("StartTime", start, stop)
+                    .WithFormats(dateFormat, timeFormat);
+            }
         }
 
         public sealed class TheIncreaseDurationCommand : SelectTimeViewModelTest
@@ -73,6 +89,75 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.Duration.Should().Be(duration + TimeSpan.FromMinutes(minutes));
             }
+        }
+
+        public sealed class ThePrepareMethod : SelectTimeViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void ConvertsInputTimesFromUtcToLocalTimeForUseInUI()
+            {
+                var startTime = DateTimeOffset.UtcNow;
+                var stopTime = DateTimeOffset.UtcNow.AddHours(1);
+                var localStartTime = startTime.ToLocalTime();
+                var localStopTime = stopTime.ToLocalTime();
+
+                var parameter = CreateParameter(startTime, stopTime);
+                ViewModel.Prepare(parameter);
+
+                ViewModel.StartTime.Should().Be(localStartTime);
+                ViewModel.StopTime.Should().Be(localStopTime);
+            }
+
+            [Theory, LogIfTooSlow]
+            [MemberData(nameof(TimeZoneOffsets))]
+            public void ConvertsInputTimesFromZonesToLocalTimeForUseInUI(int offset)
+            {
+                var zoneOffset = TimeSpan.FromHours(offset);
+                var startTime = new DateTimeOffset(2018, 1, 1, 13, 15, 22, zoneOffset);
+                var stopTime = startTime.AddHours(1);
+                var localStartTime = startTime.ToLocalTime();
+                var localStopTime = stopTime.ToLocalTime();
+
+                var parameter = CreateParameter(startTime, stopTime);
+                ViewModel.Prepare(parameter);
+
+                ViewModel.StartTime.Should().Be(localStartTime);
+                ViewModel.StopTime.Should().Be(localStopTime);
+            }
+
+            [Theory, LogIfTooSlow]
+            [MemberData(nameof(TimeZoneOffsets))]
+            public async Task ReturnsUtcTimeAsSaveResult(int offset) 
+            {
+                var zoneOffset = TimeSpan.FromHours(offset);
+                var startTime = new DateTimeOffset(2018, 1, 1, 13, 15, 22, zoneOffset);
+                var stopTime = startTime.AddHours(1);
+                var universalStartTime = startTime.ToUniversalTime();
+                var universalStopTime = stopTime.ToUniversalTime();
+
+                var parameter = CreateParameter(startTime, stopTime);
+                ViewModel.Prepare(parameter);
+
+                ViewModel.SaveCommand.ExecuteAsync().Wait();
+
+                await NavigationService
+                   .Received()
+                   .Close(
+                        Arg.Is(ViewModel),
+                        Arg.Is<SelectTimeResultsParameters>(param => ensureResultTimesAreInUtc(
+                            param, universalStartTime, universalStopTime))
+                   );
+            }
+
+            private bool ensureResultTimesAreInUtc(SelectTimeResultsParameters param,
+                                                   DateTimeOffset expectedStart,
+                                                   DateTimeOffset expectedStop) 
+            {
+                return param.Start == expectedStart && param.Stop == expectedStop;
+            }
+
+            public static IEnumerable<object[]> TimeZoneOffsets()
+                => Enumerable.Range(-11, 26).Select(i => new object[] { i });
         }
     }
 }
