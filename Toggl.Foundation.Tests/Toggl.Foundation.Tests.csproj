@@ -33,5 +33,6 @@
     <Folder Include="Interactors\TimeEntry\" />
     <Folder Include="Interactors\Project\" />
     <Folder Include="Interactors\Workspace\" />
+    <Folder Include="Interactors\Sync\" />
   </ItemGroup>
 </Project>

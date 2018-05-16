@@ -127,6 +127,7 @@ namespace Toggl.Daneel.ViewControllers
 
             // Title view
             NavigationItem.TitleView = titleButton = new UIButton(new CGRect(0, 0, 200, 40));
+            titleButton.Font = UIFont.SystemFontOfSize(14, UIFontWeight.Medium);
             titleButton.SetTitleColor(UIColor.Black, UIControlState.Normal);
 
             // Calendar configuration

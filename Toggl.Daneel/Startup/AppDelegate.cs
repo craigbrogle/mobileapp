@@ -8,6 +8,9 @@ using MvvmCross.Platform;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using MvvmCross.Plugins.Color.iOS;
+using Toggl.Foundation.Analytics;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Shortcuts;
 using UIKit;
@@ -38,6 +41,8 @@ namespace Toggl.Daneel
             navigationService = Mvx.Resolve<IMvxNavigationService>();
 
             Window.MakeKeyAndVisible();
+
+            setupNavigationBar();
 
             #if ENABLE_TEST_CLOUD
             Xamarin.Calabash.Start();
@@ -105,6 +110,36 @@ namespace Toggl.Daneel
                     navigationService.Navigate<StartTimeEntryViewModel>();
                     break;
             }
+        }
+
+        private void setupNavigationBar()
+        {
+            //Back button title
+            var attributes = new UITextAttributes
+            {
+                Font = UIFont.SystemFontOfSize(14, UIFontWeight.Medium),
+                TextColor = Color.NavigationBar.BackButton.ToNativeColor()
+            };
+            UIBarButtonItem.Appearance.SetTitleTextAttributes(attributes, UIControlState.Normal);
+            UIBarButtonItem.Appearance.SetTitleTextAttributes(attributes, UIControlState.Highlighted);
+            UIBarButtonItem.Appearance.SetBackButtonTitlePositionAdjustment(new UIOffset(6, 0), UIBarMetrics.Default);
+
+            //Back button icon
+            var image = UIImage.FromBundle("icBackNoPadding");
+            UINavigationBar.Appearance.BackIndicatorImage = image;
+            UINavigationBar.Appearance.BackIndicatorTransitionMaskImage = image;
+
+            //Title and background
+            UINavigationBar.Appearance.ShadowImage = new UIImage();
+            UINavigationBar.Appearance.BarTintColor = UIColor.Clear;
+            UINavigationBar.Appearance.BackgroundColor = UIColor.Clear;
+            UINavigationBar.Appearance.TintColor = Color.NavigationBar.BackButton.ToNativeColor();
+            UINavigationBar.Appearance.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+            UINavigationBar.Appearance.TitleTextAttributes = new UIStringAttributes
+            {
+                Font = UIFont.SystemFontOfSize(14, UIFontWeight.Medium),
+                ForegroundColor = UIColor.Black
+            };
         }
     }
 }

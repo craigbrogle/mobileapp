@@ -486,6 +486,10 @@
     <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws.png" />
     <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
@@ -585,7 +589,6 @@
     <Compile Include="Binding\BarButtonAnimatedEnabledTargetBinding.cs" />
     <Compile Include="Binding\TextFieldFocusTargetBinding.cs" />
     <Compile Include="Presentation\TogglPresenter.cs" />
-    <Compile Include="ViewControllers\Navigation\TogglNavigationController.cs" />
     <Compile Include="ViewSources\TimeEntriesLogViewSource.cs" />
     <Compile Include="ViewControllers\MainViewController.cs" />
     <Compile Include="ViewControllers\MainViewController.designer.cs">
@@ -980,6 +983,7 @@
     <Folder Include="Resources\Images.xcassets\togglLogoBig.imageset\" />
     <Folder Include="Resources\Images.xcassets\icGoogleColored.imageset\" />
     <Folder Include="Resources\Images.xcassets\paws.imageset\" />
+    <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GoogleService-Info.plist" />
