@@ -1,5 +1,4 @@
-﻿using CoreAnimation;
-using MvvmCross.Binding.BindingContext;
+﻿using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.iOS.Views;
 using MvvmCross.iOS.Views.Presenters.Attributes;
@@ -8,7 +7,6 @@ using MvvmCross.Plugins.Visibility;
 using Toggl.Daneel.Extensions;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Converters;
-using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
@@ -52,15 +50,12 @@ namespace Toggl.Daneel.ViewControllers
             {
                 UIImage.FromBundle("bgNoiseBlue"),
                 UIImage.FromBundle("bgNoisePurple"),
-                UIImage.FromBundle("bgNoiseYellow"),
-                UIImage.FromBundle("bgNoiseBlue")
+                UIImage.FromBundle("bgNoiseYellow")
             });
 
             //Commands
             bindingSet.Bind(Skip).To(vm => vm.SkipCommand);
             bindingSet.Bind(Next).To(vm => vm.NextCommand);
-            bindingSet.Bind(Login).To(vm => vm.LoginCommand);
-            bindingSet.Bind(SignUp).To(vm => vm.SignUpCommand);
             bindingSet.Bind(Previous).To(vm => vm.PreviousCommand);
 
             //Color
@@ -81,26 +76,6 @@ namespace Toggl.Daneel.ViewControllers
                       .WithConversion(pagedBackgroundImageColorConverter);
 
             //Visibility
-            bindingSet.Bind(PhoneContents)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.IsLastPage)
-                      .WithConversion(invertedVisibilityConverter);
-
-            bindingSet.Bind(LastPageItems)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.IsLastPage)
-                      .WithConversion(visibilityConverter);
-
-            bindingSet.Bind(Next)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.IsLastPage)
-                      .WithConversion(invertedVisibilityConverter);
-
-            bindingSet.Bind(ScrollView)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.IsLastPage)
-                      .WithConversion(invertedVisibilityConverter);
-
             bindingSet.Bind(Skip)
                       .For(v => v.BindVisibility())
                       .To(vm => vm.IsLastPage)

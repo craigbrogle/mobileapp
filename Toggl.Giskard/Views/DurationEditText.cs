@@ -102,6 +102,7 @@ namespace Toggl.Giskard.Views
             {
                 isEditing = false;
                 showCurrentDuration();
+                DurationChanged.Raise(this);
             }
 
             base.OnFocusChanged(gainFocus, direction, previouslyFocusedRect);
@@ -121,7 +122,7 @@ namespace Toggl.Giskard.Views
 
         public override void OnEditorAction(ImeAction actionCode)
         {
-            if (actionCode == ImeAction.Done)
+            if (actionCode == ImeAction.Done || actionCode == ImeAction.Next)
             {
                 this.RemoveFocus();
                 DurationChanged.Raise(this);

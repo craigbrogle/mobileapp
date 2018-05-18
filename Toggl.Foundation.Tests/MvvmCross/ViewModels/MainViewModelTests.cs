@@ -418,6 +418,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected string Task = "Some task";
             protected string Client = "Some client";
             protected string ProjectColor = "0000AF";
+            protected DateTimeOffset StartTime = new DateTimeOffset(2018, 01, 02, 03, 04, 05, TimeSpan.Zero);
+            protected DateTimeOffset Now = new DateTimeOffset(2018, 01, 02, 06, 04, 05, TimeSpan.Zero);
 
             private async ThreadingTask prepare()
             {
@@ -428,6 +430,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 timeEntry.Project.Color.Returns(ProjectColor);
                 timeEntry.Task.Name.Returns(Task);
                 timeEntry.Project.Client.Name.Returns(Client);
+                timeEntry.Start.Returns(StartTime);
+
+                TimeService.CurrentDateTime.Returns(Now);
 
                 DataSource.TimeEntries.CurrentlyRunningTimeEntry.Returns(currentTimeEntrySubject.AsObservable());
 
@@ -507,6 +512,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override string ExpectedValue => Client;
 
             protected override string ExpectedEmptyValue => "";
+        }
+
+        public sealed class TheCurrentTimeEntryElapsedTimeProperty : CurrentTimeEntrypropertyTest<TimeSpan>
+        {
+            protected override TimeSpan ActualValue => ViewModel.CurrentTimeEntryElapsedTime;
+
+            protected override TimeSpan ExpectedValue => Now - StartTime;
+
+            protected override TimeSpan ExpectedEmptyValue => TimeSpan.Zero;
         }
 
         public sealed class TheIsWelcomeProperty : MainViewModelTest

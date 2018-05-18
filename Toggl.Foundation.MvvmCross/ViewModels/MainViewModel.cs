@@ -227,6 +227,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             CurrentTimeEntryId = timeEntry?.Id;
             currentTimeEntryStart = timeEntry?.Start;
             CurrentTimeEntryDescription = timeEntry?.Description ?? "";
+            CurrentTimeEntryElapsedTime = timeService.CurrentDateTime - currentTimeEntryStart ?? TimeSpan.Zero;
 
             CurrentTimeEntryTask = timeEntry?.Task?.Name ?? "";
             CurrentTimeEntryProject = timeEntry?.Project?.Name ?? "";

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
@@ -6,9 +6,7 @@ using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform.UI;
 using PropertyChanged;
 using Toggl.Foundation.Analytics;
-using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Helper;
-using Toggl.Foundation.Services;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Settings;
 
@@ -20,40 +18,47 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public const int TrackPage = 0;
         public const int MostUsedPage = 1;
         public const int ReportsPage = 2;
-        public const int LoginPage = 3;
 
         private static readonly string[] pageNames =
         {
             nameof(TrackPage),
             nameof(MostUsedPage),
-            nameof(ReportsPage),
-            nameof(LoginPage)
+            nameof(ReportsPage)
         };
 
-        private static readonly (MvxColor BackgroundColor, MvxColor BorderColor)[] PageInfo =
+        private static readonly (MvxColor BackgroundColor, MvxColor BorderColor)[] pageInfo =
         {
             (Color.Onboarding.TrackPageBackgroundColor, Color.Onboarding.TrackPageBorderColor),
             (Color.Onboarding.LogPageBackgroundColor, Color.Onboarding.LogPageBorderColor),
-            (Color.Onboarding.ReportsPageBackgroundColor, Color.Onboarding.ReportsPageBorderColor),
-            (Color.Onboarding.LoginPageBackgroundColor, MvxColors.Transparent)
+            (Color.Onboarding.ReportsPageBackgroundColor, Color.Onboarding.ReportsPageBorderColor)
         };
 
         private readonly IAnalyticsService analyticsService;
         private readonly IOnboardingStorage onboardingStorage;
         private readonly IMvxNavigationService navigationService;
 
-        private readonly bool[] pagesVisited = new bool[PageInfo.Length];
+        private readonly bool[] pagesVisited = new bool[pageInfo.Length];
+
+        private bool visitedAllPages => pagesVisited.All(visited => visited);
 
         private int currentPage;
+
         public int CurrentPage
         {
-            get { return currentPage; }
+            get => currentPage;
             set
             {
-                if (currentPage == value) return;
-                if (value < 0 || value >= NumberOfPages) return;
+                if (currentPage == value || value < 0)
+                    return;
+
+                if (value >= NumberOfPages)
+                {
+                    completeOnboarding();
+                    return;
+                }
 
                 currentPage = value;
+                pagesVisited[value] = true;
                 RaisePropertyChanged();
                 NextCommand.RaiseCanExecuteChanged();
                 PreviousCommand.RaiseCanExecuteChanged();
@@ -76,22 +81,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public bool IsLastPage => CurrentPage == NumberOfPages - 1;
 
         [DependsOn(nameof(CurrentPage))]
-        public MvxColor BorderColor => PageInfo[CurrentPage].BorderColor;
+        public MvxColor BorderColor => pageInfo[CurrentPage].BorderColor;
 
         [DependsOn(nameof(CurrentPage))]
-        public MvxColor BackgroundColor => PageInfo[CurrentPage].BackgroundColor;
+        public MvxColor BackgroundColor => pageInfo[CurrentPage].BackgroundColor;
 
-        public IMvxCommand SkipCommand { get; }
+        public IMvxAsyncCommand SkipCommand { get; }
 
-        public IMvxCommand NextCommand { get; }
+        public IMvxAsyncCommand NextCommand { get; }
 
         public IMvxCommand PreviousCommand { get; }
 
-        public IMvxAsyncCommand LoginCommand { get; }
-
-        public IMvxAsyncCommand SignUpCommand { get; }
-
-        public int NumberOfPages => PageInfo.Length;
+        public int NumberOfPages => pageInfo.Length;
 
         public OnboardingViewModel(
             IMvxNavigationService navigationService,
@@ -106,75 +107,58 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.navigationService = navigationService;
             this.onboardingStorage = onboardingStorage;
 
-            SkipCommand = new MvxCommand(skip);
-            NextCommand = new MvxCommand(next, nextCanExecute);
-            LoginCommand = new MvxAsyncCommand(login);
-            SignUpCommand = new MvxAsyncCommand(signup);
-            PreviousCommand = new MvxCommand(previous, previousCanExecute);
+            SkipCommand = new MvxAsyncCommand(skip);
+            NextCommand = new MvxAsyncCommand(next);
+            PreviousCommand = new MvxCommand(previous, () => !IsFirstPage);
         }
 
-        public override void Prepare()
+        public override async Task Initialize()
         {
-            base.Prepare();
+            await base.Initialize();
 
-            CurrentPage = onboardingStorage.CompletedOnboarding()
-                ? LoginPage
-                : TrackPage;
-
-            OnCurrentPageChanged();
-        }
-
-        private async Task login()
-        {
-            setOnboardingCompletedIfNeeded();
-
-            //TEMP: this is ugly and needs to be removed asap
-            try
+            if (onboardingStorage.CompletedOnboarding())
             {
-                await navigationService.Navigate<LoginViewModel, LoginType>(LoginType.Login);
+                await navigationService.Navigate<NewLoginViewModel>();
             }
-            catch (KeyNotFoundException)
+            else
             {
-                await navigationService.Navigate<NewLoginViewModel>();                
+                currentPage = TrackPage;
+                pagesVisited[currentPage] = true;
             }
         }
 
-        private async Task signup()
-        {
-            setOnboardingCompletedIfNeeded();
-
-            //TEMP: this is ugly and needs to be removed asap
-            try
-            {
-                await navigationService.Navigate<LoginViewModel, LoginType>(LoginType.SignUp);
-            }
-            catch (KeyNotFoundException)
-            {
-                await navigationService.Navigate<SignupViewModel>();
-            }
-        }
-
-        private void skip()
+        private async Task skip()
         {
             analyticsService.TrackOnboardingSkipEvent(pageNames[CurrentPage]);
-            CurrentPage = PageInfo.Length - 1;
+
+            await navigationService.Navigate<NewLoginViewModel>();
         }
 
-        private bool nextCanExecute() => !IsLastPage;
-
-        private bool previousCanExecute() => !IsFirstPage;
-
-        private void next() => CurrentPage++;
-
-        private void previous() => CurrentPage--;
-
-        private void OnCurrentPageChanged() 
-            => pagesVisited[CurrentPage] = true;
-
-        private void setOnboardingCompletedIfNeeded()
+        private async Task next()
         {
-            if (pagesVisited.All(visited => visited))
+            if (IsLastPage)
+            {
+                await completeOnboarding();
+            }
+            else
+            {
+                CurrentPage++;
+            }
+        }
+
+        private Task completeOnboarding()
+        {
+            if (visitedAllPages)
+            {
                 onboardingStorage.SetCompletedOnboarding();
+            }
+
+            return navigationService.Navigate<NewLoginViewModel>();
+        }
+
+        private void previous()
+        {
+            CurrentPage--;
         }
     }
 }

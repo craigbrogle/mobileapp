@@ -1,4 +1,5 @@
 ﻿using Toggl.Ultrawave.ApiClients;
+using Toggl.Ultrawave.ApiClients.Interfaces;
 
 namespace Toggl.Ultrawave
 {
@@ -9,12 +10,13 @@ namespace Toggl.Ultrawave
         ITasksApi Tasks { get; }
         IStatusApi Status { get; }
         IClientsApi Clients { get; }
+        ILocationApi Location { get; }
         IProjectsApi Projects { get; }
-        IWorkspacesApi Workspaces { get; }
-        ITimeEntriesApi TimeEntries { get; }
-        IWorkspaceFeaturesApi WorkspaceFeatures { get; }
-        IProjectsSummaryApi ProjectsSummary { get; }
-        IPreferencesApi Preferences { get; }
         ICountriesApi Countries { get; }
+        IWorkspacesApi Workspaces { get; }
+        IPreferencesApi Preferences { get; }
+        ITimeEntriesApi TimeEntries { get; }
+        IProjectsSummaryApi ProjectsSummary { get; }
+        IWorkspaceFeaturesApi WorkspaceFeatures { get; }
     }
 }
