@@ -278,13 +278,13 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var email = Email.From($"{Guid.NewGuid().ToString()}@email.com");
                 var password = "s3cr3tzzz".ToPassword();
-                var termsNotAccepted = false;
+                var termsAccepted = false;
                 var countryId = 237;
 
                 // User.SignUp will throw in the future when acceptance of ToS is enforced in the backend
                 var user = await unauthenticatedTogglApi
                     .User
-                    .SignUp(email, password, termsNotAccepted, countryId);
+                    .SignUp(email, password, termsAccepted, countryId);
 
                 user.Id.Should().BeGreaterThan(0);
                 user.Email.Should().Be(email);
@@ -314,18 +314,17 @@ namespace Toggl.Ultrawave.Tests.Integration
             [InlineData(-1)]
             [InlineData(251)]
             [InlineData(1111111)]
-            public async Task SucceedsEvenIfCountryIdIsNotValid(int countryId)
+            public void FailsIfCountryIdIsNotValid(int countryId)
             {
                 var email = Email.From($"{Guid.NewGuid().ToString()}@email.com");
                 var password = "s3cr3tzzz".ToPassword();
-                var termsNotAccepted = true;
 
-                var user = await unauthenticatedTogglApi
+                Action signingUp = () => unauthenticatedTogglApi
                     .User
-                    .SignUp(email, password, termsNotAccepted, countryId);
+                    .SignUp(email, password, true, countryId)
+                    .Wait();
 
-                user.Id.Should().BeGreaterThan(0);
-                user.Email.Should().Be(email);
+                signingUp.ShouldThrow<BadRequestException>();
             }
         }
 

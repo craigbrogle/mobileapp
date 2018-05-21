@@ -24,8 +24,6 @@ namespace Toggl.Daneel.Extensions
 
         private const float shadowOpacity = 0.1f;
 
-        private static readonly TimeSpan visibilityDelay = TimeSpan.FromMilliseconds(600);
-
         public static void MockSuggestion(this UIView view)
         {
             view.Layer.CornerRadius = cellRadius;
@@ -88,9 +86,7 @@ namespace Toggl.Daneel.Extensions
                 }
             }
 
-            return step.ShouldBeVisible
-                       .Delay(visibilityDelay)
-                       .Subscribe(toggleVisibilityOnMainThread);
+            return step.ShouldBeVisible.Subscribe(toggleVisibilityOnMainThread);
         }
 
         public static void DismissByTapping(this IDismissable step, UIView view)

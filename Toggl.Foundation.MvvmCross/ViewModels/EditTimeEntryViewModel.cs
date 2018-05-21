@@ -119,6 +119,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(StopTime))]
         public bool IsTimeEntryRunning => !StopTime.HasValue;
 
+        public DateTimeOffset StopTimeOrCurrent => StopTime ?? timeService.CurrentDateTime;
+
         private DateTimeOffset? stopTime;
         public DateTimeOffset? StopTime
         {
@@ -353,9 +355,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task selectTime(string bindingParameter)
         {
-            var parameters = 
+            var parameters =
                 SelectTimeParameters
-                .CreateFromBindingString(bindingParameter, StartTime, StopTime);
+                .CreateFromBindingString(bindingParameter, StartTime, StopTime)
+                .WithFormats(DateFormat, TimeFormat);
 
             var data = await navigationService
                 .Navigate<SelectTimeViewModel, SelectTimeParameters, SelectTimeResultsParameters>(parameters)
@@ -552,6 +555,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task updateFeaturesAvailability()
         {
             IsBillableAvailable = await interactorFactory.IsBillableAvailableForWorkspace(workspaceId).Execute();
+        }
+
+        public override void ViewDestroy()
+        {
+            base.ViewDestroy();
+            deleteDisposable?.Dispose();
+            confirmDisposable?.Dispose();
+            tickingDisposable?.Dispose();
+            preferencesDisposable?.Dispose();
         }
     }
 }

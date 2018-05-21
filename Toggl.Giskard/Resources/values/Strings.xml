@@ -23,7 +23,6 @@
     <string name="AddTagsHint">Add/filter tags</string>
     <string name="StartTime">Start time</string>
     <string name="EndTime">End time</string>
-    <string name="StopButtonText">Stop</string>
     <string name="Save">Save</string>
     <string name="Oops">Oops!</string>
     <string name="NameTakenError">Sorry, this name is already taken.</string>
@@ -40,7 +39,8 @@
     <string name="DefaultWorkspace">Default Workspace</string>
     <string name="Total">Total</string>
     <string name="ManualMode">Manual Mode</string>
-    <string name="ManualModeExplanation">You can add your data manually, instead of tracking in real time.</string>
+    <string name="ManualModeExplanationPartOne">You can add your data manually, instead of</string>
+	<string name="ManualModeExplanationPartTwo">tracking in real time.</string>
     <string name="TryLoggingInInstead"><u>Try logging in instead.</u></string>
     <string name="ForgotPassword">Forgot your password?</string>
     <string name="Duration">Duration</string>
@@ -51,14 +51,16 @@
     <string name="OnboardingSignup">Don\'t have an account? <b>Sign up for free!</b></string>
     <string name="OnboardingGetStarted">Let\'s get started!</string>
     <string name="OnboardingKickstartProductivity">Kickstart your productivity\nwith Toggl</string>
-	<string name="OutdatedAppMessage">Seems you haven’t updated the app
+	  <string name="OutdatedAppMessage">Seems you haven’t updated the app
 for quite some time… Please update
 your app to continue.</string>
-	<string name="TryTogglDotCom"> Try Toggl.com </string>
-	<string name="UpdateTheApp">Update the app</string>
+	  <string name="TryTogglDotCom"> Try Toggl.com </string>
+	  <string name="UpdateTheApp">Update the app</string>
     <string name="Reports">Reports</string>
     <string name="NewTimeEntry">New time entry</string>
     <string name="StopTimer">Stop timer</string>
+    <string name="Start">Start</string>
+    <string name="Stop">Stop</string>
     
     <string name="MainTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.MainTemplateSelector, Toggl.Giskard</string>
     <string name="ReportsTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsTemplateSelector, Toggl.Giskard</string>

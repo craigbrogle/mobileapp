@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -7,7 +6,6 @@
   <PropertyGroup>
     <CodeAnalysisRuleSet>$(SolutionDir)Toggl.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\bin\Debug\</OutputPath>
   </PropertyGroup>
@@ -33,5 +31,6 @@
     <Folder Include="Interactors\TimeEntry\" />
     <Folder Include="Interactors\Project\" />
     <Folder Include="Interactors\Workspace\" />
+    <Folder Include="Interactors\Sync\" />
   </ItemGroup>
 </Project>

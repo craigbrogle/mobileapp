@@ -192,11 +192,16 @@ namespace Toggl.Giskard.Views
         {
             var marginParams = CalendarContainer.LayoutParameters as MarginLayoutParams;
             var isHidding = forceHide || marginParams.TopMargin != negativeContainerHeight;
-            var newMargin = isHidding ? negativeContainerHeight : 0;
 
+            if (isHidding && marginParams.TopMargin < negativeContainerHeight)
+                return;
+
+            var newMargin = isHidding ? negativeContainerHeight : 0;
             var animation = new TopMarginAnimation(CalendarContainer, newMargin, isHidding);
             animation.Duration = isFling ? calendarAnimationFlingDuration : calendarAnimationDuration;
             CalendarContainer.StartAnimation(animation);
+            CalendarContainer.RequestLayout();
+            Invalidate();
         }
 
         private class TopMarginAnimation : Animation

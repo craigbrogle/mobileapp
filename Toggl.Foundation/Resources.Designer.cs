@@ -95,9 +95,9 @@ namespace Toggl.Foundation {
             }
         }
         
-        public static string LoginBackButton {
+        public static string Back {
             get {
-                return ResourceManager.GetString("LoginBackButton", resourceCulture);
+                return ResourceManager.GetString("Back", resourceCulture);
             }
         }
         
@@ -728,6 +728,24 @@ namespace Toggl.Foundation {
         public static string SignUpCountryRequired {
             get {
                 return ResourceManager.GetString("SignUpCountryRequired", resourceCulture);
+            }
+        }
+        
+        public static string CountriesJson {
+            get {
+                return ResourceManager.GetString("CountriesJson", resourceCulture);
+            }
+        }
+        
+        public static string GetPasswordResetLink {
+            get {
+                return ResourceManager.GetString("GetPasswordResetLink", resourceCulture);
+            }
+        }
+
+        public static string TermsOfServiceDialogMessage {
+            get {
+                return ResourceManager.GetString("TermsOfServiceDialogMessage", resourceCulture);
             }
         }
     }

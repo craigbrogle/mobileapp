@@ -41,6 +41,11 @@ namespace Toggl.Foundation.MvvmCross.Helper
             public static readonly MvxColor ForgotPassword = new MvxColor(94, 91, 91);
         }
 
+        public static class Signup
+        {
+            public static readonly MvxColor HighlightedText = azure;
+        }
+
         public static class NavigationBar
         {
             public static readonly MvxColor BackButton = new MvxColor(94, 91, 91);

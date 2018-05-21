@@ -13,7 +13,7 @@ using Toggl.Giskard.Views;
 
 namespace Toggl.Giskard.Adapters
 {
-    public sealed class MainRecyclerAdapter 
+    public sealed class MainRecyclerAdapter
         : SegmentedRecyclerAdapter<TimeEntryViewModelCollection, TimeEntryViewModel>
     {
         public bool ShouldShowSuggestions
@@ -22,6 +22,20 @@ namespace Toggl.Giskard.Adapters
         public SuggestionsViewModel SuggestionsViewModel { get; set; }
 
         public TimeEntriesLogViewModel TimeEntriesLogViewModel { get; set; }
+
+        private bool isTimeEntryRunning;
+        public bool IsTimeEntryRunning
+        {
+            get => isTimeEntryRunning;
+            set
+            {
+                if (isTimeEntryRunning == value)
+                    return;
+
+                isTimeEntryRunning = value;
+                NotifyItemChanged(ItemCount - 1);
+            }
+        }
 
         public MainRecyclerAdapter()
         {
@@ -81,9 +95,9 @@ namespace Toggl.Giskard.Adapters
         {
             if (viewPosition == 0 && ShouldShowSuggestions)
                 return SuggestionsViewModel;
-            
+
             if (viewPosition == ItemCount - 1)
-                return null;
+                return IsTimeEntryRunning;
 
             return base.GetItem(viewPosition - (ShouldShowSuggestions ? 1 : 0));
         }

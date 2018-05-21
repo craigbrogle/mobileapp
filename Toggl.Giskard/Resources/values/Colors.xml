@@ -13,6 +13,7 @@
     <color name="transparentLightGray">#66FAFBFC</color>
     <color name="separator">#FFE5E5E5</color>
     <color name="clientName">#FF5E5B5B</color>
+    <color name="editViewDate">#FF5E5B5B</color>
     <color name="toolbarBlack">#FF323232</color>
     <color name="playButtonGreen">#FF1AD180</color>
     <color name="playButtonRed">#E20505</color>

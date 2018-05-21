@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Suggestions;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Multivac.Models;
 
 namespace Toggl.Foundation.Interactors
 {
@@ -43,6 +44,12 @@ namespace Toggl.Foundation.Interactors
         IInteractor<IObservable<bool>> AreCustomColorsEnabledForWorkspace(long workspaceId);
 
         IInteractor<IObservable<bool>> IsBillableAvailableForWorkspace(long workspaceId);
+
+        #endregion
+
+        #region Sync
+
+        IInteractor<IObservable<IEnumerable<SyncFailureItem>>> GetItemsThatFailedToSync();
 
         #endregion
     }

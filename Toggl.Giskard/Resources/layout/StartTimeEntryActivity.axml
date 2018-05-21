@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="UTF-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:local="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -92,7 +93,7 @@
             android:layout_height="?attr/actionBarSize" />
         <EditText
             android:id="@+id/StartTimeEntryDescriptionTextField"
-            local:MvxBind="TextFieldInfo TextFieldInfo"
+            local:MvxBind="TextFieldInfo TextFieldInfo; Hint PlaceholderText"
             android:maxLines="1"
             android:textSize="19sp"
             android:singleLine="true"
@@ -100,7 +101,6 @@
             android:lineSpacingExtra="5sp"
             android:scrollHorizontally="true"
             android:textColor="@android:color/white"
-            android:hint="@string/StartTimeEntryHint"
             android:background="@color/blueToolbarBackground"
             android:inputType="textNoSuggestions|textVisiblePassword"
             android:textCursorDrawable="@drawable/EditTextWhiteCursor"

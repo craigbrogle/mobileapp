@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using Toggl.Foundation;
+using Toggl.Multivac;
 using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.Parameters
 {
+    [Preserve(AllMembers = true)]
     public sealed class SelectTimeParameters
     {
         public DateTimeOffset Start { get; private set; }
         public DateTimeOffset? Stop { get; private set; }
+
+        public DateFormat DateFormat { get; private set; }
+        public TimeFormat TimeFormat { get; private set; }
 
         public int StartingTabIndex { get; private set; }
         public bool ShouldStartOnCalendar { get; private set; }
@@ -39,6 +44,13 @@ namespace Toggl.Foundation.MvvmCross.Parameters
                 StartingTabIndex = tabIndex,
                 ShouldStartOnCalendar = shouldStartOnCalendar
             };
+        }
+
+        public SelectTimeParameters WithFormats(DateFormat dateFormat, TimeFormat timeFormat) 
+        {
+            DateFormat = dateFormat;
+            TimeFormat = timeFormat;
+            return this;
         }
     }
 }

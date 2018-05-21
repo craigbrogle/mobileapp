@@ -182,14 +182,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public void ResetsOnboarding()
-            {
-                ViewModel.SignOutCommand.Execute();
-
-                OnboardingStorage.Received().Reset();
-            }
-
-            [Fact, LogIfTooSlow]
             public void ResetsUserPreferences()
             {
                 ViewModel.SignOutCommand.Execute();

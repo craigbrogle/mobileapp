@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<android.support.design.widget.CoordinatorLayout
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:tools="http://schemas.android.com/tools"
     xmlns:local="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/lightGray"
@@ -118,6 +117,57 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right|center_vertical" />
+            </FrameLayout>
+            <View
+                android:background="@color/separator"
+                android:layout_height="0.5dp"
+                android:layout_marginTop="24dp"
+                android:layout_width="match_parent" />
+            <FrameLayout
+                local:MvxBind="Click ToggleManualModeCommand"
+                android:clickable="true"
+                android:background="?attr/selectableItemBackground"
+                android:layout_height="72dp"
+                android:layout_width="match_parent">
+                <TextView
+                    android:textSize="15sp"
+                    android:textAllCaps="false"
+                    android:lineSpacingExtra="5sp"
+                    android:gravity="center_vertical"
+                    android:text="@string/ManualMode"
+                    android:textColor="@android:color/black"
+                    android:layout_marginTop="9dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:textSize="12sp"
+                    android:textColor="@color/defaultText"
+                    android:text="@string/ManualModeExplanationPartOne"
+                    android:layout_marginTop="8dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginBottom="22dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <TextView
+                    android:textSize="12sp"
+                    android:textColor="@color/defaultText"
+                    android:text="@string/ManualModeExplanationPartTwo"
+                    android:layout_marginTop="8dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginBottom="9dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                <Switch
+                    local:MvxBind="Checked IsManualModeEnabled"
+                    android:clickable="false"
+                    android:layout_gravity="right"
+                    android:layout_marginTop="9dp"
+                    android:layout_marginRight="18dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
             </FrameLayout>
             <View
                 android:background="@color/separator"

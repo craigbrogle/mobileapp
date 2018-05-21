@@ -44,6 +44,6 @@ namespace Toggl.Daneel
             );
 
         private NSDictionary<NSString, NSObject> userInfoFor(ApplicationShortcut shortcut)
-            => new NSDictionary<NSString, NSObject>(new NSString(nameof(shortcut.Url)), new NSString(shortcut.Url));
+            => new NSDictionary<NSString, NSObject>(new NSString(nameof(ApplicationShortcut.Type)), new NSNumber((int)shortcut.Type));
     }
 }

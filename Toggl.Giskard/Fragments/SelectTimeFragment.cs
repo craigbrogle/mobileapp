@@ -24,37 +24,28 @@ namespace Toggl.Giskard.Fragments
     using System.Collections.Generic;
     using MvvmCross.Binding.BindingContext;
     using static SelectTimeFragment.EditorMode;
+    using static SelectTimeViewModel;
 
     [MvxDialogFragmentPresentation(AddToBackStack = true)]
     public sealed class SelectTimeFragment : MvxDialogFragment<SelectTimeViewModel>, TabLayout.IOnTabSelectedListener
     {
-        private const int startTimeTab = 0;
-        private const int stopTimeTab = 1;
-        private const int durationTab = 2;
-
         internal enum EditorMode
         {
             Date,
             Time,
-            Duration
+            Duration,
+            RunningTimeEntry
         }
 
-        private List<TabHeaderUpdateManager> tabManagers;
+        private readonly int[] heights = { 450, 400, 224, 204 };
 
-        private readonly int[] heights = { 450, 400, 224 };
-
-        private int currentPosition;
         private EditorMode editorMode = Date;
 
         private IDisposable onModeChangedDisposable;
-        private IDisposable onDurationChangedDisposable;
-        private IDisposable onStartTimeChangedDisposable;
-        private IDisposable onStopTimeChangedDisposable;
 
         private LinearLayout controlButtons;
         private TabLayout tabLayout;
         private ViewPager pager;
-
 
         public SelectTimeFragment()
         {
@@ -77,26 +68,24 @@ namespace Toggl.Giskard.Fragments
             pager.OffscreenPageLimit = 2;
             pager.Adapter = new SelectTimePagerAdapter(BindingContext);
             tabLayout.AddOnTabSelectedListener(this);
-            tabLayout.SetupWithViewPager(pager, true);
 
-            tabManagers = Enumerable.Range(0, tabLayout.TabCount)
-                                    .Select(tabLayout.GetTabAt)
-                                    .Select(TabHeaderUpdateManager.FromTab)
-                                    .ToList();
-            
             onModeChangedDisposable =
                 ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.IsCalendarView), onIsCalendarViewChanged);
 
-            onDurationChangedDisposable =
-                ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.Duration), onDurationChanged);
+            var startPageView = this.BindingInflate(Resource.Layout.SelectDateTimeStartTimeTabHeader, null);
+            var stopPageView = this.BindingInflate(Resource.Layout.SelectDateTimeStopTimeTabHeader, null);
+            var durationPageView = this.BindingInflate(Resource.Layout.SelectDateTimeDurationTabHeader, null);
+            
+            tabLayout.Post(() =>
+            {
+                tabLayout.SetupWithViewPager(pager, true);
 
-            onStartTimeChangedDisposable =
-                ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.StartTime), onStartTimeChanged);
+                tabLayout.GetTabAt(StartTimeTab).SetCustomView(startPageView);
+                tabLayout.GetTabAt(StopTimeTab).SetCustomView(stopPageView);
+                tabLayout.GetTabAt(DurationTab).SetCustomView(durationPageView);
 
-            onStopTimeChangedDisposable =
-                ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.StopTime), onStopTimeChanged);
-
-            pager.SetCurrentItem(ViewModel.StartingTabIndex, false);
+                pager.SetCurrentItem(ViewModel.StartingTabIndex, false);
+            });
 
             return view;
         }
@@ -107,30 +96,6 @@ namespace Toggl.Giskard.Fragments
             updateLayoutHeight();
         }
 
-        private void onStartTimeChanged(object sender, PropertyChangedEventArgs args)
-        {
-            if (tabLayout.SelectedTabPosition == startTimeTab)
-                return;
-
-            tabManagers[startTimeTab].Update(false, ViewModel.StartTimeText);
-        }
-
-        private void onStopTimeChanged(object sender, PropertyChangedEventArgs args)
-        {
-            if (tabLayout.SelectedTabPosition == stopTimeTab)
-                return;
-
-            tabManagers[stopTimeTab].Update(false, ViewModel.StopTimeText);
-        }
-
-        private void onDurationChanged(object sender, PropertyChangedEventArgs args)
-        {
-            if (tabLayout.SelectedTabPosition == durationTab)
-                return;
-
-            tabManagers[durationTab].Update(false, ViewModel.DurationText);
-        }
-
         public void OnTabReselected(TabLayout.Tab tab)
             => onTabChange(tab.Position);
 
@@ -139,21 +104,19 @@ namespace Toggl.Giskard.Fragments
 
         private void onTabChange(int tabPosition)
         {
-            currentPosition = tabPosition;
+            ViewModel.CurrentTab = tabPosition;
             editorMode = calculateEditorMode();
 
             updateLayoutHeight();
-
-            if (tabManagers == null)
-                return;
-            
-            tabManagers[tabPosition].Update(true);
         }
 
         private EditorMode calculateEditorMode()
         {
-            if (currentPosition == durationTab)
+            if (ViewModel.CurrentTab == DurationTab)
                 return Duration;
+
+            if (ViewModel.CurrentTab == StopTimeTab && !ViewModel.IsTimeEntryStopped)
+                return RunningTimeEntry;
 
             return ViewModel.IsCalendarView ? Date : Time;
         }
@@ -191,28 +154,15 @@ namespace Toggl.Giskard.Fragments
 
         public void OnTabUnselected(TabLayout.Tab tab)
         {
-            var text = "";
-
-            if (tab.Position == startTimeTab)
-                text = ViewModel.StartTimeText;
-            else if (tab.Position == stopTimeTab)
-                text = ViewModel.StopTimeText;
-            else if (tab.Position == durationTab)
-                text = ViewModel.DurationText;
-
-            tabManagers[tab.Position].Update(false, text);
         }
 
-		protected override void Dispose(bool disposing)
-		{
+        protected override void Dispose(bool disposing)
+        {
             base.Dispose(disposing);
 
             if (disposing == false) return;
 
             onModeChangedDisposable.Dispose();
-            onDurationChangedDisposable.Dispose();
-            onStartTimeChangedDisposable.Dispose();
-            onStopTimeChangedDisposable.Dispose();
-		}
+        }
     }
 }

@@ -8,7 +8,11 @@ namespace Toggl.Foundation.Analytics
         void TrackOnboardingSkipEvent(string pageName);
 
         void TrackLoginEvent(AuthenticationMethod authenticationMethod);
+        void TrackLoginErrorEvent(LoginErrorSource source);
+
         void TrackSignUpEvent(AuthenticationMethod authenticationMethod);
+        void TrackSignUpErrorEvent(SignUpErrorSource source);
+
         void TrackLogoutEvent(LogoutSource source);
         void TrackResetPassword();
 

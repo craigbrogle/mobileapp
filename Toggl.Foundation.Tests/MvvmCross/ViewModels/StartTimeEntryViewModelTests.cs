@@ -16,8 +16,8 @@ using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Foundation.Tests.Mocks;
-using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using Toggl.PrimeRadiant.Exceptions;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
 using static Toggl.Foundation.Helper.Constants;
@@ -135,7 +135,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var observable = Substitute.For<IConnectableObservable<DateTimeOffset>>();
                 TimeService.CurrentDateTimeObservable.Returns(observable);
                 var duration = TimeSpan.FromSeconds(130);
-                var parameter = new StartTimeEntryParameters(DateTimeOffset.Now, "", duration);
+                var parameter = StartTimeEntryParameters.ForManualMode(DateTimeOffset.Now);
 
                 ViewModel.Prepare(parameter);
 
@@ -147,7 +147,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var observable = Substitute.For<IConnectableObservable<DateTimeOffset>>();
                 TimeService.CurrentDateTimeObservable.Returns(observable);
-                var parameter = new StartTimeEntryParameters(DateTimeOffset.Now, "", null);
+                var parameter = StartTimeEntryParameters.ForTimerMode(DateTimeOffset.Now);
 
                 ViewModel.Prepare(parameter);
 
@@ -1441,6 +1441,24 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.TextFieldInfo.TaskId.Should().BeNull();
                 }
+
+                [Theory, LogIfTooSlow]
+                [InlineData(true)]
+                [InlineData(false)]
+                public void SetsTheAppropriateBillableValueBasedOnTheWorkspaceWhenSelectingNoProject(bool isBillableAvailable)
+                {
+                    InteractorFactory.GetWorkspaceById(WorkspaceId).Execute().Returns(Observable.Return(Workspace));
+                    InteractorFactory.IsBillableAvailableForProject(ProjectId).Execute()
+                        .Returns(Observable.Throw<bool>(new EntityNotFoundException(new Exception())));
+                    InteractorFactory.IsBillableAvailableForWorkspace(WorkspaceId).Execute()
+                        .Returns(Observable.Return(isBillableAvailable));
+                    var noProjectSuggestion = ProjectSuggestion.NoProject(WorkspaceId, Workspace.Name);
+
+                    ViewModel.SelectSuggestionCommand.Execute(noProjectSuggestion);
+
+                    ViewModel.IsBillable.Should().BeFalse();
+                    ViewModel.IsBillableAvailable.Should().Be(isBillableAvailable);
+                }
             }
 
             public sealed class WhenSelectingATagSuggestion : SelectSuggestionTest<TagSuggestion>
@@ -1482,6 +1500,105 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.TextFieldInfo.Text.Should().Be(Suggestion.Symbol);
                 }
+            }
+        }
+
+        public sealed class TheSelectTimeCommand : StartTimeEntryViewModelTest
+        {
+            private const string bindingParameter = "Duration";
+            private readonly TaskCompletionSource<SelectTimeResultsParameters> tcs = new TaskCompletionSource<SelectTimeResultsParameters>();
+
+            public TheSelectTimeCommand()
+            {
+                NavigationService
+                    .Navigate<SelectTimeViewModel, SelectTimeParameters, SelectTimeResultsParameters>(Arg.Any<SelectTimeParameters>())
+                    .Returns(tcs.Task);
+            }
+
+            [Fact, LogIfTooSlow]
+            public void SetsIsEditingTimeToTrueWhenItStarts()
+            {
+                ViewModel.SelectTimeCommand.ExecuteAsync(bindingParameter);
+
+                ViewModel.IsEditingTime.Should().BeTrue();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsIsEditingTimeToFalseWhenItEnds()
+            {
+                await callCommandCorrectly();
+
+                ViewModel.IsEditingTime.Should().BeFalse();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task CallsTheSelectViewModelWithACalculatedStopDateIfTheDurationIsNotNull()
+            {
+                ViewModel.Prepare(StartTimeEntryParameters.ForManualMode(DateTimeOffset.Now));
+
+                await callCommandCorrectly();
+
+                await NavigationService
+                    .Received()
+                    .Navigate<SelectTimeViewModel, SelectTimeParameters, SelectTimeResultsParameters>(Arg.Is<SelectTimeParameters>(
+                        parameters => parameters.Stop != null
+                    ));
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task CallsTheSelectViewModelWithNoStopDateIfTheDurationIsNull()
+            {
+                ViewModel.Prepare(StartTimeEntryParameters.ForTimerMode(DateTimeOffset.Now));
+
+                await callCommandCorrectly();
+
+                await NavigationService
+                    .Received()
+                    .Navigate<SelectTimeViewModel, SelectTimeParameters, SelectTimeResultsParameters>(Arg.Is<SelectTimeParameters>(
+                        parameters => parameters.Stop == null
+                    ));
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsTheDurationIfTheStopResultHasAValue()
+            {
+                const int totalDurationInHours = 2;
+                ViewModel.Prepare(StartTimeEntryParameters.ForTimerMode(DateTimeOffset.Now));
+
+                await callCommandCorrectly(totalDurationInHours);
+
+                ViewModel.Duration.Value.TotalHours.Should().Be(totalDurationInHours);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task DoesNotSetTheDurationIfTheStopResultHasNoValue()
+            {
+                ViewModel.Prepare(StartTimeEntryParameters.ForTimerMode(DateTimeOffset.Now));
+
+                await callCommandCorrectly();
+
+                ViewModel.Duration.Should().BeNull();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task SetsTheStartDateToTheValueReturned()
+            {
+                const int totalDurationInHours = 2;
+                ViewModel.Prepare(StartTimeEntryParameters.ForTimerMode(DateTimeOffset.Now));
+
+                await callCommandCorrectly(totalDurationInHours);
+                var expected = (await tcs.Task).Start;
+
+                ViewModel.StartTime.Should().Be(expected);
+            }
+
+            private Task callCommandCorrectly(int? hoursToAddToStopTime = null)
+            {
+                var commandTask = ViewModel.SelectTimeCommand.ExecuteAsync(bindingParameter);
+                var now = DateTimeOffset.Now;
+                var stopTime = hoursToAddToStopTime.HasValue ? now.AddHours(hoursToAddToStopTime.Value) : (DateTimeOffset?)null;
+                tcs.SetResult(new SelectTimeResultsParameters(now, stopTime));
+                return commandTask;
             }
         }
 

@@ -60,10 +60,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public Password Password { get; set; } = Password.Empty;
 
-        public bool TermsAccepted { get; set; } = false;
-
-        public int? CountryId { get; set; } = null;
-
         public string InfoText { get; set; } = "";
 
         [DependsOn(nameof(IsSignUp))]
@@ -229,7 +225,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (IsSignUp)
             {
                 validatePassword();
-                validateCountryId();
             }
         }
 
@@ -242,18 +237,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 : Resources.SignUpPasswordRequirements;
 
             RaisePropertyChanged(nameof(InfoText));
-        }
-
-        private void validateCountryId()
-        {
-            if (!CountryId.HasValue)
-            {
-                IsErrorText = true;
-                InfoText = Resources.SignUpCountryRequired;
-
-                RaisePropertyChanged(nameof(IsErrorText));
-                RaisePropertyChanged(nameof(InfoText));
-            }
         }
 
         private void resetPassword()
@@ -346,16 +329,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void signUp()
         {
-            if (CountryId != null)
-            {
-                IsLoading = true;
+            IsLoading = true;
 
-                loginDisposable =
-                    loginManager
-                        .SignUp(Email, Password, TermsAccepted, CountryId.Value)
-                        .Do(_ => analyticsService.TrackSignUpEvent(AuthenticationMethod.EmailAndPassword))
-                        .Subscribe(onDataSource, onError, onCompleted);
-            }
+            var termsAccepted = true;
+            int? countryId = null;
+
+            loginDisposable =
+                loginManager
+                    .SignUp(Email, Password, termsAccepted, countryId)
+                    .Do(_ => analyticsService.TrackSignUpEvent(AuthenticationMethod.EmailAndPassword))
+                    .Subscribe(onDataSource, onError, onCompleted);
         }
 
         private async Task startPasswordManager()
@@ -420,6 +403,47 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     InfoText = getGenericError();
                     break;
             }
+
+            if (IsSignUp)
+            {
+                analyticsService.TrackSignUpErrorEvent(signUpErrorSource(exception));
+            }
+            else
+            {
+                analyticsService.TrackLoginErrorEvent(loginErrorSource(exception));
+            }
+        }
+
+        private LoginErrorSource loginErrorSource(Exception exception)
+        {
+            switch (exception)
+            {
+                case UnauthorizedException _:
+                    return LoginErrorSource.InvalidEmailOrPassword;
+                case GoogleLoginException _:
+                    return LoginErrorSource.GoogleLoginError;
+                case OfflineException _:
+                    return LoginErrorSource.Offline;
+                case ServerErrorException _:
+                    return LoginErrorSource.ServerError;
+                default:
+                    return LoginErrorSource.Other;
+            }
+        }
+
+        private SignUpErrorSource signUpErrorSource(Exception exception)
+        {
+            switch (exception)
+            {
+                case EmailIsAlreadyUsedException _:
+                    return SignUpErrorSource.EmailIsAlreadyUsed;
+                case OfflineException _:
+                    return SignUpErrorSource.Offline;
+                case ServerErrorException _:
+                    return SignUpErrorSource.ServerError;
+                default:
+                    return SignUpErrorSource.Other;
+            }
         }
 
         private string getGenericError()
@@ -447,6 +471,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Password = Password.Empty;
             CurrentPage = EmailPage;
             RaisePropertyChanged(nameof(TryLoggingInInsteadOfSignup));
+        }
+
+        public override void ViewDestroy()
+        {
+            base.ViewDestroy();
+            loginDisposable?.Dispose();
         }
     }
 }

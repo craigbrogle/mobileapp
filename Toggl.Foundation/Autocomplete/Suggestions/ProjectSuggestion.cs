@@ -8,6 +8,8 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
     [Preserve(AllMembers = true)]
     public sealed class ProjectSuggestion : AutocompleteSuggestion
     {
+        public const long NoProjectId = 0;
+
         public static ProjectSuggestion NoProject(long workspaceId, string workspaceName)
             => new ProjectSuggestion(workspaceId, workspaceName);
 
@@ -35,7 +37,7 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
 
         private ProjectSuggestion(long workspaceId, string workspaceName)
         {
-            ProjectId = 0;
+            ProjectId = NoProjectId;
             ClientName = "";
             ProjectColor = "#A3A3A3";
             ProjectName = Resources.NoProject;

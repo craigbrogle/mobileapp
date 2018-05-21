@@ -209,22 +209,6 @@ private TemporaryFileTransformation GetAndroidGoogleLoginTransformation()
     };
 }
 
-private TemporaryFileTransformation GetDroidCrashConfigurationTransformation()
-{
-    const string path = "Toggl.Giskard/Startup/SplashScreen.cs";
-    var appCenterId = EnvironmentVariable("TOGGL_APP_CENTER_ID_DROID");
-
-    var filePath = GetFiles(path).Single();
-    var file = TransformTextFile(filePath).ToString();
-
-    return new TemporaryFileTransformation
-    { 
-        Path = path, 
-        Original = file,
-        Temporary = file.Replace("{TOGGL_APP_CENTER_ID_DROID}", appCenterId)
-    };
-}
-
 private TemporaryFileTransformation GetIosInfoConfigurationTransformation()
 {
     const string path = "Toggl.Daneel/Info.plist";
@@ -266,6 +250,70 @@ private TemporaryFileTransformation GetIosInfoConfigurationTransformation()
     };
 }
 
+private TemporaryFileTransformation GetAndroidManifestTransformation()
+{
+    const string path = "Toggl.Giskard/Properties/AndroidManifest.xml";
+    const string packageNameToReplace = "com.toggl.giskard.debug";
+    const string versionNumberToReplace = "987654321";
+    const string appNameToReplace = "Toggl for Devs";
+
+    var commitCount = GetCommitCount();
+    var packageName = packageNameToReplace;
+    var appName = appNameToReplace;
+
+    if (target == "Build.Release.Android.AdHoc")
+    {
+        packageName = "com.toggl.giskard";
+        appName = "Toggl for Tests";
+    }
+    else if (target == "Build.Release.Android.PlayStore")
+    {
+        packageName = "com.toggl.giskard";
+        appName = "Toggl";
+    }
+
+    var filePath = GetFiles(path).Single();
+    var file = TransformTextFile(filePath).ToString();
+
+    return new TemporaryFileTransformation
+    { 
+        Path = path, 
+        Original = file,
+        Temporary = file.Replace(versionNumberToReplace, commitCount)
+                        .Replace(packageNameToReplace, packageName)
+                        .Replace(appNameToReplace, appName)
+    };
+}
+
+private TemporaryFileTransformation GetAndroidSplashScreenTransformation()
+{
+    const string path = "Toggl.Giskard/Startup/SplashScreen.cs";
+    const string appNameToReplace = "Toggl for Devs";
+    var appCenterId = EnvironmentVariable("TOGGL_APP_CENTER_ID_DROID");
+
+    var appName = appNameToReplace;
+
+    if (target == "Build.Release.Android.AdHoc")
+    {
+        appName = "Toggl for Tests";
+    }
+    else if (target == "Build.Release.Android.PlayStore")
+    {
+        appName = "Toggl";
+    }
+
+    var filePath = GetFiles(path).Single();
+    var file = TransformTextFile(filePath).ToString();
+
+    return new TemporaryFileTransformation
+    { 
+        Path = path, 
+        Original = file,
+        Temporary = file.Replace(appNameToReplace, appName)
+                        .Replace("{TOGGL_APP_CENTER_ID_DROID}", appCenterId)
+    };
+}
+
 private TemporaryFileTransformation GetIntegrationTestsConfigurationTransformation()
 {   
     const string path = "Toggl.Ultrawave.Tests.Integration/Helper/Configuration.cs";
@@ -285,12 +333,13 @@ var transformations = new List<TemporaryFileTransformation>
 {
     GetIosInfoConfigurationTransformation(),
     GetIosCrashConfigurationTransformation(),
-    GetDroidCrashConfigurationTransformation(),
     GetIntegrationTestsConfigurationTransformation(),
     GetIosAnalyticsServicesConfigurationTransformation(),
     GetAndroidProjectConfigurationTransformation(),
     GetAndroidGoogleServicesTransformation(),
-    GetAndroidGoogleLoginTransformation()
+    GetAndroidGoogleLoginTransformation(),
+    GetAndroidSplashScreenTransformation(),
+    GetAndroidManifestTransformation()
 };
 
 private HashSet<string> targetsThatSkipTearDown = new HashSet<string>

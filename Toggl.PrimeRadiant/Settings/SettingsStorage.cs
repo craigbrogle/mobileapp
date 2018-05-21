@@ -20,6 +20,7 @@ namespace Toggl.PrimeRadiant.Settings
         private const string preferManualMode = "PreferManualMode";
 
         private const string startButtonWasTappedBeforeKey = "StartButtonWasTappedBefore";
+        private const string hasTappedTimeEntryKey = "HasTappedTimeEntry";
         private const string hasEditedTimeEntryKey = "HasEditedTimeEntry";
         private const string projectOrTagWasAddedBeforeKey = "ProjectOrTagWasAddedBefore";
         private const string stopButtonWasTappedBeforeKey = "StopButtonWasTappedBefore";
@@ -34,6 +35,7 @@ namespace Toggl.PrimeRadiant.Settings
         private readonly ISubject<bool> isNewUserSubject;
         private readonly ISubject<bool> projectOrTagWasAddedSubject;
         private readonly ISubject<bool> startButtonWasTappedSubject;
+        private readonly ISubject<bool> hasTappedTimeEntrySubject;
         private readonly ISubject<bool> hasEditedTimeEntrySubject;
         private readonly ISubject<bool> stopButtonWasTappedSubject;
         private readonly ISubject<bool> hasSelectedProjectSubject;
@@ -47,6 +49,7 @@ namespace Toggl.PrimeRadiant.Settings
 
             (isNewUserSubject, IsNewUser) = prepareSubjectAndObservable(isNewUserKey);
             (stopButtonWasTappedSubject, StopButtonWasTappedBefore) = prepareSubjectAndObservable(stopButtonWasTappedBeforeKey);
+            (hasTappedTimeEntrySubject, HasTappedTimeEntry) = prepareSubjectAndObservable(hasTappedTimeEntryKey);
             (hasEditedTimeEntrySubject, HasEditedTimeEntry) = prepareSubjectAndObservable(hasEditedTimeEntryKey);
             (hasSelectedProjectSubject, HasSelectedProject) = prepareSubjectAndObservable(hasSelectedProjectKey);
             (userSignedUpUsingTheAppSubject, UserSignedUpUsingTheApp) = prepareSubjectAndObservable(userSignedUpUsingTheAppKey);
@@ -102,6 +105,8 @@ namespace Toggl.PrimeRadiant.Settings
 
         public IObservable<bool> StartButtonWasTappedBefore { get; }
 
+        public IObservable<bool> HasTappedTimeEntry { get; }
+
         public IObservable<bool> HasEditedTimeEntry { get; }
 
         public IObservable<bool> ProjectOrTagWasAddedBefore { get; }
@@ -145,8 +150,8 @@ namespace Toggl.PrimeRadiant.Settings
 
         public void TimeEntryWasTapped()
         {
-            hasEditedTimeEntrySubject.OnNext(true);
-            keyValueStorage.SetBool(hasEditedTimeEntryKey, true);
+            hasTappedTimeEntrySubject.OnNext(true);
+            keyValueStorage.SetBool(hasTappedTimeEntryKey, true);
         }
 
         public void ProjectOrTagWasAdded()

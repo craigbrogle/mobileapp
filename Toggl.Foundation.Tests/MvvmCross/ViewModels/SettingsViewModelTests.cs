@@ -202,15 +202,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public async Task ResetsOnboarding()
-            {
-                doNotShowConfirmationDialog();
-                await ViewModel.LogoutCommand.ExecuteAsync();
-
-                OnboardingStorage.Received().Reset();
-            }
-
-            [Fact, LogIfTooSlow]
             public async Task NavigatesToTheOnboardingScreen()
             {
                 doNotShowConfirmationDialog();

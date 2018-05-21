@@ -23,6 +23,8 @@ namespace Toggl.Daneel.ViewSources
         : GroupedCollectionTableViewSource<TimeEntryViewModelCollection, TimeEntryViewModel>,
           IUITableViewDataSource
     {
+        public event EventHandler SwipeToContinueWasUsed;
+
         private const int bottomPadding = 64;
         private const int spaceBetweenSections = 20;
 
@@ -141,6 +143,7 @@ namespace Toggl.Daneel.ViewSources
                 Resources.Continue,
                 (action, sourceView, completionHandler) =>
                 {
+                    SwipeToContinueWasUsed?.Invoke(this, EventArgs.Empty);
                     ContinueTimeEntryCommand.Execute(timeEntry);
                     completionHandler.Invoke(finished: true);
                 }

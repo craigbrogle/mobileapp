@@ -61,6 +61,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(SyncingProgress))]
         public bool ShowSyncIndicator => SyncingProgress == SyncProgress.Syncing;
 
+        public bool IsTimeEntryRunning => CurrentTimeEntryId.HasValue;
+
         public bool IsAddDescriptionLabelVisible =>
             string.IsNullOrEmpty(CurrentTimeEntryDescription)
             && string.IsNullOrEmpty(CurrentTimeEntryProject);
@@ -96,6 +98,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IMvxNavigationService NavigationService => navigationService;
 
         public IMvxAsyncCommand StartTimeEntryCommand { get; }
+
+        public IMvxAsyncCommand AlternativeStartTimeEntryCommand { get; }
 
         public IMvxAsyncCommand StopTimeEntryCommand { get; }
 
@@ -145,6 +149,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             EditTimeEntryCommand = new MvxAsyncCommand(editTimeEntry, () => CurrentTimeEntryId.HasValue);
             StopTimeEntryCommand = new MvxAsyncCommand(stopTimeEntry, () => isStopButtonEnabled);
             StartTimeEntryCommand = new MvxAsyncCommand(startTimeEntry, () => CurrentTimeEntryId.HasValue == false);
+            AlternativeStartTimeEntryCommand = new MvxAsyncCommand(alternativeStartTimeEntry, () => CurrentTimeEntryId.HasValue == false);
         }
 
         public void Init(string action)
@@ -169,7 +174,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .CurrentlyRunningTimeEntry
                 .Throttle(currentTimeEntryDueTime, scheduler) // avoid overwhelming the UI with frequent updates
                 .Subscribe(setRunningEntry);
-            
+
             var syncManagerDisposable = dataSource
                 .SyncManager
                 .ProgressObservable
@@ -217,18 +222,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsInManualMode = userPreferences.IsManualModeEnabled();
         }
 
-        public override void ViewAppeared()
-        {
-            base.ViewAppeared();
-
-            ChangePresentation(new CardVisibilityHint(CurrentTimeEntryId != null));
-        }
-
         private void setRunningEntry(IDatabaseTimeEntry timeEntry)
         {
             CurrentTimeEntryId = timeEntry?.Id;
             currentTimeEntryStart = timeEntry?.Start;
             CurrentTimeEntryDescription = timeEntry?.Description ?? "";
+            CurrentTimeEntryElapsedTime = timeService.CurrentDateTime - currentTimeEntryStart ?? TimeSpan.Zero;
 
             CurrentTimeEntryTask = timeEntry?.Task?.Name ?? "";
             CurrentTimeEntryProject = timeEntry?.Project?.Name ?? "";
@@ -242,6 +241,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTimeEntryCommand.RaiseCanExecuteChanged();
             StartTimeEntryCommand.RaiseCanExecuteChanged();
             EditTimeEntryCommand.RaiseCanExecuteChanged();
+
+            RaisePropertyChanged(nameof(IsTimeEntryRunning));
         }
 
         private void refresh()
@@ -259,12 +260,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         }
 
         private Task startTimeEntry()
+            => startTimeEntry(IsInManualMode);
+
+        private Task alternativeStartTimeEntry()
+            => startTimeEntry(!IsInManualMode);
+
+        private Task startTimeEntry(bool initializeInManualMode)
         {
             OnboardingStorage.StartButtonWasTapped();
 
-            var parameter = IsInManualMode
+            var parameter = initializeInManualMode
                 ? StartTimeEntryParameters.ForManualMode(timeService.CurrentDateTime)
-                : StartTimeEntryParameters.ForTimerMode(timeService.CurrentDateTime); 
+                : StartTimeEntryParameters.ForTimerMode(timeService.CurrentDateTime);
             return navigationService.Navigate<StartTimeEntryViewModel, StartTimeEntryParameters>(parameter);
         }
 

@@ -15,9 +15,6 @@
             <connections>
                 <outlet property="BackgroundImage" destination="uQ9-8C-BGz" id="5UG-H9-p72"/>
                 <outlet property="FirstPageLabel" destination="0bW-s1-SME" id="name-outlet-0bW-s1-SME"/>
-                <outlet property="JumbotronLabel" destination="BAk-8t-LBQ" id="name-outlet-BAk-8t-LBQ"/>
-                <outlet property="LastPageItems" destination="YG4-AY-v9P" id="name-outlet-YG4-AY-v9P"/>
-                <outlet property="Login" destination="nWO-4d-oJq" id="name-outlet-nWO-4d-oJq"/>
                 <outlet property="Next" destination="crr-oI-9sA" id="name-outlet-crr-oI-9sA"/>
                 <outlet property="PageControl" destination="KBd-Lu-7wr" id="name-outlet-KBd-Lu-7wr"/>
                 <outlet property="PhoneContents" destination="cBN-Dd-JYx" id="name-outlet-cBN-Dd-JYx"/>
@@ -25,7 +22,6 @@
                 <outlet property="Previous" destination="QOR-SE-Mpp" id="name-outlet-QOR-SE-Mpp"/>
                 <outlet property="ScrollView" destination="3BO-Ic-74A" id="name-outlet-3BO-Ic-74A"/>
                 <outlet property="SecondPageLabel" destination="Meo-nQ-q5D" id="name-outlet-Meo-nQ-q5D"/>
-                <outlet property="SignUp" destination="tAw-Ut-UeB" id="name-outlet-tAw-Ut-UeB"/>
                 <outlet property="Skip" destination="1ic-Bm-3e0" id="name-outlet-1ic-Bm-3e0"/>
                 <outlet property="ThirdPageLabel" destination="G9v-ES-Yia" id="name-outlet-G9v-ES-Yia"/>
                 <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
@@ -51,91 +47,6 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cBN-Dd-JYx">
                     <rect key="frame" x="65" y="91" width="190" height="319"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                </view>
-                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YG4-AY-v9P">
-                    <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
-                    <subviews>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="togglLogoWhite" translatesAutoresizingMaskIntoConstraints="NO" id="sj5-wO-FDf">
-                            <rect key="frame" x="104" y="40" width="112" height="36"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="36" id="Etg-QL-HRX"/>
-                                <constraint firstAttribute="width" constant="112" id="uUA-dH-jcc"/>
-                            </constraints>
-                        </imageView>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="togglCronometer" translatesAutoresizingMaskIntoConstraints="NO" id="tym-Hy-5nB">
-                            <rect key="frame" x="194" y="104" width="126" height="138"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="138" id="L3U-op-PTa"/>
-                                <constraint firstAttribute="width" constant="126" id="PwH-bE-eWd"/>
-                            </constraints>
-                        </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BAk-8t-LBQ">
-                            <rect key="frame" x="16" y="232.5" width="288" height="100.5"/>
-                            <string key="text">TAKE CONTROL OF
-YOUR TIME AND
-START TRACKING</string>
-                            <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
-                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <nil key="highlightedColor"/>
-                        </label>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nWO-4d-oJq">
-                            <rect key="frame" x="16" y="386" width="288" height="40"/>
-                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            <accessibility key="accessibilityConfiguration" label="OnboardingLogin"/>
-                            <constraints>
-                                <constraint firstAttribute="height" constant="40" id="YWy-Aa-Cb6"/>
-                            </constraints>
-                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
-                            <state key="normal" title="Log in">
-                                <color key="titleColor" red="0.023529411764705882" green="0.66666666666666663" blue="0.96078431372549022" alpha="1" colorSpace="calibratedRGB"/>
-                            </state>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                    <integer key="value" value="8"/>
-                                </userDefinedRuntimeAttribute>
-                            </userDefinedRuntimeAttributes>
-                        </button>
-                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="notebook" translatesAutoresizingMaskIntoConstraints="NO" id="1nu-tH-SkB">
-                            <rect key="frame" x="0.0" y="153" width="95" height="83"/>
-                            <constraints>
-                                <constraint firstAttribute="width" constant="95" id="F1R-3k-GWd"/>
-                                <constraint firstAttribute="height" constant="83" id="LB2-bh-Hl4"/>
-                            </constraints>
-                        </imageView>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="tAw-Ut-UeB">
-                            <rect key="frame" x="15" y="450" width="289" height="29"/>
-                            <accessibility key="accessibilityConfiguration" label="OnboardingSignUp"/>
-                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
-                            <state key="normal" title="Don’t have an account? Sign up for free">
-                                <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            </state>
-                        </button>
-                    </subviews>
-                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                    <constraints>
-                        <constraint firstItem="sj5-wO-FDf" firstAttribute="top" secondItem="YG4-AY-v9P" secondAttribute="top" constant="40" id="1En-2Z-fHg"/>
-                        <constraint firstAttribute="trailing" secondItem="BAk-8t-LBQ" secondAttribute="trailing" constant="16" id="8Kg-do-WT2"/>
-                        <constraint firstItem="sj5-wO-FDf" firstAttribute="centerX" secondItem="YG4-AY-v9P" secondAttribute="centerX" id="B8h-Pn-Roa"/>
-                        <constraint firstItem="BAk-8t-LBQ" firstAttribute="top" secondItem="tym-Hy-5nB" secondAttribute="bottom" constant="23" id="HYw-J2-4R2"/>
-                        <constraint firstAttribute="trailing" secondItem="nWO-4d-oJq" secondAttribute="trailing" constant="16" id="MQN-Tu-ami"/>
-                        <constraint firstItem="nWO-4d-oJq" firstAttribute="top" secondItem="BAk-8t-LBQ" secondAttribute="bottom" constant="53" id="OW3-a4-Md9">
-                            <variation key="heightClass=compact" constant="24"/>
-                        </constraint>
-                        <constraint firstAttribute="trailing" secondItem="tAw-Ut-UeB" secondAttribute="trailing" constant="16" id="Q5X-zF-576"/>
-                        <constraint firstItem="tym-Hy-5nB" firstAttribute="top" secondItem="sj5-wO-FDf" secondAttribute="bottom" constant="28" id="QRc-R0-mpa"/>
-                        <constraint firstItem="BAk-8t-LBQ" firstAttribute="leading" secondItem="YG4-AY-v9P" secondAttribute="leading" constant="16" id="R64-Dj-gl3"/>
-                        <constraint firstItem="1nu-tH-SkB" firstAttribute="top" secondItem="sj5-wO-FDf" secondAttribute="bottom" constant="77" id="Wru-bO-IA2"/>
-                        <constraint firstItem="nWO-4d-oJq" firstAttribute="leading" secondItem="YG4-AY-v9P" secondAttribute="leading" constant="16" id="eyC-jy-7ex"/>
-                        <constraint firstAttribute="trailing" secondItem="tym-Hy-5nB" secondAttribute="trailing" id="fOI-Cl-Kmg"/>
-                        <constraint firstItem="tAw-Ut-UeB" firstAttribute="leading" secondItem="YG4-AY-v9P" secondAttribute="leading" constant="15" id="sA5-aH-xaq"/>
-                        <constraint firstItem="tAw-Ut-UeB" firstAttribute="top" secondItem="nWO-4d-oJq" secondAttribute="bottom" constant="24" id="x20-4M-PNf"/>
-                        <constraint firstItem="1nu-tH-SkB" firstAttribute="leading" secondItem="YG4-AY-v9P" secondAttribute="leading" id="zgh-z8-m4I"/>
-                    </constraints>
-                    <variation key="heightClass=regular">
-                        <mask key="constraints">
-                            <exclude reference="HYw-J2-4R2"/>
-                        </mask>
-                    </variation>
                 </view>
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3BO-Ic-74A">
                     <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
@@ -234,9 +145,7 @@ START TRACKING</string>
                 <constraint firstItem="1ic-Bm-3e0" firstAttribute="top" secondItem="dSK-f7-Uvp" secondAttribute="top" id="1No-up-h7o"/>
                 <constraint firstAttribute="bottom" secondItem="uQ9-8C-BGz" secondAttribute="bottom" id="3F8-uh-mRB"/>
                 <constraint firstItem="KBd-Lu-7wr" firstAttribute="centerX" secondItem="2" secondAttribute="centerX" id="8at-kn-IWJ"/>
-                <constraint firstItem="YG4-AY-v9P" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="BKa-11-b6O"/>
                 <constraint firstItem="dSK-f7-Uvp" firstAttribute="trailing" secondItem="uQ9-8C-BGz" secondAttribute="trailing" id="Cxo-jg-U6F"/>
-                <constraint firstItem="YG4-AY-v9P" firstAttribute="bottom" secondItem="dSK-f7-Uvp" secondAttribute="bottom" id="DZb-jp-cih"/>
                 <constraint firstItem="hCB-nj-krh" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="52" id="EJV-EX-9IS"/>
                 <constraint firstItem="hCB-nj-krh" firstAttribute="top" secondItem="dSK-f7-Uvp" secondAttribute="top" constant="49" id="IKT-GH-bEe"/>
                 <constraint firstItem="uQ9-8C-BGz" firstAttribute="leading" secondItem="dSK-f7-Uvp" secondAttribute="leading" id="IVH-uq-cle"/>
@@ -246,18 +155,15 @@ START TRACKING</string>
                 <constraint firstAttribute="trailing" secondItem="crr-oI-9sA" secondAttribute="trailing" id="SjV-Vk-J1r"/>
                 <constraint firstItem="dSK-f7-Uvp" firstAttribute="bottom" secondItem="crr-oI-9sA" secondAttribute="bottom" id="U74-gr-GUw"/>
                 <constraint firstItem="cBN-Dd-JYx" firstAttribute="bottom" secondItem="hCB-nj-krh" secondAttribute="bottom" constant="-22" id="Yuf-c2-Okw"/>
-                <constraint firstItem="KBd-Lu-7wr" firstAttribute="top" secondItem="tAw-Ut-UeB" secondAttribute="bottom" constant="28" id="aJc-Sw-JXX"/>
                 <constraint firstItem="cBN-Dd-JYx" firstAttribute="centerY" secondItem="hCB-nj-krh" secondAttribute="centerY" id="aws-4u-H1V"/>
                 <constraint firstItem="cBN-Dd-JYx" firstAttribute="leading" secondItem="hCB-nj-krh" secondAttribute="leading" constant="13" id="b11-eM-S25"/>
                 <constraint firstItem="dSK-f7-Uvp" firstAttribute="bottom" secondItem="3BO-Ic-74A" secondAttribute="bottom" id="cdm-Od-rB1"/>
-                <constraint firstItem="YG4-AY-v9P" firstAttribute="top" secondItem="dSK-f7-Uvp" secondAttribute="top" constant="-20" id="fyW-XA-ZqU"/>
                 <constraint firstItem="QOR-SE-Mpp" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="ht7-4g-Opq"/>
                 <constraint firstAttribute="trailing" secondItem="hCB-nj-krh" secondAttribute="trailing" constant="52" id="l4y-Al-q5D"/>
                 <constraint firstItem="cBN-Dd-JYx" firstAttribute="top" secondItem="hCB-nj-krh" secondAttribute="top" constant="22" id="r4b-51-ugG"/>
                 <constraint firstItem="cBN-Dd-JYx" firstAttribute="centerX" secondItem="hCB-nj-krh" secondAttribute="centerX" id="rlh-YM-CTY"/>
                 <constraint firstItem="KBd-Lu-7wr" firstAttribute="centerY" secondItem="crr-oI-9sA" secondAttribute="centerY" id="rnk-Pw-fds"/>
                 <constraint firstItem="uQ9-8C-BGz" firstAttribute="top" secondItem="2" secondAttribute="top" id="ulR-Jh-Eag"/>
-                <constraint firstItem="YG4-AY-v9P" firstAttribute="trailing" secondItem="2" secondAttribute="trailing" id="vIA-XJ-6i1"/>
                 <constraint firstAttribute="trailing" secondItem="3BO-Ic-74A" secondAttribute="trailing" id="vKM-LW-ljA"/>
                 <constraint firstAttribute="trailing" secondItem="1ic-Bm-3e0" secondAttribute="trailing" id="wNz-bj-mls"/>
                 <constraint firstItem="3BO-Ic-74A" firstAttribute="top" secondItem="2" secondAttribute="top" id="wbU-bE-L7r"/>
@@ -268,8 +174,5 @@ START TRACKING</string>
     </objects>
     <resources>
         <image name="bgNoiseBlue" width="320" height="568"/>
-        <image name="notebook" width="95" height="85"/>
-        <image name="togglCronometer" width="126" height="140"/>
-        <image name="togglLogoWhite" width="111" height="35"/>
     </resources>
 </document>

@@ -2,12 +2,15 @@
 using System.Reactive.Linq;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Onboarding;
+using Toggl.Multivac.Extensions;
 
 namespace Toggl.Daneel.Onboarding.MainView
 {
     public sealed class SwipeLeftOnboardingStep : IOnboardingStep
     {
         private const int minimumTimeEntriesCount = 5;
+
+        private readonly TimeSpan delay = TimeSpan.FromSeconds(2);
 
         public IObservable<bool> ShouldBeVisible { get; }
 
@@ -23,8 +26,8 @@ namespace Toggl.Daneel.Onboarding.MainView
             ShouldBeVisible = Observable.CombineLatest(
                 swipeRightOnboardingStepIsVisibleObservable,
                 timeEntriesCountObservable,
-                (swipeRightIsVisible, timeEntriesCount) => !swipeRightIsVisible
-                && timeEntriesCount >= minimumTimeEntriesCount);
+                (swipeRightIsVisible, timeEntriesCount) => !swipeRightIsVisible && timeEntriesCount >= minimumTimeEntriesCount)
+                .DelayIf(shouldBeVisible => shouldBeVisible, delay);
         }
     }
 }

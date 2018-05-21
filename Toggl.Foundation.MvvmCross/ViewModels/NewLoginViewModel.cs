@@ -8,6 +8,7 @@ using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Exceptions;
 using Toggl.Foundation.Login;
+using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
@@ -17,7 +18,7 @@ using Toggl.Ultrawave.Exceptions;
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
     [Preserve(AllMembers = true)]
-    public sealed class NewLoginViewModel : MvxViewModel
+    public sealed class NewLoginViewModel : MvxViewModel<CredentialsParameter>
     {
         private readonly ILoginManager loginManager;
         private readonly IAnalyticsService analyticsService;
@@ -53,9 +54,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand GoogleLoginCommand { get; }
 
-        public IMvxCommand ForgotPasswordCommand { get; }
-
         public IMvxCommand TogglePasswordVisibilityCommand { get; }
+
+        public IMvxAsyncCommand SignupCommand { get; }
+
+        public IMvxAsyncCommand ForgotPasswordCommand { get; }
 
         public IMvxAsyncCommand StartPasswordManagerCommand { get; }
 
@@ -81,11 +84,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.passwordManagerService = passwordManagerService;
             this.apiErrorHandlingService = apiErrorHandlingService;
 
+            SignupCommand = new MvxAsyncCommand(signup);
             GoogleLoginCommand = new MvxCommand(googleLogin);
-            ForgotPasswordCommand = new MvxCommand(forgotPassword);
             LoginCommand = new MvxCommand(login, () => LoginEnabled);
+            ForgotPasswordCommand = new MvxAsyncCommand(forgotPassword);
             TogglePasswordVisibilityCommand = new MvxCommand(togglePasswordVisibility);
             StartPasswordManagerCommand = new MvxAsyncCommand(startPasswordManager, () => IsPasswordManagerAvailable);
+        }
+
+        public override void Prepare(CredentialsParameter parameter)
+        {
+            Email = parameter.Email;
+            Password = parameter.Password;
         }
 
         private void login()
@@ -174,8 +184,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void togglePasswordVisibility()
            => IsPasswordMasked = !IsPasswordMasked;
 
-        private void forgotPassword()
+        private async Task forgotPassword()
         {
+            var emailParameter = EmailParameter.With(Email);
+            emailParameter = await navigationService
+                .Navigate<ForgotPasswordViewModel, EmailParameter, EmailParameter>(emailParameter);
+            if (emailParameter != null)
+                Email = emailParameter.Email;
         }
 
         private void googleLogin()
@@ -188,6 +203,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .LoginWithGoogle()
                 .Do(_ => analyticsService.TrackLoginEvent(AuthenticationMethod.Google))
                 .Subscribe(onDataSource, onError, onCompleted);
+        }
+
+        private Task signup()
+        {
+            var parameter = CredentialsParameter.With(Email, Password);
+            return navigationService.Navigate<SignupViewModel, CredentialsParameter>(parameter);
         }
     }
 }

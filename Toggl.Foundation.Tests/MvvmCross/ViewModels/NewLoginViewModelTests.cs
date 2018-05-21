@@ -18,6 +18,8 @@ using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Network;
 using Xunit;
 using Toggl.Foundation.Tests.TestExtensions;
+using FsCheck;
+using Toggl.Foundation.MvvmCross.Parameters;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -25,10 +27,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class NewLoginViewModelTest : BaseViewModelTests<NewLoginViewModel>
         {
-            protected ILoginManager LoginManager { get; } = Substitute.For<ILoginManager>();
-            protected IPasswordManagerService PasswordManagerService { get; } = Substitute.For<IPasswordManagerService>();
-            protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
-
             protected Email ValidEmail { get; } = Email.From("person@company.com");
             protected Email InvalidEmail { get; } = Email.From("this is not an email");
 
@@ -632,6 +630,55 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 PasswordManagerService.GetLoginInformation().Returns(observable);
 
                 return observable;
+            }
+        }
+
+        public sealed class TheSignupCommand : NewLoginViewModelTest
+        {
+            [Property]
+            public void NavigatesToTheSignupViewModel(
+                NonEmptyString email, NonEmptyString password)
+            {
+                ViewModel.Email = Email.From(email.Get);
+                ViewModel.Password = Password.From(password.Get);
+
+                ViewModel.SignupCommand.ExecuteAsync().Wait();
+
+                NavigationService
+                    .Received()
+                    .Navigate<SignupViewModel, CredentialsParameter>(
+                        Arg.Is<CredentialsParameter>(parameter
+                            => parameter.Email.Equals(ViewModel.Email)
+                                && parameter.Password.Equals(ViewModel.Password)
+                        )
+                    );
+            }
+        }
+
+        public sealed class ThePrepareMethod : NewLoginViewModelTest
+        {
+            [Property]
+            public void SetsTheEmail(NonEmptyString emailString)
+            {
+                var email = Email.From(emailString.Get);
+                var password = Password.Empty;
+                var parameter = CredentialsParameter.With(email, password);
+
+                ViewModel.Prepare(parameter);
+
+                ViewModel.Email.Should().Be(email);
+            }
+
+            [Property]
+            public void SetsThePassword(NonEmptyString passwordString)
+            {
+                var email = Email.Empty;
+                var password = Password.From(passwordString.Get);
+                var parameter = CredentialsParameter.With(email, password);
+
+                ViewModel.Prepare(parameter);
+
+                ViewModel.Password.Should().Be(password);
             }
         }
     }

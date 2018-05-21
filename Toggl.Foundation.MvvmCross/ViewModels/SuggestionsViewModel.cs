@@ -88,5 +88,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     StartTimeEntryCommand.RaiseCanExecuteChanged();
                 });
         }
+
+        public override void ViewDestroy()
+        {
+            base.ViewDestroy();
+            emptyDatabaseDisposable?.Dispose();
+        }
     }
 }

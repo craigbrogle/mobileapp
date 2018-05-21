@@ -482,6 +482,22 @@
     <ImageAsset Include="Resources\Images.xcassets\icOnePassword.imageset\passwordman.png" />
     <ImageAsset Include="Resources\Images.xcassets\icOnePassword.imageset\passwordman%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\icOnePassword.imageset\passwordman%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\confirmation.png" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\confirmation%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\confirmation%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws.png" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
@@ -538,6 +554,11 @@
     <InterfaceDefinition Include="Views\Settings\LicensesViewCell.xib" />
     <InterfaceDefinition Include="Views\Log\TimeEntriesEmptyLogView.xib" />
     <InterfaceDefinition Include="Views\Log\TimeEntryMockView.xib" />
+    <InterfaceDefinition Include="ViewControllers\SelectCountryViewController.xib" />
+    <InterfaceDefinition Include="Views\CountrySelection\CountryViewCell.xib" />
+    <InterfaceDefinition Include="ViewControllers\ForgotPasswordViewController.xib" />
+    <InterfaceDefinition Include="ViewControllers\SignupViewController.xib" />
+    <InterfaceDefinition Include="ViewControllers\TermsOfServiceViewController.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -579,7 +600,6 @@
     <Compile Include="Binding\BarButtonAnimatedEnabledTargetBinding.cs" />
     <Compile Include="Binding\TextFieldFocusTargetBinding.cs" />
     <Compile Include="Presentation\TogglPresenter.cs" />
-    <Compile Include="ViewControllers\Navigation\TogglNavigationController.cs" />
     <Compile Include="ViewSources\TimeEntriesLogViewSource.cs" />
     <Compile Include="ViewControllers\MainViewController.cs" />
     <Compile Include="ViewControllers\MainViewController.designer.cs">
@@ -897,9 +917,32 @@
     <Compile Include="Onboarding\MainView\SwipeRightOnboardingStep.cs" />
     <Compile Include="Onboarding\EditView\CategorizeTimeUsingProjectsOnboardingStep.cs" />
     <Compile Include="Extensions\TimeEntriesLogViewCellExtensions.cs" />
+    <Compile Include="ViewControllers\SelectCountryViewController.cs" />
+    <Compile Include="ViewControllers\SelectCountryViewController.designer.cs">
+      <DependentUpon>SelectCountryViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewSources\CountryTableViewSource.cs" />
+    <Compile Include="Views\CountrySelection\CountryViewCell.cs" />
+    <Compile Include="Views\CountrySelection\CountryViewCell.designer.cs">
+      <DependentUpon>CountryViewCell.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\LoginTextField.cs" />
     <Compile Include="Binding\ButtonAnimatedTitleTargetBinding.cs" />
     <Compile Include="Binding\LoginTextFieldFirstResponderTargetBinding.cs" />
+    <Compile Include="ViewControllers\ForgotPasswordViewController.cs" />
+    <Compile Include="ViewControllers\ForgotPasswordViewController.designer.cs">
+      <DependentUpon>ForgotPasswordViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewControllers\SignupViewController.cs" />
+    <Compile Include="ViewControllers\SignupViewController.designer.cs">
+      <DependentUpon>SignupViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\LoginSignupViewExtensions.cs" />
+    <Compile Include="ViewControllers\TermsOfServiceViewController.cs" />
+    <Compile Include="ViewControllers\TermsOfServiceViewController.designer.cs">
+      <DependentUpon>TermsOfServiceViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RangeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
@@ -960,9 +1003,14 @@
     <Folder Include="Onboarding\StartTimeEntryView\" />
     <Folder Include="Onboarding\CreationView\" />
     <Folder Include="Onboarding\EditView\" />
+    <Folder Include="Views\CountrySelection\" />
     <Folder Include="Resources\Images.xcassets\bike.imageset\" />
     <Folder Include="Resources\Images.xcassets\togglLogoBig.imageset\" />
     <Folder Include="Resources\Images.xcassets\icGoogleColored.imageset\" />
+    <Folder Include="Resources\Images.xcassets\confirmation.imageset\" />
+    <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
+    <Folder Include="Resources\Images.xcassets\paws.imageset\" />
+    <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GoogleService-Info.plist" />

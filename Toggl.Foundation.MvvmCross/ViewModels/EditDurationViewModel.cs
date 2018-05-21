@@ -72,7 +72,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                         return StopTime;
 
                     default:
-                        return default(DateTimeOffset);
+                        // any value between start and end time can be returned here
+                        // this constraint is to avoid invalid dates with the date picker
+                        return StartTime;
                 }
             }
 
@@ -245,6 +247,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             TimeFormat = preferences.TimeOfDayFormat;
 
             RaisePropertyChanged(nameof(DurationFormat));
+        }
+
+        public override void ViewDestroy()
+        {
+            base.ViewDestroy();
+            runningTimeEntryDisposable?.Dispose();
+            preferencesDisposable?.Dispose();
         }
 
         private enum EditMode

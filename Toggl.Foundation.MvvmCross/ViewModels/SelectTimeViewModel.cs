@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Globalization;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using PropertyChanged;
+using Toggl.Foundation.MvvmCross.Combiners;
 using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
@@ -14,10 +16,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class SelectTimeViewModel
         : MvxViewModel<SelectTimeParameters, SelectTimeResultsParameters>
     {
+        public const int StartTimeTab = 0;
+        public const int StopTimeTab = 1;
+        public const int DurationTab = 2;
+
         private readonly IMvxNavigationService navigationService;
         private readonly ITimeService timeService;
+        private IDisposable timeServiceDisposable;
 
         private readonly TimeSpanToDurationValueConverter durationConverter = new TimeSpanToDurationValueConverter();
+
+        private readonly DateTimeOffsetTimeFormatValueCombiner timeFormatValueCombiner;
+        private readonly DateTimeOffsetDateFormatValueCombiner dateFormatValueCombiner;
 
         public DateTimeOffset CurrentDateTime { get; set; }
 
@@ -25,8 +35,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public int StartingTabIndex { get; private set; }
 
+        public DateFormat DateFormat { get; set; }
+        public TimeFormat TimeFormat { get; set; }
+
         [DependsOn(nameof(CurrentDateTime))]
         public DateTimeOffset? StopTime { get; set; }
+
+        public DateTimeOffset StopTimeOrCurrent => StopTime ?? CurrentDateTime;
 
         [DependsOn(nameof(StartTime))]
         public DateTime StartDatePart
@@ -153,32 +168,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand ToggleClockCalendarModeCommand { get; }
 
-        public IMvxCommand IncreaseDuration5MinCommand { get; }
-        public IMvxCommand IncreaseDuration10MinCommand { get; }
-        public IMvxCommand IncreaseDuration30MinCommand { get; }
+        public IMvxCommand<int> IncreaseDurationCommand { get; }
 
         public IMvxCommand FocusDurationCommand { get; }
         public IMvxCommand UnfocusDurationCommand { get; }
 
         public bool IsCalendarView { get; set; }
 
-        [DependsOn(nameof(StartTime))]
-        public string StartTimeText => $"{StartTime:HH:mm}";
+        public int CurrentTab { get; set; }
 
-        [DependsOn(nameof(StartTime))]
-        public string StartDateText => $"{StartTime:MM/dd}";
-
-        [DependsOn(nameof(IsTimeEntryStopped))]
-        public string StopTimeText
-            => IsTimeEntryStopped
-            ? $"{StopTime:HH:mm}"
-            : $"{CurrentDateTime:HH:mm}";
-
-        [DependsOn(nameof(IsTimeEntryStopped))]
-        public string StopDateText
-            => IsTimeEntryStopped
-            ? $"{StopTime:MM/dd}"
-            : $"{CurrentDateTime:MM/dd}";
+        public bool IsOnStartTimeTab => CurrentTab == StartTimeTab;
+        public bool IsOnStopTimeTab => CurrentTab == StopTimeTab;
+        public bool IsOnDurationTab => CurrentTab == DurationTab;
 
         public bool IsDurationVisible { get; set; }
 
@@ -190,10 +191,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public string DurationText
             => (string)durationConverter.Convert(Duration, typeof(TimeSpan), null, CultureInfo.CurrentCulture);
 
-        private TimeSpan editingDuration;
+        private TimeSpan? editingDuration = null;
         public TimeSpan EditingDuration
         {
-            get => editingDuration;
+            get => editingDuration ?? Duration;
             set
             {
                 if (StopTime.HasValue)
@@ -225,9 +226,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             CancelCommand = new MvxAsyncCommand(cancel);
             SaveCommand = new MvxAsyncCommand(save);
 
-            IncreaseDuration5MinCommand = new MvxCommand(increaseDuration(5));
-            IncreaseDuration10MinCommand = new MvxCommand(increaseDuration(10));
-            IncreaseDuration30MinCommand = new MvxCommand(increaseDuration(30));
+            IncreaseDurationCommand = new MvxCommand<int>(increaseDuration);
 
             FocusDurationCommand = new MvxCommand(focusDurationCommand);
             UnfocusDurationCommand = new MvxCommand(unfocusDurationCommand);
@@ -235,12 +234,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTimeEntryCommand = new MvxCommand(stopTimeEntry);
 
             ToggleClockCalendarModeCommand = new MvxCommand(togglClockCalendarMode);
+
+            timeFormatValueCombiner = new DateTimeOffsetTimeFormatValueCombiner(TimeZoneInfo.Local);
+            dateFormatValueCombiner = new DateTimeOffsetDateFormatValueCombiner(TimeZoneInfo.Local);
         }
 
         public override void Prepare(SelectTimeParameters parameter)
         {
-            StartTime = parameter.Start;
-            StopTime = parameter.Stop;
+            StartTime = parameter.Start.ToLocalTime();
+            StopTime = parameter.Stop?.ToLocalTime();
+
+            DateFormat = parameter.DateFormat;
+            TimeFormat = parameter.TimeFormat;
 
             StartingTabIndex = parameter.StartingTabIndex;
             IsCalendarView = parameter.ShouldStartOnCalendar;
@@ -250,13 +255,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await base.Initialize();
 
-            timeService.CurrentDateTimeObservable
-                       .Subscribe(currentDateTime => CurrentDateTime = currentDateTime);
+            if (!StopTime.HasValue)
+            {
+                timeServiceDisposable =
+                    timeService.CurrentDateTimeObservable
+                               .StartWith(timeService.CurrentDateTime)
+                               .Subscribe(currentDateTime => CurrentDateTime = currentDateTime);
+            }
         }
 
-        private Action increaseDuration(int minutes)
+        private void increaseDuration(int minutes)
         {
-            return () => EditingDuration = EditingDuration + TimeSpan.FromMinutes(minutes);
+            EditingDuration += TimeSpan.FromMinutes(minutes);
         }
 
         private void focusDurationCommand()
@@ -279,12 +289,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTime = CurrentDateTime;
         }
 
+        public override void ViewDestroy()
+        {
+            base.ViewDestroy();
+            timeServiceDisposable?.Dispose();
+        }
+
         private async Task cancel()
             => await navigationService.Close(this, null);
 
         private async Task save()
         {
-            var results = new SelectTimeResultsParameters(StartTime, StopTime);
+            var results = new SelectTimeResultsParameters(StartTime.ToUniversalTime(), StopTime?.ToUniversalTime());
             await navigationService.Close(this, results);
         }
     }

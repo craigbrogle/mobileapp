@@ -5,6 +5,8 @@ using System.Reactive.Concurrency;
 using FluentAssertions;
 using Microsoft.Reactive.Testing;
 using Xunit;
+using FsCheck.Xunit;
+using FsCheck;
 
 namespace Toggl.Foundation.Tests
 {
@@ -176,6 +178,44 @@ namespace Toggl.Foundation.Tests
             }
 
             private long ticksPerDay => TimeSpan.FromDays(1).Ticks;
+        }
+
+        public sealed class TheRunAfterDelayMethod
+        {
+            private readonly TimeService timeService;
+            private readonly TestScheduler scheduler;
+
+            public TheRunAfterDelayMethod()
+            {
+                scheduler = new TestScheduler();
+                timeService = new TimeService(scheduler);
+            }
+
+            [Property]
+            public void RunsTheActionAfterSpecifiedDelay(PositiveInt delaySeconds)
+            {
+                var delay = TimeSpan.FromSeconds(delaySeconds.Get);
+                var actionWasInvoked = false;
+                Action action = () => actionWasInvoked = true;
+                
+                timeService.RunAfterDelay(delay, action);
+                scheduler.AdvanceBy(delay.Ticks);
+
+                actionWasInvoked.Should().BeTrue();
+            }
+
+            [Property]
+            public void DoesNotRunTheActionAfterSpecifiedDelay(PositiveInt delaySeconds)
+            {
+                var delay = TimeSpan.FromSeconds(delaySeconds.Get);
+                var actionWasInvoked = false;
+                Action action = () => actionWasInvoked = true;
+
+                timeService.RunAfterDelay(delay, action);
+                scheduler.AdvanceBy(delay.Ticks - 1);
+
+                actionWasInvoked.Should().BeFalse();
+            }
         }
     }
 }

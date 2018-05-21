@@ -149,7 +149,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void SubscribesToCurrentTimeObservableIfParameterDoesNotHaveStopTime(DateTimeOffset now)
             {
                 var parameter = DurationParameter.WithStartAndDuration(now, null);
-
+                TimeService.CurrentDateTimeObservable.Returns(Substitute.For<IObservable<DateTimeOffset>>());
                 ViewModel.Prepare(parameter);
 
                 TimeService.CurrentDateTimeObservable.Received().Subscribe(Arg.Any<AnonymousObserver<DateTimeOffset>>());

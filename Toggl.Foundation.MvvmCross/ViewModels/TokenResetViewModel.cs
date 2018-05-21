@@ -102,7 +102,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             analyticsService.TrackLogoutEvent(LogoutSource.TokenReset);
             userPreferences.Reset();
-            onboardingStorage.Reset();
             await dataSource.Logout();
             await navigationService.Navigate<OnboardingViewModel>();
         }

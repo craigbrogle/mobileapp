@@ -33,6 +33,18 @@ namespace Toggl.Ultrawave.Models
     }
 
     [Preserve(AllMembers = true)]
+    internal sealed partial class Location
+    {
+        public Location() { }
+
+        public Location(ILocation entity)
+        {
+            CountryName = entity.CountryName;
+            CountryCode = entity.CountryCode;
+        }
+    }
+
+    [Preserve(AllMembers = true)]
     internal sealed partial class Preferences
     {
         public Preferences() { }
