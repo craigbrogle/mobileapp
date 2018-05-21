@@ -6,6 +6,7 @@ using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform.UI;
 using PropertyChanged;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Settings;
@@ -92,6 +93,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand PreviousCommand { get; }
 
+        public IMvxAsyncCommand LoginCommand { get; }
+
+        public IMvxAsyncCommand SignUpCommand { get; }
+
         public int NumberOfPages => pageInfo.Length;
 
         public OnboardingViewModel(
@@ -110,6 +115,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             SkipCommand = new MvxAsyncCommand(skip);
             NextCommand = new MvxAsyncCommand(next);
             PreviousCommand = new MvxCommand(previous, () => !IsFirstPage);
+
+            LoginCommand = new MvxAsyncCommand(login);
+            SignUpCommand = new MvxAsyncCommand(signup);
         }
 
         public override async Task Initialize()
@@ -132,6 +140,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             analyticsService.TrackOnboardingSkipEvent(pageNames[CurrentPage]);
 
             await navigationService.Navigate<NewLoginViewModel>();
+        }
+
+        private async Task signup()
+        {
+            await navigationService.Navigate<LoginViewModel, LoginType>(LoginType.SignUp);
+        }
+
+        private async Task login()
+        {
+            await navigationService.Navigate<LoginViewModel, LoginType>(LoginType.Login);
         }
 
         private async Task next()

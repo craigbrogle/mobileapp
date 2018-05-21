@@ -72,12 +72,14 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.AdHoc|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release.AdHoc</OutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <WarningLevel>4</WarningLevel>
     <CodesignProvision>Daneel_AdHoc</CodesignProvision>
     <CodesignKey>iPhone Distribution: Toggl OU (B227VTMZ94)</CodesignKey>
     <MtouchExtraArgs>--linkskip Toggl.Daneel</MtouchExtraArgs>
-    <MtouchVerbosity></MtouchVerbosity>
+    <MtouchVerbosity>
+    </MtouchVerbosity>
     <MtouchFloat32>true</MtouchFloat32>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>Full</MtouchLink>
@@ -87,11 +89,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.UITest|iPhoneSimulator' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Release.UITest</OutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <WarningLevel>4</WarningLevel>
     <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
-    <MtouchVerbosity></MtouchVerbosity>
+    <MtouchVerbosity>
+    </MtouchVerbosity>
     <MtouchLink>None</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
     <MtouchHttpClientHandler>HttpClientHandler</MtouchHttpClientHandler>
@@ -498,6 +502,10 @@
     <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack.png" />
     <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\icWarning.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\icWarning%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\icWarning%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
@@ -559,6 +567,7 @@
     <InterfaceDefinition Include="ViewControllers\ForgotPasswordViewController.xib" />
     <InterfaceDefinition Include="ViewControllers\SignupViewController.xib" />
     <InterfaceDefinition Include="ViewControllers\TermsOfServiceViewController.xib" />
+    <InterfaceDefinition Include="Views\SyncFailures\SyncFailureCell.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -595,6 +604,8 @@
     <Compile Include="ViewControllers\Navigation\OnboardingFlowNavigationController.cs" />
     <Compile Include="Binding\BarButtonCommandTargetBinding.cs" />
     <Compile Include="Binding\ViewAnimatedVisibilityTargetBinding.cs" />
+    <Compile Include="ViewControllers\SyncFailuresViewController.cs" />
+    <Compile Include="ViewSources\ListTableViewSource.cs" />
     <Compile Include="ViewSources\SelectProjectTableViewSource.cs" />
     <Compile Include="Binding\TextFieldSecureTextEntryTargetBinding.cs" />
     <Compile Include="Binding\BarButtonAnimatedEnabledTargetBinding.cs" />
@@ -943,6 +954,10 @@
       <DependentUpon>TermsOfServiceViewController.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\RangeExtensions.cs" />
+    <Compile Include="Views\SyncFailures\SyncFailureCell.cs" />
+    <Compile Include="Views\SyncFailures\SyncFailureCell.designer.cs">
+      <DependentUpon>SyncFailureCell.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
@@ -979,6 +994,7 @@
     <Folder Include="Resources\Images.xcassets\icSearch.imageset\" />
     <Folder Include="Resources\Images.xcassets\icCheckBoxChecked.imageset\" />
     <Folder Include="Resources\Images.xcassets\icCheckBoxUnchecked.imageset\" />
+    <Folder Include="ViewSources\TableViewSource" />
     <Folder Include="Views\Onboarding\" />
     <Folder Include="Views\Interfaces\" />
     <Folder Include="Resources\Images.xcassets\search.imageset\" />
@@ -1011,6 +1027,8 @@
     <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
     <Folder Include="Resources\Images.xcassets\paws.imageset\" />
     <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
+    <Folder Include="Views\SyncFailures\" />
+    <Folder Include="Resources\Images.xcassets\icWarning.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GoogleService-Info.plist" />

@@ -48,6 +48,7 @@ namespace Toggl.Daneel.ViewControllers
         private readonly SpiderOnARopeView spiderBroView = new SpiderOnARopeView();
         private readonly UIButton reportsButton = new UIButton(new CGRect(0, 0, 40, 40));
         private readonly UIButton settingsButton = new UIButton(new CGRect(0, 0, 40, 40));
+        private readonly UIButton syncFailuresButton = new UIButton(new CGRect(0, 0, 40, 40));
         private readonly UIImageView titleImage = new UIImageView(UIImage.FromBundle("togglLogo"));
         private readonly TimeEntriesEmptyLogView emptyStateView = TimeEntriesEmptyLogView.Create();
 
@@ -144,6 +145,7 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Bind(StopTimeEntryButton).To(vm => vm.StopTimeEntryCommand);
             bindingSet.Bind(StartTimeEntryButton).To(vm => vm.StartTimeEntryCommand);
             bindingSet.Bind(EditTimeEntryButton).To(vm => vm.EditTimeEntryCommand);
+            bindingSet.Bind(syncFailuresButton).To(vm => vm.OpenSyncFailuresCommand);
 
             bindingSet.Bind(CurrentTimeEntryCard)
                       .For(v => v.BindTap())
@@ -209,6 +211,12 @@ namespace Toggl.Daneel.ViewControllers
                       .To(vm => vm.IsInManualMode)
                       .WithConversion(startTimeEntryButtonManualModeIconConverter);
 
+            //The sync failures button
+            bindingSet.Bind(syncFailuresButton)
+                .For(v => v.BindVisibility())
+                .To(vm => vm.NumberOfSyncFailures)
+                .WithConversion(visibilityConverter);
+
             bindingSet.Apply();
 
             View.SetNeedsLayout();
@@ -244,6 +252,13 @@ namespace Toggl.Daneel.ViewControllers
                 new UIBarButtonItem(settingsButton),
                 new UIBarButtonItem(reportsButton)
             };
+
+#if DEBUG
+            NavigationItem.LeftBarButtonItems = new[]
+            {
+                new UIBarButtonItem(syncFailuresButton)
+            };
+#endif
         }
 
         protected override void Dispose(bool disposing)
@@ -308,6 +323,7 @@ namespace Toggl.Daneel.ViewControllers
             //Prepare Navigation bar images
             reportsButton.SetImage(UIImage.FromBundle("icReports"), UIControlState.Normal);
             settingsButton.SetImage(UIImage.FromBundle("icSettings"), UIControlState.Normal);
+            syncFailuresButton.SetImage(UIImage.FromBundle("icWarning"), UIControlState.Normal);
 
             RunningEntryDescriptionFadeView.FadeLeft = true;
             RunningEntryDescriptionFadeView.FadeRight = true;

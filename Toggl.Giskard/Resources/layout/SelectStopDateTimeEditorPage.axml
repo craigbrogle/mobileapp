@@ -54,7 +54,7 @@
     </LinearLayout>
     <toggl.giskard.views.togglDroidDatePicker
         android:id="@+id/SelectDateTimeCalendarView"
-        local:MvxBind="Value StopDatePart; Visibility Visibility(And(IsCalendarView, IsTimeEntryStopped))"
+        local:MvxBind="Value StopDatePart; Boundaries StopTimeBoundaries; Visibility Visibility(And(IsCalendarView, IsTimeEntryStopped))"
         android:layout_marginTop="96dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

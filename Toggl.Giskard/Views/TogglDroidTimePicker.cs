@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using MvvmCross.Platform.Droid.Platform;
 using Toggl.Giskard.Extensions;
+using Toggl.Multivac;
 
 namespace Toggl.Giskard.Views
 {
@@ -16,6 +17,14 @@ namespace Toggl.Giskard.Views
         , DatePicker.IOnDateChangedListener
     {
         private bool isInitialized;
+
+        private readonly long DefaultMinimum = 
+            new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            .ToUnixTimeMilliseconds();
+        
+        private readonly long DefaultMaximum =
+            new DateTimeOffset(2100, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            .ToUnixTimeMilliseconds();
 
         public TogglDroidDatePicker(Context context)
             : base(context)
@@ -32,6 +41,7 @@ namespace Toggl.Giskard.Views
         {
         }
 
+        public event EventHandler BoundariesChanged;
         public event EventHandler ValueChanged;
 
 		protected override void OnFinishInflate()
@@ -43,7 +53,39 @@ namespace Toggl.Giskard.Views
             header.Visibility = ViewStates.Gone;
 		}
 
-		public DateTime Value
+        private DateTimeOffsetRange boundaries;
+        public DateTimeOffsetRange Boundaries
+        {
+            get => boundaries;
+            set
+            {
+                if (boundaries == value)
+                    return;
+
+                boundaries = value;
+
+                /* 
+                 * Workaround for a DatePicker bug in which
+                 * there's an early return if the year is the same
+                 * and the dates are different, which is bad logic.
+                 * https://stackoverflow.com/a/19722636/93770
+                 * 
+                 * Also, because of the bug in DatePicker widget, make 
+                 * sure this order is not reversed. MaxDate must be
+                 * set before MinDate.
+                 */
+
+                MaxDate = DefaultMaximum;
+                MaxDate = ((DateTimeOffset)boundaries.Maximum.Date).ToUnixTimeMilliseconds();
+
+                MinDate = DefaultMinimum;
+                MinDate = ((DateTimeOffset)boundaries.Minimum.Date).ToUnixTimeMilliseconds();
+
+                BoundariesChanged?.Invoke(this, null);
+            }
+        }
+
+        public DateTime Value
         {
             get
             {

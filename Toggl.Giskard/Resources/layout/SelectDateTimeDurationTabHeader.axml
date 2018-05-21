@@ -14,7 +14,7 @@
         android:layout_height="12dp" />
     <TextView
         android:id="@+id/text"
-        local:MvxBind="Text DurationText; Visibility Visibility(!IsOnDurationTab); Alpha SelectedTabAlpha(IsOnDurationTab)"
+        local:MvxBind="Text TimeSpanToDuration(Duration); Visibility Visibility(!IsOnDurationTab); Alpha SelectedTabAlpha(IsOnDurationTab)"
         android:layout_marginLeft="4dp"
         tools:text="00:12:44"
         android:textSize="14sp"

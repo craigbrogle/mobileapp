@@ -385,6 +385,8 @@
     <Compile Include="Bindings\ViewAlphaTargetBinding.cs" />
     <Compile Include="Bindings\ViewUpsideDownTargetBinding.cs" />
     <Compile Include="Bindings\ViewHeightTargetBinding.cs" />
+    <Compile Include="Helper\VibratorExtensions.cs" />
+    <Compile Include="Bindings\DatePickerBoundariesTargetBinding.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />

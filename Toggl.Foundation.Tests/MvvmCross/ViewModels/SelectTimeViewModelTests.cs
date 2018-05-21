@@ -10,10 +10,14 @@ using NSubstitute;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
+using Toggl.Foundation.Tests.Generators;
+using Toggl.Foundation.Helper;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
+    using static Constants;
+
     public sealed class SelectTimeViewModelTests
     {
         public abstract class SelectTimeViewModelTest : BaseViewModelTests<SelectTimeViewModel>
@@ -91,6 +95,104 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
+        public sealed class TheConstructor : SelectTimeViewModelTest
+        {
+            [Theory, LogIfTooSlow]
+            [ClassData(typeof(TwoParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useNavigationService, bool useTimeService)
+            {
+                var navigationService = useNavigationService ? NavigationService : null;
+                var timeService = useTimeService ? TimeService : null;
+
+                Action constructingWithEmptyParameters =
+                    () => new SelectTimeViewModel(navigationService, timeService);
+
+                constructingWithEmptyParameters.ShouldThrow<ArgumentNullException>();
+            }
+        }
+
+        public sealed class TheStartTimeBoundariesProperty : SelectTimeViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void IsCorrectlyInitializedOnPrepareForStoppedEntry()
+            {
+                var start = DateTimeOffset.Now;
+                var stop = DateTimeOffset.Now + TimeSpan.FromHours(1);
+                var parameter = CreateParameter(start, stop);
+
+                ViewModel.Prepare(parameter);
+
+                ViewModel.StartTimeBoundaries.Should().Be(
+                    new DateTimeOffsetRange(stop - MaxTimeEntryDuration, stop));
+            }
+
+            [Fact, LogIfTooSlow]
+            public void IsCorrectlyInitializedOnPrepareForRunningEntry()
+            {
+                var start = DateTimeOffset.Now;
+                var parameter = CreateParameter(start, null);
+
+                ViewModel.Prepare(parameter);
+
+                ViewModel.StartTimeBoundaries.Should().Be(
+                    new DateTimeOffsetRange(EarliestAllowedStartTime, LatestAllowedStartTime));
+            }
+
+            [Fact, LogIfTooSlow]
+            public void ChangingStartAndStopTimeDoesNotChangeBoundaryBeforePrepareHasRun()
+            {
+                var start = DateTimeOffset.Now;
+                var stop = DateTimeOffset.Now.AddHours(1);
+                var oldBoundaries = ViewModel.StartTimeBoundaries;
+
+                ViewModel.StartTime = start;
+                ViewModel.StopTime = stop;
+
+                ViewModel.StartTimeBoundaries.Should().Be(oldBoundaries);
+            }
+        }
+
+        public sealed class TheStopTimeBoundariesProperty : SelectTimeViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void IsCorrectlyInitializedOnPrepareForStoppedEntry()
+            {
+                var start = DateTimeOffset.Now;
+                var stop = DateTimeOffset.Now + TimeSpan.FromHours(1);
+                var parameter = CreateParameter(start, stop);
+
+                ViewModel.Prepare(parameter);
+
+                ViewModel.StopTimeBoundaries.Should().Be(
+                    new DateTimeOffsetRange(start, start + MaxTimeEntryDuration));
+            }
+
+            [Fact, LogIfTooSlow]
+            public void IsCorrectlyInitializedOnPrepareForRunningEntry()
+            {
+                var start = DateTimeOffset.Now;
+                var parameter = CreateParameter(start, null);
+
+                ViewModel.Prepare(parameter);
+
+                ViewModel.StopTimeBoundaries.Should().Be(
+                    new DateTimeOffsetRange(start, start + MaxTimeEntryDuration));
+            }
+
+            [Fact, LogIfTooSlow]
+            public void ChangingStartAndStopTimeDoesNotChangeBoundaryBeforePrepareHasRun()
+            {
+                var start = DateTimeOffset.Now;
+                var stop = DateTimeOffset.Now.AddHours(1);
+                var oldBoundaries = ViewModel.StopTimeBoundaries;
+
+                ViewModel.StartTime = start;
+                ViewModel.StopTime = stop;
+
+                ViewModel.StopTimeBoundaries.Should().Be(oldBoundaries);
+            }
+        }
+                    
         public sealed class ThePrepareMethod : SelectTimeViewModelTest
         {
             [Fact, LogIfTooSlow]
@@ -127,7 +229,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             [Theory, LogIfTooSlow]
             [MemberData(nameof(TimeZoneOffsets))]
-            public async Task ReturnsUtcTimeAsSaveResult(int offset) 
+            public async Task ReturnsUtcTimeAsSaveResult(int offset)
             {
                 var zoneOffset = TimeSpan.FromHours(offset);
                 var startTime = new DateTimeOffset(2018, 1, 1, 13, 15, 22, zoneOffset);
@@ -151,7 +253,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private bool ensureResultTimesAreInUtc(SelectTimeResultsParameters param,
                                                    DateTimeOffset expectedStart,
-                                                   DateTimeOffset expectedStop) 
+                                                   DateTimeOffset expectedStop)
             {
                 return param.Start == expectedStart && param.Stop == expectedStop;
             }

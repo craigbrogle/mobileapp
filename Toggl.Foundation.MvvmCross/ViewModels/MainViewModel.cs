@@ -58,6 +58,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public SyncProgress SyncingProgress { get; private set; }
 
+        public int NumberOfSyncFailures { get; private set; }
+
         [DependsOn(nameof(SyncingProgress))]
         public bool ShowSyncIndicator => SyncingProgress == SyncProgress.Syncing;
 
@@ -109,6 +111,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxAsyncCommand OpenReportsCommand { get; }
 
+        public IMvxAsyncCommand OpenSyncFailuresCommand { get; }
+
         public IMvxCommand RefreshCommand { get; }
 
         public IMvxCommand ToggleManualMode { get; }
@@ -146,6 +150,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             RefreshCommand = new MvxCommand(refresh);
             OpenReportsCommand = new MvxAsyncCommand(openReports);
             OpenSettingsCommand = new MvxAsyncCommand(openSettings);
+            OpenSyncFailuresCommand = new MvxAsyncCommand(openSyncFailures);
             EditTimeEntryCommand = new MvxAsyncCommand(editTimeEntry, () => CurrentTimeEntryId.HasValue);
             StopTimeEntryCommand = new MvxAsyncCommand(stopTimeEntry, () => isStopButtonEnabled);
             StartTimeEntryCommand = new MvxAsyncCommand(startTimeEntry, () => CurrentTimeEntryId.HasValue == false);
@@ -193,10 +198,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     RaisePropertyChanged(nameof(TimeEntriesCount));
                 });
 
+            var getNumberOfSyncFailuresDisposable = interactorFactory
+                .GetItemsThatFailedToSync()
+                .Execute()
+                .Select(i => i.Count())
+                .Subscribe(n => NumberOfSyncFailures = n);
+
             disposeBag.Add(tickDisposable);
             disposeBag.Add(syncManagerDisposable);
             disposeBag.Add(isEmptyChangedDisposable);
             disposeBag.Add(currentlyRunningTimeEntryDisposable);
+            disposeBag.Add(getNumberOfSyncFailuresDisposable);
 
             switch (urlNavigationAction)
             {
@@ -258,6 +270,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var user = await dataSource.User.Current;
             await navigationService.Navigate<ReportsViewModel, long>(user.DefaultWorkspaceId);
         }
+
+        private Task openSyncFailures()
+            => navigationService.Navigate<SyncFailuresViewModel>();
 
         private Task startTimeEntry()
             => startTimeEntry(IsInManualMode);

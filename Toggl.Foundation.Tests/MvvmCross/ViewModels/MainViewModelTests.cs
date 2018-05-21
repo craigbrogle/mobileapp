@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck.Xunit;
 using Microsoft.Reactive.Testing;
@@ -17,6 +16,7 @@ using Toggl.Foundation.Suggestions;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Foundation.Tests.Mocks;
+using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Settings;
 using Xunit;
@@ -135,11 +135,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async ThreadingTask PassesTheAppropriatePlaceholderToTheStartTimeEntryViewModel(bool isInManualMode)
             {
                 ViewModel.IsInManualMode = isInManualMode;
-                
+
                 await CallCommand();
 
                 var expected = isInManualMode ^ flipManualModeChecks
-                    ? Resources.ManualTimeEntryPlaceholder 
+                    ? Resources.ManualTimeEntryPlaceholder
                     : Resources.StartTimeEntryPlaceholder;
                 NavigationService.Received().Navigate<StartTimeEntryViewModel, StartTimeEntryParameters>(
                     Arg.Is<StartTimeEntryParameters>(parameter => parameter.PlaceholderText == expected)
@@ -171,7 +171,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var date = DateTimeOffset.Now;
                 TimeService.CurrentDateTime.Returns(date);
                 ViewModel.IsInManualMode = isInManualMode;
-                
+
                 await CallCommand();
 
                 var expected = isInManualMode ^ flipManualModeChecks
@@ -247,6 +247,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.OpenReportsCommand.ExecuteAsync();
 
                 await NavigationService.Received().Navigate<ReportsViewModel, long>(workspaceId);
+            }
+        }
+
+        public sealed class TheOpenSyncFailuresCommand : MainViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async ThreadingTask NavigatesToTheSettingsViewModel()
+            {
+                await ViewModel.OpenSyncFailuresCommand.ExecuteAsync();
+
+                await NavigationService.Received().Navigate<SyncFailuresViewModel>();
             }
         }
 
@@ -514,6 +525,30 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override string ExpectedEmptyValue => "";
         }
 
+        public sealed class TheNumberOfSyncFailuresProperty : MainViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async ThreadingTask ReturnsTheCountOfInteractorResult()
+            {
+                var syncables = new IDatabaseSyncable[]
+                {
+                    new MockTag { Name = "Tag", SyncStatus = SyncStatus.SyncFailed, LastSyncErrorMessage = "Error1" },
+                    new MockTag { Name = "Tag2", SyncStatus = SyncStatus.SyncFailed, LastSyncErrorMessage = "Error1" },
+                    new MockProject { Name = "Project", SyncStatus = SyncStatus.SyncFailed, LastSyncErrorMessage = "Error2" }
+                };
+
+                var items = syncables.Select(i => new SyncFailureItem(i));
+
+                var interactor = Substitute.For<IInteractor<IObservable<IEnumerable<SyncFailureItem>>>>();
+                interactor.Execute().Returns(Observable.Return(items));
+                InteractorFactory.GetItemsThatFailedToSync().Returns(interactor);
+
+                await ViewModel.Initialize();
+
+                ViewModel.NumberOfSyncFailures.Should().Be(3);
+            }
+        }
+
         public sealed class TheCurrentTimeEntryElapsedTimeProperty : CurrentTimeEntrypropertyTest<TimeSpan>
         {
             protected override TimeSpan ActualValue => ViewModel.CurrentTimeEntryElapsedTime;
@@ -629,7 +664,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async ThreadingTask ReturnsFalseWhenThereAreSomeTimeEntries()
             {
                 PrepareTimeEntry();
-                
+
                 await ViewModel.Initialize();
 
                 ViewModel.ShouldShowEmptyState.Should().BeFalse();

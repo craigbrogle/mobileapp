@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
     xmlns:local="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -54,7 +54,7 @@
     </LinearLayout>
     <toggl.giskard.views.togglDroidDatePicker
         android:id="@+id/SelectDateTimeCalendarView"
-        local:MvxBind="Value StartDatePart; Visibility Visibility(IsCalendarView)"
+        local:MvxBind="Value StartDatePart; Visibility Visibility(IsCalendarView); Boundaries StartTimeBoundaries"
         android:layout_marginTop="96dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

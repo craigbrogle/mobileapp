@@ -4,11 +4,13 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform.Core;
 using PropertyChanged;
-using Toggl.Foundation.MvvmCross.Combiners;
-using Toggl.Foundation.MvvmCross.Converters;
+using Toggl.Foundation.Helper;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
+using System.Reactive.Subjects;
+using static Toggl.Foundation.MvvmCross.ViewModels.SelectTimeViewModel.TemporalInconsistency;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -20,14 +22,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public const int StopTimeTab = 1;
         public const int DurationTab = 2;
 
+        public enum TemporalInconsistency
+        {
+            StartTimeAfterStopTime,
+            StopTimeBeforeStartTime,
+            DurationTooLong
+        }
+
+        private readonly ISubject<TemporalInconsistency> temporalInconsistencySubject = new Subject<TemporalInconsistency>();
+
         private readonly IMvxNavigationService navigationService;
         private readonly ITimeService timeService;
         private IDisposable timeServiceDisposable;
+        private bool isViewModelPrepared;
+        private TimeSpan? editingDuration;
 
-        private readonly TimeSpanToDurationValueConverter durationConverter = new TimeSpanToDurationValueConverter();
+        public DateTimeOffsetRange StartTimeBoundaries { get; set; }
 
-        private readonly DateTimeOffsetTimeFormatValueCombiner timeFormatValueCombiner;
-        private readonly DateTimeOffsetDateFormatValueCombiner dateFormatValueCombiner;
+        public DateTimeOffsetRange StopTimeBoundaries { get; set; }
 
         public DateTimeOffset CurrentDateTime { get; set; }
 
@@ -36,20 +48,22 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public int StartingTabIndex { get; private set; }
 
         public DateFormat DateFormat { get; set; }
+
         public TimeFormat TimeFormat { get; set; }
+
+        private bool stopTimeEntryRequested;
 
         [DependsOn(nameof(CurrentDateTime))]
         public DateTimeOffset? StopTime { get; set; }
 
         public DateTimeOffset StopTimeOrCurrent => StopTime ?? CurrentDateTime;
 
+        public IObservable<TemporalInconsistency> TemporalInconsistencyDetected { get; }
+
         [DependsOn(nameof(StartTime))]
         public DateTime StartDatePart
         {
-            get
-            {
-                return StartTime.Date;
-            }
+            get => StartTime.Date;
             set
             {
                 var newYear = value.Year;
@@ -70,10 +84,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(StartTime))]
         public TimeSpan StartTimePart
         {
-            get
-            {
-                return StartTime.TimeOfDay;
-            }
+            get => StartTime.TimeOfDay;
             set
             {
                 var newTimeHours = value.Hours;
@@ -93,12 +104,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(StopTime))]
         public DateTime StopDatePart
         {
-            get
-            {
-                return StopTime?.Date ?? default(DateTime);
-            }
+            get => StopTime?.Date ?? default(DateTime);
             set
             {
+                if (!StopTime.HasValue && !stopTimeEntryRequested)
+                    return;
+
                 var startDateYear = StopTime?.Year;
                 var startDateMonth = StopTime?.Month;
                 var startDateDay = StopTime?.Day;
@@ -127,12 +138,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [DependsOn(nameof(StopTime))]
         public TimeSpan StopTimePart
         {
-            get
-            {
-                return StopTime?.TimeOfDay ?? default(TimeSpan);
-            }
+            get => StopTime?.TimeOfDay ?? default(TimeSpan);
             set
             {
+                if (!StopTime.HasValue && !stopTimeEntryRequested)
+                    return;
+
                 var stopTimeHours = StopTime?.TimeOfDay.Hours;
                 var stopTimeMinutes = StopTime?.TimeOfDay.Minutes;
 
@@ -164,6 +175,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IMvxCommand StopTimeEntryCommand { get; }
 
         public IMvxAsyncCommand CancelCommand { get; }
+
         public IMvxAsyncCommand SaveCommand { get; }
 
         public IMvxCommand ToggleClockCalendarModeCommand { get; }
@@ -171,6 +183,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IMvxCommand<int> IncreaseDurationCommand { get; }
 
         public IMvxCommand FocusDurationCommand { get; }
+
         public IMvxCommand UnfocusDurationCommand { get; }
 
         public bool IsCalendarView { get; set; }
@@ -178,7 +191,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public int CurrentTab { get; set; }
 
         public bool IsOnStartTimeTab => CurrentTab == StartTimeTab;
+
         public bool IsOnStopTimeTab => CurrentTab == StopTimeTab;
+
         public bool IsOnDurationTab => CurrentTab == DurationTab;
 
         public bool IsDurationVisible { get; set; }
@@ -187,11 +202,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public TimeSpan Duration
             => (StopTime ?? CurrentDateTime) - StartTime;
 
-        [DependsOn(nameof(Duration))]
-        public string DurationText
-            => (string)durationConverter.Convert(Duration, typeof(TimeSpan), null, CultureInfo.CurrentCulture);
-
-        private TimeSpan? editingDuration = null;
         public TimeSpan EditingDuration
         {
             get => editingDuration ?? Duration;
@@ -220,6 +230,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
 
+            TemporalInconsistencyDetected = temporalInconsistencySubject.AsObservable();
+
             this.navigationService = navigationService;
             this.timeService = timeService;
 
@@ -234,9 +246,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTimeEntryCommand = new MvxCommand(stopTimeEntry);
 
             ToggleClockCalendarModeCommand = new MvxCommand(togglClockCalendarMode);
-
-            timeFormatValueCombiner = new DateTimeOffsetTimeFormatValueCombiner(TimeZoneInfo.Local);
-            dateFormatValueCombiner = new DateTimeOffsetDateFormatValueCombiner(TimeZoneInfo.Local);
         }
 
         public override void Prepare(SelectTimeParameters parameter)
@@ -249,6 +258,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             StartingTabIndex = parameter.StartingTabIndex;
             IsCalendarView = parameter.ShouldStartOnCalendar;
+
+            initializeTimeConstraints();
+            isViewModelPrepared = true;
         }
 
         public override async Task Initialize()
@@ -286,7 +298,84 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void stopTimeEntry()
         {
+            stopTimeEntryRequested = true;
             StopTime = CurrentDateTime;
+        }
+
+        private void initializeTimeConstraints()
+        {
+            StopTimeBoundaries = new DateTimeOffsetRange(
+                StartTime,
+                StartTime + Constants.MaxTimeEntryDuration);
+
+            if (StopTime.HasValue)
+            {
+                StartTimeBoundaries = new DateTimeOffsetRange(
+                    StopTime.Value - Constants.MaxTimeEntryDuration,
+                    StopTime.Value);
+            }
+            else
+            {
+                StartTimeBoundaries = new DateTimeOffsetRange(
+                    Constants.EarliestAllowedStartTime,
+                    Constants.LatestAllowedStartTime);
+            }
+        }
+
+        private void OnStartTimeChanged()
+        {
+            if (!isViewModelPrepared)
+                return;
+
+            if (StopTime.HasValue)
+            {
+                if (StopTime < StartTime)
+                {
+                    StartTime = StopTime.Value;
+                    temporalInconsistencySubject.OnNext(StartTimeAfterStopTime);
+                }
+
+                if (StopTime.Value - StartTime > Constants.MaxTimeEntryDuration)
+                {
+                    StartTime = StopTime.Value - Constants.MaxTimeEntryDuration;
+                    temporalInconsistencySubject.OnNext(DurationTooLong);
+                }
+            }
+
+            StopTimeBoundaries = new DateTimeOffsetRange(
+                StartTime,
+                StartTime + Constants.MaxTimeEntryDuration);
+        }
+
+        private void OnStopTimeChanged()
+        {
+            if (!isViewModelPrepared)
+                return;
+
+            if (StopTime.HasValue)
+            {
+                if (StopTime < StartTime)
+                {
+                    StopTime = StartTime;
+                    temporalInconsistencySubject.OnNext(StopTimeBeforeStartTime);
+                }
+
+                if (StopTime.Value - StartTime > Constants.MaxTimeEntryDuration)
+                {
+                    StopTime = StartTime + Constants.MaxTimeEntryDuration;
+                    temporalInconsistencySubject.OnNext(DurationTooLong);
+                }
+
+                StartTimeBoundaries = new DateTimeOffsetRange(
+                    StopTime.Value - Constants.MaxTimeEntryDuration,
+                    StopTime.Value);
+            }
+            else
+            {
+                StartTimeBoundaries = new DateTimeOffsetRange(
+                    Constants.EarliestAllowedStartTime,
+                    Constants.LatestAllowedStartTime);
+            }
         }
 
         public override void ViewDestroy()
