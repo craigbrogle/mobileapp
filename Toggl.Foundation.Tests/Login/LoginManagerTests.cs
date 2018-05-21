@@ -523,6 +523,20 @@ namespace Toggl.Foundation.Tests.Login
                 Api.User.Received(2).Get();
             }
 
+            [Fact, LogIfTooSlow]
+            public void WillRetryTheLoginWhenReceivingUserIsMissingApiTokenExceptionOrThrowOtherExceptions()
+            {
+                var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
+                var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
+                Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException), Observable.Throw<IUser>(serverErrorException));
+
+                var observer = TestScheduler.CreateObserver<ITogglDataSource>();
+                TestScheduler.Start();
+                LoginManager.Login(Email, Password).Subscribe(observer);
+                TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
+
+                observer.Messages.Single().Value.Exception.Should().Be(serverErrorException);
+                Api.User.Received(2).Get();
             }
         }
 
@@ -558,6 +572,22 @@ namespace Toggl.Foundation.Tests.Login
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
                 observer.Messages.Single().Value.Exception.Should().BeOfType<UserIsMissingApiTokenException>();
+            }
+
+            [Fact, LogIfTooSlow]
+            public void WillRetryTheSignUpWhenReceivingUserIsMissingApiTokenExceptionOrThrowOtherExceptions()
+            {
+                var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
+                var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
+                Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException), Observable.Throw<IUser>(serverErrorException));
+
+                var observer = TestScheduler.CreateObserver<ITogglDataSource>();
+                TestScheduler.Start();
+                LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
+                TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
+
+                observer.Messages.Single().Value.Exception.Should().Be(serverErrorException);
+                Api.User.Received(2).SignUp(Email, Password, TermsAccepted, CountryId);
             }
 
             [Fact, LogIfTooSlow]
