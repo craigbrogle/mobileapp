@@ -256,11 +256,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Activities\ForgotPasswordActivity.cs" />
     <Compile Include="Activities\SelectTagsActivity.cs" />
     <Compile Include="Adapters\SelectCreatableEntityRecyclerAdapter.cs" />
     <Compile Include="Adapters\SelectTagsRecyclerAdapter.cs" />
     <Compile Include="Activities\SelectProjectActivity.cs" />
     <Compile Include="Adapters\SelectProjectRecyclerAdapter.cs" />
+    <Compile Include="Bindings\TextInputLayoutErrorAppearanceTargetBinding.cs" />
+    <Compile Include="Bindings\TextInputLayoutErrorTextTargetBinding.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LinkerPleaseInclude.cs" />
@@ -736,6 +739,8 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\paws.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\paws.png" />
     <AndroidResource Include="Resources\drawable\TagRoundedRectangle.xml" />
+    <AndroidResource Include="Resources\layout\ForgotPasswordActivity.axml" />
+    <AndroidResource Include="Resources\color\BlueButtonTextColor.xml" />
     <AndroidResource Include="Resources\layout\SignUpActivity.axml" />
     <AndroidResource Include="Resources\layout\SelectCountryActivity.axml" />
     <AndroidResource Include="Resources\layout\SelectCountryActivityCountryCell.axml" />

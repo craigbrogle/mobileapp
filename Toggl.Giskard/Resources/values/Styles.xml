@@ -10,8 +10,20 @@
         <item name="android:colorAccent">#328FFF</item>
         <item name="colorControlActivated">#328FFF</item>
     </style>
+    <style name="AppTheme.TransparentActionBar">
+        <item name="windowActionBarOverlay">true</item>
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
     <style name="TogglDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:colorAccent">#328FFF</item>
 		<item name="colorControlActivated">#328FFF</item>
+    </style>
+    <style name="TextInputLayoutErrorAppearance" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/errorText</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="TextInputLayoutRegularTextAppearance" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/defaultText</item>
+        <item name="android:textSize">12sp</item>
     </style>
 </resources>

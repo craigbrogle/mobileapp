@@ -71,10 +71,14 @@ your app to continue.</string>
     <string name="DontHaveAnAccount">Don\'t have an account?</string>
     <string name="LoginWithGoogle">Login With Google</string>
     <string name="Or">Or</string>
+    <string name="ForgotPasswordEmailExplanation">Please enter your email to reset your password</string>
+    <string name="ResetPasswordEmailSentMessage">Link sent. Please, check your email to reset the password</string>
+    <string name="GetPasswordResetLink">Get Password Reset Link</string>
+    <string name="ForgotPasswordTitle">Forgot your password?</string>
     <string name="And">and</string>
-	<string name="IAgree">I Agree</string>
-	<string name="ReviewTheTerms">Review the Terms</string>
-	<string name="TermsMessage">By tapping "I Agree", you
+	  <string name="IAgree">I Agree</string>
+	  <string name="ReviewTheTerms">Review the Terms</string>
+	  <string name="TermsMessage">By tapping "I Agree", you
 understand and agree to Toggl\'s</string>
 
     <string name="MainTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.MainTemplateSelector, Toggl.Giskard</string>

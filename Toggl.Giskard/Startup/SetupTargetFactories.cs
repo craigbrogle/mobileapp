@@ -89,6 +89,16 @@ namespace Toggl.Giskard
                 ViewWidthPercentageTargetBinding.BindingName,
                 view => new ViewWidthPercentageTargetBinding(view)
             );
+
+            registry.RegisterCustomBindingFactory<TextInputLayout>(
+                TextInputLayoutErrorAppearanceTargetBinding.BindingName,
+                view => new TextInputLayoutErrorAppearanceTargetBinding(view)
+            );
+
+            registry.RegisterCustomBindingFactory<TextInputLayout>(
+                TextInputLayoutErrorTextTargetBinding.BindingName,
+                view => new TextInputLayoutErrorTextTargetBinding(view)
+            );
         }
     }
 }
