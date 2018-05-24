@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="UTF-8"?>
+<android.support.v7.widget.CardView
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     local:cardUseCompatPadding="true"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
@@ -21,13 +22,13 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true" />
         <TextView
-            local:MvxBind="Text ProjectName; TextColor ARGB(ProjectColor); Visibility Visibility(HasProject)"
             android:id="@+id/TimeEntriesLogCellProjectLabel"
+            local:MvxBind="Text ProjectName; TextColor ARGB(ProjectColor); Visibility Visibility(HasProject)"
+            tools:text="Design"
+            tools:textColor="#c56bff"
             android:maxLines="1"
             android:textSize="15sp"
             android:fontFamily="sans-serif-medium"
-            tools:text="Design"
-            tools:textColor="#c56bff"
             android:layout_marginLeft="12dp"
             android:layout_marginBottom="14dp"
             android:layout_width="wrap_content"
@@ -36,11 +37,11 @@
             android:layout_alignParentBottom="true" />
         <TextView
             local:MvxBind="Text ClientName; Visibility Visibility(HasProject)"
+            tools:text="Toggl"
             android:maxLines="1"
             android:textSize="15sp"
             android:fontFamily="sans-serif"
             android:textColor="@color/clientName"
-            tools:text="Toggl"
             android:layout_marginLeft="4dp"
             android:layout_marginBottom="14dp"
             android:layout_width="wrap_content"

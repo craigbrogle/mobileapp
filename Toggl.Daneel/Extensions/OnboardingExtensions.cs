@@ -24,7 +24,9 @@ namespace Toggl.Daneel.Extensions
 
         private const float shadowOpacity = 0.1f;
 
-        private static readonly TimeSpan visibilityDelay = TimeSpan.FromMilliseconds(600);
+        private const float closeImageSize = 6;
+
+        private const float closeImageDistanceFromEdge = 9;
 
         public static void MockSuggestion(this UIView view)
         {
@@ -88,15 +90,15 @@ namespace Toggl.Daneel.Extensions
                 }
             }
 
-            return step.ShouldBeVisible
-                       .Delay(visibilityDelay)
-                       .Subscribe(toggleVisibilityOnMainThread);
+            return step.ShouldBeVisible.Subscribe(toggleVisibilityOnMainThread);
         }
 
         public static void DismissByTapping(this IDismissable step, UIView view)
         {
             var tapGestureRecognizer = new UITapGestureRecognizer(() => step.Dismiss());
             view.AddGestureRecognizer(tapGestureRecognizer);
+
+            addTooltipCloseIcon(view);
         }
 
         public static IDisposable ManageDismissableTooltip(this IOnboardingStep step, UIView tooltip, IOnboardingStorage storage)
@@ -168,6 +170,21 @@ namespace Toggl.Daneel.Extensions
                 subscriptionDisposable?.Dispose();
                 subscriptionDisposable = null;
             });
+        }
+
+        private static void addTooltipCloseIcon(this UIView tooltip)
+        {
+            var closeImage = UIImage.FromBundle("icClose").ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+            var imageView = new UIImageView(closeImage);
+            imageView.TintColor = UIColor.White;
+            imageView.TranslatesAutoresizingMaskIntoConstraints = false;
+
+            tooltip.AddSubview(imageView);
+
+            imageView.WidthAnchor.ConstraintEqualTo(closeImageSize).Active = true;
+            imageView.HeightAnchor.ConstraintEqualTo(closeImageSize).Active = true;
+            imageView.TrailingAnchor.ConstraintEqualTo(tooltip.TrailingAnchor, -closeImageDistanceFromEdge).Active = true;
+            imageView.TopAnchor.ConstraintEqualTo(tooltip.TopAnchor, closeImageDistanceFromEdge).Active = true;
         }
     }
 }

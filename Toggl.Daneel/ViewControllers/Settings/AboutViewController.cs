@@ -22,9 +22,17 @@ namespace Toggl.Daneel.ViewControllers.Settings
 
             var bindingSet = this.CreateBindingSet<AboutViewController, AboutViewModel>();
 
+            bindingSet.Bind(PrivacyPolicyView)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.OpenPrivacyPolicyCommand);
+
+            bindingSet.Bind(TermsOfServiceView)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.OpenTermsOfServiceCommand);
+
             bindingSet.Bind(LicensesView)
                       .For(v => v.BindTap())
-                      .To(vm => vm.LicensesCommand);
+                      .To(vm => vm.OpenLicensesCommand);
 
             bindingSet.Apply();
         }

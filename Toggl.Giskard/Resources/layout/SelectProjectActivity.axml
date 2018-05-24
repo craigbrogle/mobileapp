@@ -1,21 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="UTF-8"?>
+<android.support.design.widget.CoordinatorLayout
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@android:color/white"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
         android:elevation="2dp"
-        android:background="@color/blueToolbarBackground"
         android:orientation="horizontal"
         android:minHeight="?android:attr/actionBarSize"
+        android:background="@color/blueToolbarBackground"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
             local:MvxBind="Click CloseCommand"
-            android:clickable="true"
             android:padding="16dp"
+            android:clickable="true"
             android:src="@drawable/arrow_back"
             android:tint="@android:color/white"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -26,9 +27,9 @@
             android:textSize="19sp"
             android:letterSpacing="-0.01"
             android:lineSpacingExtra="5sp"
+            android:textCursorDrawable="@null"
             android:hint="@string/AddProjectHint"
             android:textColor="@android:color/white"
-            android:textCursorDrawable="@null"
             android:background="@color/blueToolbarBackground"
             android:textColorHint="@color/blueBackgroundTextHintColor"
             android:layout_width="wrap_content"
@@ -37,8 +38,8 @@
     </LinearLayout>
     <toggl.giskard.views.SelectProjectRecyclerView
         local:MvxBind="ItemsSource Suggestions; ItemClick SelectProjectCommand;  UseGrouping UseGrouping; CreateCommand CreateProjectCommand; Text Text; IsSuggestingCreation SuggestCreation; ToggleTasksCommand ToggleTaskSuggestionsCommand"
-        local:MvxTemplateSelector="@string/SelectProjectTemplateSelector"
         android:scrollbars="vertical"
+        local:MvxTemplateSelector="@string/SelectProjectTemplateSelector"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize" />

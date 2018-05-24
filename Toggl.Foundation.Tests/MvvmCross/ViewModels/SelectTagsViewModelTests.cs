@@ -8,10 +8,10 @@ using FluentAssertions;
 using FsCheck;
 using FsCheck.Xunit;
 using NSubstitute;
-using NSubstitute.Core;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.PrimeRadiant.Models;
@@ -26,7 +26,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public abstract class SelectTagsViewModelTest : BaseViewModelTests<SelectTagsViewModel>
         {
             protected override SelectTagsViewModel CreateViewModel()
-                => new SelectTagsViewModel(DataSource, NavigationService);
+                => new SelectTagsViewModel(DataSource, NavigationService, InteractorFactory);
 
             protected Task EnsureClosesTheViewModel()
                 => NavigationService.Received().Close(Arg.Is(ViewModel), Arg.Any<long[]>());
@@ -61,14 +61,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : SelectTagsViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(TwoParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useNavigationService)
+            [ClassData(typeof(ThreeParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource, bool useNavigationService, bool useInteractorFactory)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var navigationService = useNavigationService ? NavigationService : null;
+                var interactorFactory = useInteractorFactory ? InteractorFactory : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new SelectTagsViewModel(dataSource, navigationService);
+                    () => new SelectTagsViewModel(dataSource, navigationService, interactorFactory);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -162,16 +163,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task WhenChangedQueriesTheAutocompleteProvider()
             {
                 var text = "Some text";
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
                 await ViewModel.Initialize();
 
                 ViewModel.Text = text;
 
-                await autocompleteProvider.Received()
-                    .Query(Arg.Is<QueryInfo>(info
-                        => info.Text == text
-                        && info.SuggestionType == AutocompleteSuggestionType.Tags));
+                InteractorFactory.Received()
+                    .GetTagsAutocompleteSuggestions(
+                        Arg.Is<IList<string>>(words => words.SequenceEqual(text.SplitToQueryWords())));
             }
         }
 
@@ -303,12 +301,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Select(i => createWorkspace(i, $"Workspace{i}")).ToArray();
                 workspaces.ForEach(workspace
                     => tags.AddRange(getTagSuggestions(5, workspace)));
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        arg => arg.SuggestionType == AutocompleteSuggestionType.Tags))
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(tags));
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
                 var targetWorkspace = workspaces[1];
                 InteractorFactory.GetWorkspaceById(targetWorkspace.Id).Execute()
                     .Returns(Observable.Return(targetWorkspace));
@@ -328,12 +323,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var workspace = createWorkspace(13, "Some workspace");
                 var tagSuggestions = getTagSuggestions(10, workspace);
                 var tagIds = tagSuggestions.Select(tag => tag.TagId).ToArray();
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        arg => arg.SuggestionType == AutocompleteSuggestionType.Tags))
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(tagSuggestions));
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
                 InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
                     .Returns(Observable.Return(workspace));
 
@@ -351,14 +343,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 var shuffledTags = new[] { tagSuggestions[3], tagSuggestions[1], tagSuggestions[2], tagSuggestions[0] };
                 var selectedTagIds = new[] { tagSuggestions[0].TagId, tagSuggestions[2].TagId };
-
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        arg => arg.SuggestionType == AutocompleteSuggestionType.Tags))
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(shuffledTags));
-
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
                 InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
                     .Returns(Observable.Return(workspace));
 
@@ -385,17 +372,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var oldSuggestions = getTagSuggestions(3, workspace);
                 var newSuggestions = getTagSuggestions(1, workspace);
                 var oldTagIds = oldSuggestions.Select(tag => tag.TagId).ToArray();
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                        var queryText = "Query text";
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        arg => arg.SuggestionType == AutocompleteSuggestionType.Tags))
-                            .Returns(Observable.Return(oldSuggestions));
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        arg => arg.Text == queryText && arg.SuggestionType == AutocompleteSuggestionType.Tags))
+                var queryText = "Query text";
+                InteractorFactory.GetTagsAutocompleteSuggestions(
+                        Arg.Is<IList<string>>(words => words.SequenceEqual(queryText.SplitToQueryWords())))
+                    .Execute()
                     .Returns(Observable.Return(newSuggestions));
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
                 InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
                     .Returns(Observable.Return(workspace));
                 ViewModel.Prepare((oldTagIds, workspace.Id));
@@ -499,9 +480,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 
                 var observable = Observable
                     .Return(new AutocompleteSuggestion[] { new TagSuggestion(createdTag) });
-                DataSource
-                    .AutocompleteProvider
-                    .Query(Arg.Any<QueryInfo>())
+                InteractorFactory
+                    .GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(observable);
             }
 
@@ -553,7 +534,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var tagName = "Some Tag";
                 long workspaceId = 123;
                 var initialTags = CreateTags(count: 10);
-                DataSource.AutocompleteProvider.Query(Arg.Any<QueryInfo>())
+                InteractorFactory
+                    .GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(initialTags));
                 var createdTag = CreateTagSubstitute(0, tagName);
                 createdTag.WorkspaceId.Returns(workspaceId);
@@ -567,9 +550,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Concat(new AutocompleteSuggestion[] { createdTagSuggestion });
                 var observable = Observable
                     .Return(newTagSuggestions);
-                DataSource
-                    .AutocompleteProvider
-                    .Query(Arg.Any<QueryInfo>())
+                InteractorFactory
+                    .GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(observable);
                 ViewModel.Text = tagName;
 
@@ -634,9 +617,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task IsFalseWhenSuchTagAlreadyExists(string text)
             {
                 var tags = CreateTags(10);
-                DataSource
-                    .AutocompleteProvider
-                    .Query(Arg.Any<QueryInfo>())
+                InteractorFactory
+                    .GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(tags));
                 ViewModel.Prepare((new long[0], 0));
                 await ViewModel.Initialize();

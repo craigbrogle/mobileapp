@@ -3,7 +3,9 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
+using Toggl.Multivac;
 
 namespace Toggl.Foundation
 {
@@ -13,46 +15,43 @@ namespace Toggl.Foundation
 
         private readonly IScheduler scheduler;
 
-        private DateTimeOffset previousSecondLocalDateTime;
-
-        private ISubject<DateTimeOffset> midnightSubject;
-
         public DateTimeOffset CurrentDateTime => floor(scheduler.Now);
 
-        public IConnectableObservable<DateTimeOffset> CurrentDateTimeObservable { get; }
+        public IObservable<DateTimeOffset> CurrentDateTimeObservable { get; }
 
-        public IConnectableObservable<DateTimeOffset> MidnightObservable { get; }
+        public IObservable<DateTimeOffset> MidnightObservable { get; }
 
         public TimeService(IScheduler scheduler)
         {
             this.scheduler = scheduler;
 
-            previousSecondLocalDateTime = CurrentDateTime.ToLocalTime();
-            midnightSubject = new Subject<DateTimeOffset>();
-
             CurrentDateTimeObservable =
                 Observable
                     .Interval(TimeSpan.FromSeconds(1), scheduler)
                     .Select(_ => CurrentDateTime)
-                    .Do(tickOnMidnight)
-                    .Publish();
+                    .Publish().RefCount();
 
-            MidnightObservable = midnightSubject.AsObservable().Publish();
+            var localTimeObservable = CurrentDateTimeObservable
+                .Select(t => t.ToLocalTime());
 
-            disposable.Add(CurrentDateTimeObservable.Connect());
-            disposable.Add(MidnightObservable.Connect());
+            MidnightObservable = localTimeObservable
+                .Zip(localTimeObservable.Skip(1), (previous, now) => (previous: previous, now: now))
+                .Where(t => t.previous.Date != t.now.Date)
+                .Select(t => t.now);
+        }
+
+        public Task RunAfterDelay(TimeSpan delay, Action action)
+        {
+            Ensure.Argument.IsNotNull(action, nameof(action));
+
+            return Observable
+                .Return(Unit.Default)
+                .Delay(delay, scheduler)
+                .Do(_ => action())
+                .ToTask();
         }
 
         private DateTimeOffset floor(DateTimeOffset t)
             => new DateTimeOffset(t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second, t.Offset);
-
-        private void tickOnMidnight(DateTimeOffset now)
-        {
-            var localNow = now.ToLocalTime();
-            if (localNow.Date != previousSecondLocalDateTime.Date)
-                midnightSubject.OnNext(localNow);
-
-            previousSecondLocalDateTime = now.ToLocalTime();
-        }
     }
 }

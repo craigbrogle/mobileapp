@@ -16,9 +16,9 @@ namespace Toggl.Daneel.Onboarding.MainView
             Ensure.Argument.IsNotNull(isTimeEntriesLogEmpty, nameof(isTimeEntriesLogEmpty));
 
             ShouldBeVisible = onboardingStorage.UserSignedUpUsingTheApp.CombineLatest(
-                onboardingStorage.HasEditedTimeEntry,
+                onboardingStorage.HasTappedTimeEntry,
                 isTimeEntriesLogEmpty,
-                (signedUpUsingTheApp, hasEditedTimeEntry, isEmpty) => signedUpUsingTheApp && !hasEditedTimeEntry && !isEmpty);
+                (signedUpUsingTheApp, hasTappedTimeEntry, isEmpty) => signedUpUsingTheApp && !hasTappedTimeEntry && !isEmpty);
         }
     }
 }

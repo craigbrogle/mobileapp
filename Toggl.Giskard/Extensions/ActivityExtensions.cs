@@ -43,10 +43,10 @@ namespace Toggl.Giskard.Extensions
 
             var (widthPixels, heightPixels, isLargeScreen) = activity.GetMetrics(context);
 
-            var width = isLargeScreen 
+            var width = isLargeScreen
                 ? widthPixels - largeScreenMargins.DpToPixels(context)
                 : smallScreenWidth.DpToPixels(context);
-            
+
             var height = heightDp >= 0
                 ? heightDp.DpToPixels(context)
                 : heightDp;

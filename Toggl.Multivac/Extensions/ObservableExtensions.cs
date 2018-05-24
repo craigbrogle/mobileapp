@@ -43,5 +43,10 @@ namespace Toggl.Multivac.Extensions
             replayed.Connect();
             return replayed;
         }
+
+        public static IObservable<T> DelayIf<T>(this IObservable<T> observable, Predicate<T> predicate, TimeSpan delay)
+            => observable.SelectMany(value => predicate(value)
+                ? Observable.Return(value).Delay(delay)
+                : Observable.Return(value));
     }
 }

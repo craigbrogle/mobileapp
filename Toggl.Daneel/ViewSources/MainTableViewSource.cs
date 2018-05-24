@@ -15,6 +15,18 @@ namespace Toggl.Daneel.ViewSources
     {
         public event EventHandler OnScrolled;
 
+        public event EventHandler SwipeToContinueWasUsed
+        {
+            add => timeEntriesLogViewSource.SwipeToContinueWasUsed += value;
+            remove => timeEntriesLogViewSource.SwipeToContinueWasUsed -= value;
+        }
+
+        public event EventHandler SwipeToDeleteWasUsed
+        {
+            add => timeEntriesLogViewSource.SwipeToDeleteWasUsed += value;
+            remove => timeEntriesLogViewSource.SwipeToDeleteWasUsed -= value;
+        }
+
         private readonly TimeEntriesLogViewSource timeEntriesLogViewSource;
         private readonly SwipeToRefreshTableViewDelegate swipeToRefreshTableViewDelegate;
 

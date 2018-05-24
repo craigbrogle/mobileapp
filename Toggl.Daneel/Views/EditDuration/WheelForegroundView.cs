@@ -49,6 +49,8 @@ namespace Toggl.Daneel.Views.EditDuration
 
         private readonly nfloat suqareCenterHorizontalOffset = 0f;
 
+        private readonly nfloat extendedRadiusMultiplier = 1.5f;
+
         private double endPointsRadius => SmallRadius + (Radius - SmallRadius) / 2;
 
         private DateTimeOffset startTime;
@@ -251,24 +253,16 @@ namespace Toggl.Daneel.Views.EditDuration
             foreach (UITouch touch in touches)
             {
                 var position = touch.LocationInView(this);
-                if (isCloseEnough(position, startTimePosition))
+                var intention = determineTapIntention(position);
+                if (intention.HasValue)
                 {
-                    updateType = WheelUpdateType.EditStartTime;
-                    return touch;
-                }
+                    updateType = intention.Value;
+                    if (updateType == WheelUpdateType.EditBothAtOnce)
+                    {
+                        editBothAtOnceStartTimeAngleOffset =
+                            AngleBetween(position.ToMultivacPoint(), Center.ToMultivacPoint()) - startTimeAngle;
+                    }
 
-                if (IsRunning) continue;
-
-                if (isCloseEnough(position, endTimePosition))
-                {
-                    updateType = WheelUpdateType.EditEndTime;
-                    return touch;
-                }
-
-                if (isOnTheWheelBetweenStartAndStop(position))
-                {
-                    updateType = WheelUpdateType.EditBothAtOnce;
-                    editBothAtOnceStartTimeAngleOffset = AngleBetween(position.ToMultivacPoint(), Center.ToMultivacPoint()) - startTimeAngle;
                     return touch;
                 }
             }
@@ -276,8 +270,37 @@ namespace Toggl.Daneel.Views.EditDuration
             return null;
         }
 
-        private bool isCloseEnough(CGPoint tapPosition, CGPoint endPoint)
-            => DistanceSq(tapPosition.ToMultivacPoint(), endPoint.ToMultivacPoint()) <= (Thickness / 2f) * (Thickness / 2f);
+        private WheelUpdateType? determineTapIntention(CGPoint position)
+        {
+            if (touchesStartCap(position))
+                return WheelUpdateType.EditStartTime;
+
+            if (!IsRunning && touchesEndCap(position))
+                return WheelUpdateType.EditEndTime;
+
+            if (touchesStartCap(position, extendedRadius: true))
+                return WheelUpdateType.EditStartTime;
+
+            if (!IsRunning && touchesEndCap(position, extendedRadius: true))
+                return WheelUpdateType.EditEndTime;
+
+            if (!IsRunning && isOnTheWheelBetweenStartAndStop(position))
+                return WheelUpdateType.EditBothAtOnce;
+
+            return null;
+        }
+
+        private bool touchesStartCap(CGPoint position, bool extendedRadius = false)
+            => isCloseEnough(position, startTimePosition, calculateCapRadius(extendedRadius));
+
+        private bool touchesEndCap(CGPoint position, bool extendedRadius = false)
+            => isCloseEnough(position, endTimePosition, calculateCapRadius(extendedRadius));
+
+        private nfloat calculateCapRadius(bool extendedRadius)
+            => (extendedRadius ? extendedRadiusMultiplier : 1) * (Thickness / 2);
+
+        private static bool isCloseEnough(CGPoint tapPosition, CGPoint endPoint, nfloat radius)
+            => DistanceSq(tapPosition.ToMultivacPoint(), endPoint.ToMultivacPoint()) <= radius * radius;
 
         private bool isOnTheWheelBetweenStartAndStop(CGPoint point)
         {

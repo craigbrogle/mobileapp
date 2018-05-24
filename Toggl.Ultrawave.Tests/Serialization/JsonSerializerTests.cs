@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Toggl.Ultrawave.Serialization;
 using Xunit;
 
@@ -6,6 +7,11 @@ namespace Toggl.Ultrawave.Tests.Serialization
 {
     public sealed class JsonSerializerTests
     {
+        private class ThrowingModel
+        {
+            public string ThrowingProperty => throw new Exception();
+        }
+
         private class TestModel
         {
             public string FooBar { get; set; }
@@ -39,6 +45,16 @@ namespace Toggl.Ultrawave.Tests.Serialization
 
                 actual.Should().Be(expectedJson);
             }
+
+            [Fact, LogIfTooSlow]
+            public void ThrowsSerializationExceptionIfSerializationThrows()
+            {
+                var serializar = new JsonSerializer();
+
+                Action serialization = () => serializar.Serialize(new ThrowingModel());
+
+                serialization.ShouldThrow<SerializationException>();
+            }
         }
 
         public sealed class TheDeserializeMethod
@@ -53,6 +69,21 @@ namespace Toggl.Ultrawave.Tests.Serialization
                 var actual = jsonSerializer.Deserialize<TestModel>(testJson);
 
                 actual.FooBar.Should().Be(expectedObject.FooBar);
+            }
+
+            [Theory, LogIfTooSlow]
+            [InlineData("{")]
+            [InlineData("}")]
+            [InlineData("{\"FooBar\":}")]
+            [InlineData("\"  \"")]
+            [InlineData("This is an error.")]
+            public void ThrowsDeserializationExceptionIfDeserializationThrows(string invalidJson)
+            {
+                var serializar = new JsonSerializer();
+
+                Action deserialization = () => serializar.Deserialize<TestModel>(invalidJson);
+
+                deserialization.ShouldThrow<DeserializationException>();
             }
         }
     }

@@ -15,6 +15,12 @@ namespace Toggl.Daneel.ViewControllers.Settings
 		[Outlet]
 		UIKit.UIView LicensesView { get; set; }
 
+        [Outlet]
+        UIKit.UIView PrivacyPolicyView { get; set; }
+
+        [Outlet]
+        UIKit.UIView TermsOfServiceView { get; set; }
+
 		[Outlet]
 		UIKit.NSLayoutConstraint TopConstraint { get; set; }
 		
@@ -24,6 +30,18 @@ namespace Toggl.Daneel.ViewControllers.Settings
 				LicensesView.Dispose ();
 				LicensesView = null;
 			}
+
+            if (PrivacyPolicyView != null)
+            {
+                PrivacyPolicyView.Dispose();
+                PrivacyPolicyView = null;
+            }
+
+            if (TermsOfServiceView != null)
+            {
+                TermsOfServiceView.Dispose();
+                TermsOfServiceView = null;
+            }
 
 			if (TopConstraint != null) {
 				TopConstraint.Dispose ();

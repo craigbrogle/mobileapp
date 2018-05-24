@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using PropertyChanged;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.MvvmCross.Collections;
@@ -27,6 +28,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITogglDataSource dataSource;
         private readonly IInteractorFactory interactorFactory;
         private readonly IOnboardingStorage onboardingStorage;
+        private readonly IAnalyticsService analyticsService;
         private readonly IMvxNavigationService navigationService;
 
         private bool areContineButtonsEnabled = true;
@@ -53,17 +55,20 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                                        ITogglDataSource dataSource,
                                        IInteractorFactory interactorFactory,
                                        IOnboardingStorage onboardingStorage,
+                                       IAnalyticsService analyticsService,
                                        IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
 
             this.dataSource = dataSource;
             this.timeService = timeService;
             this.onboardingStorage = onboardingStorage;
+            this.analyticsService = analyticsService;
             this.interactorFactory = interactorFactory;
             this.navigationService = navigationService;
 
@@ -111,7 +116,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task fetchSectionedTimeEntries()
         {
             var timeEntries = await dataSource.TimeEntries.GetAll();
-            if (timeEntries == null) 
+            if (timeEntries == null)
             {
                 TimeEntries.Clear();
                 return;
@@ -232,10 +237,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task delete(TimeEntryViewModel timeEntryViewModel)
         {
-            await dataSource
-                .TimeEntries
-                .Delete(timeEntryViewModel.Id)
-                .Do(_ => dataSource.SyncManager.PushSync());
+            await dataSource.TimeEntries.Delete(timeEntryViewModel.Id);
+
+            analyticsService.TrackDeletingTimeEntry();
+            dataSource.SyncManager.PushSync();
         }
 
         private async Task continueTimeEntry(TimeEntryViewModel timeEntryViewModel)

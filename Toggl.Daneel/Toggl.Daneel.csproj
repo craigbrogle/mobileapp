@@ -71,12 +71,14 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.AdHoc|AnyCPU' ">
     <Optimize>true</Optimize>
     <OutputPath>bin\Release.AdHoc</OutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <WarningLevel>4</WarningLevel>
     <CodesignProvision>Daneel_AdHoc</CodesignProvision>
     <CodesignKey>iPhone Distribution: Toggl OU (B227VTMZ94)</CodesignKey>
     <MtouchExtraArgs>--linkskip Toggl.Daneel</MtouchExtraArgs>
-    <MtouchVerbosity></MtouchVerbosity>
+    <MtouchVerbosity>
+    </MtouchVerbosity>
     <MtouchFloat32>true</MtouchFloat32>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>Full</MtouchLink>
@@ -86,11 +88,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release.UITest|iPhoneSimulator' ">
     <Optimize>false</Optimize>
     <OutputPath>bin\iPhoneSimulator\Release.UITest</OutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <WarningLevel>4</WarningLevel>
     <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
-    <MtouchVerbosity></MtouchVerbosity>
+    <MtouchVerbosity>
+    </MtouchVerbosity>
     <MtouchLink>None</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
     <MtouchHttpClientHandler>HttpClientHandler</MtouchHttpClientHandler>
@@ -120,12 +124,6 @@
     <Reference Include="Xamarin.iOS" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Reactive.Interfaces">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.0.0\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Core">
-      <HintPath>..\packages\System.Reactive.Core.3.0.0\lib\netstandard1.3\System.Reactive.Core.dll</HintPath>
-    </Reference>
     <Reference Include="System.Reactive.Linq">
       <HintPath>..\packages\System.Reactive.Linq.3.0.0\lib\netstandard1.3\System.Reactive.Linq.dll</HintPath>
     </Reference>
@@ -210,6 +208,12 @@
     </Reference>
     <Reference Include="MvvmCross.Plugins.Visibility.iOS">
       <HintPath>..\packages\MvvmCross.Plugin.Visibility.5.5.2\lib\Xamarin.iOS10\MvvmCross.Plugins.Visibility.iOS.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\netstandard1.3\System.Reactive.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -489,6 +493,26 @@
     <ImageAsset Include="Resources\Images.xcassets\thumbsdown.imageset\thumbsdown.png" />
     <ImageAsset Include="Resources\Images.xcassets\thumbsdown.imageset\thumbsdown%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\thumbsdown.imageset\thumbsdown%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\confirmation.png" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\confirmation%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\confirmation.imageset\confirmation%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws.png" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\paws.imageset\paws%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icBackNoPadding.imageset\icBack%403x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\icWarning.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\icWarning%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\icWarning.imageset\icWarning%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
@@ -546,6 +570,12 @@
     <InterfaceDefinition Include="Views\Log\TimeEntriesEmptyLogView.xib" />
     <InterfaceDefinition Include="Views\Log\TimeEntryMockView.xib" />
     <InterfaceDefinition Include="Views\Rating\RatingView.xib" />
+    <InterfaceDefinition Include="ViewControllers\SelectCountryViewController.xib" />
+    <InterfaceDefinition Include="Views\CountrySelection\CountryViewCell.xib" />
+    <InterfaceDefinition Include="ViewControllers\ForgotPasswordViewController.xib" />
+    <InterfaceDefinition Include="ViewControllers\SignupViewController.xib" />
+    <InterfaceDefinition Include="ViewControllers\TermsOfServiceViewController.xib" />
+    <InterfaceDefinition Include="Views\SyncFailures\SyncFailureCell.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -582,12 +612,13 @@
     <Compile Include="ViewControllers\Navigation\OnboardingFlowNavigationController.cs" />
     <Compile Include="Binding\BarButtonCommandTargetBinding.cs" />
     <Compile Include="Binding\ViewAnimatedVisibilityTargetBinding.cs" />
+    <Compile Include="ViewControllers\SyncFailuresViewController.cs" />
+    <Compile Include="ViewSources\ListTableViewSource.cs" />
     <Compile Include="ViewSources\SelectProjectTableViewSource.cs" />
     <Compile Include="Binding\TextFieldSecureTextEntryTargetBinding.cs" />
     <Compile Include="Binding\BarButtonAnimatedEnabledTargetBinding.cs" />
     <Compile Include="Binding\TextFieldFocusTargetBinding.cs" />
     <Compile Include="Presentation\TogglPresenter.cs" />
-    <Compile Include="ViewControllers\Navigation\TogglNavigationController.cs" />
     <Compile Include="ViewSources\TimeEntriesLogViewSource.cs" />
     <Compile Include="ViewControllers\MainViewController.cs" />
     <Compile Include="ViewControllers\MainViewController.designer.cs">
@@ -905,12 +936,39 @@
     <Compile Include="Onboarding\MainView\SwipeRightOnboardingStep.cs" />
     <Compile Include="Onboarding\EditView\CategorizeTimeUsingProjectsOnboardingStep.cs" />
     <Compile Include="Extensions\TimeEntriesLogViewCellExtensions.cs" />
+    <Compile Include="ViewControllers\SelectCountryViewController.cs" />
+    <Compile Include="ViewControllers\SelectCountryViewController.designer.cs">
+      <DependentUpon>SelectCountryViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewSources\CountryTableViewSource.cs" />
+    <Compile Include="Views\CountrySelection\CountryViewCell.cs" />
+    <Compile Include="Views\CountrySelection\CountryViewCell.designer.cs">
+      <DependentUpon>CountryViewCell.cs</DependentUpon>
+    </Compile>
     <Compile Include="Views\LoginTextField.cs" />
     <Compile Include="Binding\ButtonAnimatedTitleTargetBinding.cs" />
     <Compile Include="Binding\LoginTextFieldFirstResponderTargetBinding.cs" />
     <Compile Include="Views\Rating\RatingView.cs" />
     <Compile Include="Views\Rating\RatingView.designer.cs">
       <DependentUpon>RatingView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewControllers\ForgotPasswordViewController.cs" />
+    <Compile Include="ViewControllers\ForgotPasswordViewController.designer.cs">
+      <DependentUpon>ForgotPasswordViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ViewControllers\SignupViewController.cs" />
+    <Compile Include="ViewControllers\SignupViewController.designer.cs">
+      <DependentUpon>SignupViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\LoginSignupViewExtensions.cs" />
+    <Compile Include="ViewControllers\TermsOfServiceViewController.cs" />
+    <Compile Include="ViewControllers\TermsOfServiceViewController.designer.cs">
+      <DependentUpon>TermsOfServiceViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\RangeExtensions.cs" />
+    <Compile Include="Views\SyncFailures\SyncFailureCell.cs" />
+    <Compile Include="Views\SyncFailures\SyncFailureCell.designer.cs">
+      <DependentUpon>SyncFailureCell.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -948,6 +1006,7 @@
     <Folder Include="Resources\Images.xcassets\icSearch.imageset\" />
     <Folder Include="Resources\Images.xcassets\icCheckBoxChecked.imageset\" />
     <Folder Include="Resources\Images.xcassets\icCheckBoxUnchecked.imageset\" />
+    <Folder Include="ViewSources\TableViewSource" />
     <Folder Include="Views\Onboarding\" />
     <Folder Include="Views\Interfaces\" />
     <Folder Include="Resources\Images.xcassets\search.imageset\" />
@@ -972,12 +1031,19 @@
     <Folder Include="Onboarding\StartTimeEntryView\" />
     <Folder Include="Onboarding\CreationView\" />
     <Folder Include="Onboarding\EditView\" />
+    <Folder Include="Views\CountrySelection\" />
     <Folder Include="Resources\Images.xcassets\bike.imageset\" />
     <Folder Include="Resources\Images.xcassets\togglLogoBig.imageset\" />
     <Folder Include="Resources\Images.xcassets\icGoogleColored.imageset\" />
     <Folder Include="Views\Rating\" />
     <Folder Include="Resources\Images.xcassets\thumbsup.imageset\" />
     <Folder Include="Resources\Images.xcassets\thumbsdown.imageset\" />
+    <Folder Include="Resources\Images.xcassets\confirmation.imageset\" />
+    <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
+    <Folder Include="Resources\Images.xcassets\paws.imageset\" />
+    <Folder Include="Resources\Images.xcassets\icBackNoPadding.imageset\" />
+    <Folder Include="Views\SyncFailures\" />
+    <Folder Include="Resources\Images.xcassets\icWarning.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GoogleService-Info.plist" />

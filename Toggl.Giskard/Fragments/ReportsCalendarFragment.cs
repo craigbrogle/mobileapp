@@ -19,7 +19,7 @@ using Toggl.Giskard.Extensions;
 using Toggl.Multivac.Extensions;
 
 namespace Toggl.Giskard.Fragments
-{   
+{
     [MvxFragmentPresentation(typeof(ReportsViewModel), Resource.Id.ReportsCalendarContainer, AddToBackStack = false)]
     public sealed class ReportsCalendarFragment : MvxFragment<ReportsCalendarViewModel>
     {
@@ -33,7 +33,7 @@ namespace Toggl.Giskard.Fragments
             base.OnCreateView(inflater, container, savedInstanceState);
             var view = this.BindingInflate(Resource.Layout.ReportsCalendarFragment, null);
 
-            rowHeight = 60.DpToPixels(Activity);
+            rowHeight = Activity.Resources.DisplayMetrics.WidthPixels / 7;
 
             Mvx.Resolve<IMvxBindingContextStack<IMvxAndroidBindingContext>>()
                .Push(BindingContext as IMvxAndroidBindingContext);
@@ -68,7 +68,7 @@ namespace Toggl.Giskard.Fragments
         }
 
         private void recalculatePagerHeight()
-        {   
+        {
             currentRowCount = ViewModel.RowsInCurrentMonth;
 
             var layoutParams = pager.LayoutParameters;

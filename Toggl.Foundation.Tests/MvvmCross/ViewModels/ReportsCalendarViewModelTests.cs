@@ -118,6 +118,27 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.BeginningOfWeek.Should().Be(beginningOfWeek);
             }
+
+            [Fact, LogIfTooSlow]
+            public void InitializesTheDateRangeWithTheCurrentWeek()
+            {
+                var user = Substitute.For<IDatabaseUser>();
+                user.BeginningOfWeek.Returns(BeginningOfWeek.Sunday);
+                DataSource.User.Current.Returns(Observable.Return(user));
+                var now = new DateTimeOffset(2018, 7, 1, 1, 1, 1, TimeSpan.Zero);
+                var observer = Substitute.For<IObserver<DateRangeParameter>>();
+                TimeService.CurrentDateTime.Returns(now);
+                ViewModel.SelectedDateRangeObservable.Subscribe(observer);
+                ViewModel.Prepare();
+                ViewModel.Initialize().Wait();
+
+                observer.Received().OnNext(Arg.Is<DateRangeParameter>(
+                    dateRange => ensureDateRangeIsCorrect(
+                        dateRange,
+                        ViewModel.Months[11].Days[0],
+                        ViewModel.Months[11].Days[6]
+                    )));
+            }
         }
 
         public sealed class TheCurrentMonthProperty : ReportsCalendarViewModelTest
@@ -210,18 +231,18 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         firstTappedCellViewModel,
                         secondTappedCellViewModel)));
             }
-
-            private bool ensureDateRangeIsCorrect(
-                DateRangeParameter dateRange,
-                CalendarDayViewModel expectedStart,
-                CalendarDayViewModel expectedEnd)
-                    => dateRange.StartDate.Year == expectedStart.CalendarMonth.Year
-                    && dateRange.StartDate.Month == expectedStart.CalendarMonth.Month
-                    && dateRange.StartDate.Day == expectedStart.Day
-                    && dateRange.EndDate.Year == expectedEnd.CalendarMonth.Year
-                    && dateRange.EndDate.Month == expectedEnd.CalendarMonth.Month
-                    && dateRange.EndDate.Day == expectedEnd.Day;
         }
+
+        private static bool ensureDateRangeIsCorrect(
+            DateRangeParameter dateRange,
+            CalendarDayViewModel expectedStart,
+            CalendarDayViewModel expectedEnd)
+            => dateRange.StartDate.Year == expectedStart.CalendarMonth.Year
+               && dateRange.StartDate.Month == expectedStart.CalendarMonth.Month
+               && dateRange.StartDate.Day == expectedStart.Day
+               && dateRange.EndDate.Year == expectedEnd.CalendarMonth.Year
+               && dateRange.EndDate.Month == expectedEnd.CalendarMonth.Month
+               && dateRange.EndDate.Day == expectedEnd.Day;
 
         public abstract class TheCalendarDayTappedCommand : ReportsCalendarViewModelTest
         {

@@ -41,6 +41,11 @@ namespace Toggl.Foundation.MvvmCross.Helper
             public static readonly MvxColor ForgotPassword = new MvxColor(94, 91, 91);
         }
 
+        public static class Signup
+        {
+            public static readonly MvxColor HighlightedText = azure;
+        }
+
         public static class NavigationBar
         {
             public static readonly MvxColor BackButton = new MvxColor(94, 91, 91);
@@ -160,6 +165,9 @@ namespace Toggl.Foundation.MvvmCross.Helper
             return new MvxColor(r, g, b);
         }
 
+        internal static string ToHexString(this MvxColor color)
+            => $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+
         public static class EditTimeEntry
         {
             public static readonly MvxColor ClientText = new MvxColor(94, 91, 91);
@@ -239,6 +247,8 @@ namespace Toggl.Foundation.MvvmCross.Helper
             public static readonly MvxColor DayNotInMonth = new MvxColor(149, 149, 149);
 
             public static readonly MvxColor Disabled = new MvxColor(181, 188, 192);
+
+            public static readonly MvxColor OtherProjectsSegmentBackground = pinkishGrey;
 
             public static class Loading
             {

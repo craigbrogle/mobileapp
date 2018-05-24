@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Interactors;
@@ -35,6 +36,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IOnboardingStorage onboardingStorage;
         private readonly IMailService mailService;
         private readonly UserAgent userAgent;
+        private readonly IAnalyticsService analyticsService;
 
         private long workspaceId;
 
@@ -114,7 +116,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IPlatformConstants platformConstants,
             IUserPreferences userPreferences,
             IOnboardingStorage onboardingStorage,
-            IMvxNavigationService navigationService)
+            IMvxNavigationService navigationService,
+            IAnalyticsService analyticsService)
         {
             Ensure.Argument.IsNotNull(userAgent, nameof(userAgent));
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
@@ -125,6 +128,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(platformConstants, nameof(platformConstants));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
 
             this.userAgent = userAgent;
             this.dataSource = dataSource;
@@ -135,6 +139,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.platformConstants = platformConstants;
             this.userPreferences = userPreferences;
             this.onboardingStorage = onboardingStorage;
+            this.analyticsService = analyticsService;
 
             disposeBag.Add(dataSource.SyncManager
                 .ProgressObservable
@@ -330,10 +335,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsLoggingOut = true;
             IsSynced = false;
             IsRunningSync = false;
+            analyticsService.TrackLogoutEvent(LogoutSource.Settings);
             userPreferences.Reset();
-            onboardingStorage.Reset();
             await dataSource.Logout();
-            await navigationService.Navigate<OnboardingViewModel>();
+            await navigationService.Navigate<LoginViewModel>();
         }
 
         private async Task<bool> isSynced()

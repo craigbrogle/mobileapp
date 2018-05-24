@@ -12,6 +12,7 @@ using MvvmCross.Core.ViewModels;
 using V4Space = Android.Support.V4.Widget.Space;
 using Newtonsoft.Json.Converters;
 using Firebase.Provider;
+using MvvmCross.Binding.Droid.Views;
 
 namespace Toggl.Giskard
 {
@@ -146,6 +147,18 @@ namespace Toggl.Giskard
         public void Include(MvxSeekBarProgressTargetBinding binding)
         {
             binding = new MvxSeekBarProgressTargetBinding(null, null);
+        }
+
+        public void Include(MvxTimePicker timePicker)
+        {
+            timePicker = new MvxTimePicker(null);
+            timePicker = new MvxTimePicker(null, null);
+        }
+
+        public void Include(MvxDatePicker datePicker)
+        {
+            datePicker = new MvxDatePicker(null);
+            datePicker = new MvxDatePicker(null, null);
         }
 
         public void Include(FitWindowsFrameLayout layout)

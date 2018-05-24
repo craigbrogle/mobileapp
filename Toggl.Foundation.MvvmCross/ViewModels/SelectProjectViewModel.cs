@@ -10,6 +10,7 @@ using PropertyChanged;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.Helper;
@@ -129,7 +130,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             infoSubject.AsObservable()
                        .StartWith(Text)
-                       .SelectMany(text => dataSource.AutocompleteProvider.Query(new QueryInfo(text, AutocompleteSuggestionType.Projects)))
+                       .Select(text => text.SplitToQueryWords())
+                       .SelectMany(query => interactorFactory.GetProjectsAutocompleteSuggestions(query).Execute())
                        .Select(suggestions => suggestions.Cast<ProjectSuggestion>())
                        .Select(setSelectedProject)
                        .Subscribe(onSuggestions);

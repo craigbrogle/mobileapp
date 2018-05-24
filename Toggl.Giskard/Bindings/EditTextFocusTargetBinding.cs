@@ -7,6 +7,7 @@ using Toggl.Giskard.Extensions;
 using MvvmCross.Platform.WeakSubscription;
 using System.ComponentModel;
 using static Android.Views.View;
+using Android.App;
 
 namespace Toggl.Giskard.Bindings
 {
@@ -30,7 +31,7 @@ namespace Toggl.Giskard.Bindings
 
         protected override void SetValueImpl(EditText target, bool value)
         {
-            if (value) target.RequestFocus();
+            if (value) target.SetFocus();
             else target.RemoveFocus();
         }
 

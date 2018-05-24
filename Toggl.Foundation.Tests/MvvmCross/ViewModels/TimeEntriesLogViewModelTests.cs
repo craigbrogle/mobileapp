@@ -24,28 +24,30 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public abstract class TimeEntriesLogViewModelTest : BaseViewModelTests<TimeEntriesLogViewModel>
         {
             protected override TimeEntriesLogViewModel CreateViewModel()
-                => new TimeEntriesLogViewModel(TimeService, DataSource, InteractorFactory, OnboardingStorage, NavigationService);
+                => new TimeEntriesLogViewModel(TimeService, DataSource, InteractorFactory, OnboardingStorage, AnalyticsService, NavigationService);
         }
 
         public sealed class TheConstructor : TimeEntriesLogViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(FiveParameterConstructorTestData))]
+            [ClassData(typeof(SixParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
                 bool useDataSource,
                 bool useTimeService,
                 bool useInteractorFactory,
                 bool useOnboardingStorage,
+                bool useAnalyticsService,
                 bool useNavigationService)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
                 var interactorFactory = useInteractorFactory ? InteractorFactory : null;
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
+                var analyticsService = useAnalyticsService ? AnalyticsService : null;
                 var navigationService = useNavigationService ? NavigationService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, navigationService);
+                    () => new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -402,6 +404,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.DeleteCommand.ExecuteAsync(timeEntryViewModel).Wait();
 
                 DataSource.TimeEntries.Received().Delete(id).Wait();
+            }
+
+            [Fact]
+            public async ThreadingTask TracksTheEventUsingTheAnaltyticsService()
+            {
+                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                timeEntry.Id.Returns(1);
+                timeEntry.Duration.Returns(100);
+                timeEntry.WorkspaceId.Returns(10);
+                var timeEntryViewModel = new TimeEntryViewModel(timeEntry, DurationFormat.Improved);
+
+                await ViewModel.DeleteCommand.ExecuteAsync(timeEntryViewModel);
+
+                AnalyticsService.Received().TrackDeletingTimeEntry();
             }
         }
     }

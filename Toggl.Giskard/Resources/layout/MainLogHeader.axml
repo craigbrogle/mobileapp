@@ -1,29 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@android:color/transparent"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:gravity="center_vertical"
+    android:background="@android:color/transparent"
     android:layout_height="42dp"
     android:layout_marginTop="32dp"
     android:layout_width="match_parent">
     <TextView
         local:MvxBind="Text DateToTitleString(Date)"
+        tools:text="Today"
         android:textSize="15sp"
         android:fontFamily="sans-serif-medium"
         android:textColor="@android:color/black"
-        tools:text="Today"
         android:layout_marginLeft="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true" />
     <TextView
         local:MvxBind="Text TimeSpanToDuration(TotalTime)"
+        tools:text="5:03:01"
         android:gravity="end"
         android:textSize="14sp"
         android:fontFamily="sans-serif-medium"
         android:textColor="@android:color/black"
-        tools:text="5:03:01"
         android:layout_marginRight="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

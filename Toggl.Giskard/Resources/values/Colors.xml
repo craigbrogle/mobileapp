@@ -2,6 +2,7 @@
 <resources>
     <color name="defaultBackground">#FAFBFC</color>
     <color name="errorText">#E20505</color>
+    <color name="grey">#9F9F9F</color>
     <color name="lightToolbarBackground">#FFFFFF</color>
     <color name="darkToolbarBackground">#323232</color>
     <color name="placeholderText">#CECECE</color>
@@ -13,6 +14,7 @@
     <color name="transparentLightGray">#66FAFBFC</color>
     <color name="separator">#FFE5E5E5</color>
     <color name="clientName">#FF5E5B5B</color>
+    <color name="editViewDate">#FF5E5B5B</color>
     <color name="toolbarBlack">#FF323232</color>
     <color name="playButtonGreen">#FF1AD180</color>
     <color name="playButtonRed">#E20505</color>
@@ -29,4 +31,6 @@
     <color name="blueStatusBarBackground">#559fec</color>
     <color name="blueBackgroundTextHintColor">#b9d9f7</color>
     <color name="onboardingStatusBarColor">#53a0fd</color>
+    <color name="halfTransparentWhite">#B3FFFFFF</color>
+    <color name="popupBlueBackground">#328FFF</color>
 </resources>

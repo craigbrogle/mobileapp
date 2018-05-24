@@ -140,14 +140,13 @@ namespace Toggl.Daneel.Presentation
 
         public override void Show(MvxViewModelRequest request)
         {
-            var navigationController = UIApplication.SharedApplication.KeyWindow?.RootViewController as TogglNavigationController;
+            var navigationController = UIApplication.SharedApplication.KeyWindow?.RootViewController as MvxNavigationController;
             var topViewController = navigationController == null
                 ? null
                 : getPresentedViewController(navigationController.TopViewController) as MvxViewController;
             
             //Don't show the same view twice
-            if (topViewController != null
-                && topViewController.ViewModel.GetType() == request.ViewModelType)
+            if (topViewController?.ViewModel?.GetType() == request.ViewModelType)
                 return;
                 
             base.Show(request);
@@ -170,7 +169,7 @@ namespace Toggl.Daneel.Presentation
             if (viewController is OnboardingViewController || viewController is TokenResetViewController)
                 return new OnboardingFlowNavigationController(viewController);
 
-            return new TogglNavigationController(viewController);
+            return base.CreateNavigationController(viewController);
         }
 
         public override void ChangePresentation(MvxPresentationHint hint)

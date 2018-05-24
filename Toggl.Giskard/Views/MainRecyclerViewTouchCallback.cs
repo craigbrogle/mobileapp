@@ -47,9 +47,11 @@ namespace Toggl.Giskard.Views
         public override int GetSwipeDirs(RecyclerView recyclerView, ViewHolder viewHolder)
         {
             if (viewHolder is MainRecyclerViewLogViewHolder timeEntriesLogViewHolder && timeEntriesLogViewHolder.CanSync)
+            {
                 return base.GetSwipeDirs(recyclerView, viewHolder);
+            }
 
-            return ItemTouchHelper.Left;
+            return ItemTouchHelper.ActionStateIdle;
         }
 
         public override bool OnMove(RecyclerView recyclerView, ViewHolder viewHolder, ViewHolder target)

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SelectCountryViewController">
+            <connections>
+                <outlet property="BottomConstraint" destination="UV4-34-yij" id="8g7-Hr-ubf"/>
+                <outlet property="CloseButton" destination="Xqq-Su-CQu" id="mFv-VG-Xhn"/>
+                <outlet property="CountriesTableView" destination="Zjh-Mc-VHX" id="WPy-QM-aoK"/>
+                <outlet property="SearchTextField" destination="3Mb-dF-ikC" id="1wO-xK-jb3"/>
+                <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="2">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xqq-Su-CQu">
+                    <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="44" id="0ZU-Gi-Aaf"/>
+                        <constraint firstAttribute="height" constant="44" id="Q7J-ge-HRq"/>
+                    </constraints>
+                    <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2" maxY="2"/>
+                    <state key="normal" image="icClose"/>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Country of Residence" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qqg-LD-i5w">
+                    <rect key="frame" x="116.5" y="12" width="143" height="17"/>
+                    <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="search" translatesAutoresizingMaskIntoConstraints="NO" id="kke-s7-adV">
+                    <rect key="frame" x="16" y="71" width="12" height="12"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="12" id="Gj5-EZ-5Hy"/>
+                        <constraint firstAttribute="height" constant="12" id="UlS-nW-c1Q"/>
+                    </constraints>
+                </imageView>
+                <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Search" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="3Mb-dF-ikC">
+                    <rect key="frame" x="38" y="53" width="321" height="48"/>
+                    <color key="tintColor" red="0.29803921570000003" green="0.85098039219999999" blue="0.3921568627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="48" id="JOJ-9v-ODt"/>
+                    </constraints>
+                    <nil key="textColor"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                    <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" smartQuotesType="no"/>
+                </textField>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Zjh-Mc-VHX">
+                    <rect key="frame" x="0.0" y="101" width="375" height="566"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </tableView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XIR-D5-ixt" userLabel="Separator">
+                    <rect key="frame" x="0.0" y="101" width="375" height="1"/>
+                    <color key="backgroundColor" red="0.90980392160000001" green="0.90980392160000001" blue="0.90980392160000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="1" id="Hk5-Lt-43W"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="kke-s7-adV" firstAttribute="centerY" secondItem="3Mb-dF-ikC" secondAttribute="centerY" id="1Ho-Ws-jmj"/>
+                <constraint firstItem="XIR-D5-ixt" firstAttribute="centerX" secondItem="2" secondAttribute="centerX" id="7gv-Wj-zL4"/>
+                <constraint firstItem="qqg-LD-i5w" firstAttribute="centerX" secondItem="2" secondAttribute="centerX" id="8HA-QO-xvp"/>
+                <constraint firstAttribute="trailing" secondItem="Zjh-Mc-VHX" secondAttribute="trailing" id="98b-sS-Jaa"/>
+                <constraint firstItem="Xqq-Su-CQu" firstAttribute="top" secondItem="2" secondAttribute="top" id="Hps-Mg-x8u"/>
+                <constraint firstItem="3Mb-dF-ikC" firstAttribute="leading" secondItem="kke-s7-adV" secondAttribute="trailing" constant="10" id="JGQ-2l-kTk"/>
+                <constraint firstAttribute="bottom" secondItem="Zjh-Mc-VHX" secondAttribute="bottom" id="UV4-34-yij"/>
+                <constraint firstAttribute="trailing" secondItem="3Mb-dF-ikC" secondAttribute="trailing" constant="16" id="fb3-Ho-cAX"/>
+                <constraint firstItem="qqg-LD-i5w" firstAttribute="top" secondItem="2" secondAttribute="top" constant="12" id="gnT-1u-ocf"/>
+                <constraint firstItem="XIR-D5-ixt" firstAttribute="top" secondItem="Zjh-Mc-VHX" secondAttribute="top" id="lxF-7b-Uir"/>
+                <constraint firstItem="Xqq-Su-CQu" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="oE8-kY-xa4"/>
+                <constraint firstItem="3Mb-dF-ikC" firstAttribute="top" secondItem="qqg-LD-i5w" secondAttribute="bottom" constant="24" id="t2s-I9-9od"/>
+                <constraint firstItem="Zjh-Mc-VHX" firstAttribute="leading" secondItem="2" secondAttribute="leading" id="tMl-TI-MaS"/>
+                <constraint firstItem="XIR-D5-ixt" firstAttribute="width" secondItem="Zjh-Mc-VHX" secondAttribute="width" id="vBt-Yh-tjQ"/>
+                <constraint firstItem="Zjh-Mc-VHX" firstAttribute="top" secondItem="3Mb-dF-ikC" secondAttribute="bottom" id="vN4-XA-odQ"/>
+                <constraint firstItem="kke-s7-adV" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="16" id="xYe-j3-aqx"/>
+            </constraints>
+        </view>
+    </objects>
+    <resources>
+        <image name="icClose" width="10" height="10"/>
+        <image name="search" width="13" height="12"/>
+    </resources>
+</document>

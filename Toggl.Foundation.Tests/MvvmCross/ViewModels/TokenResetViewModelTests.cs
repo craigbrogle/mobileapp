@@ -28,14 +28,29 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected ILoginManager LoginManager { get; } = Substitute.For<ILoginManager>();
 
             protected override TokenResetViewModel CreateViewModel()
-                => new TokenResetViewModel(LoginManager, DataSource, DialogService, NavigationService, UserPreferences, OnboardingStorage);
+                => new TokenResetViewModel(
+                    LoginManager, 
+                    DataSource,
+                    DialogService,
+                    NavigationService,
+                    UserPreferences, 
+                    OnboardingStorage,
+                    AnalyticsService);
         }
 
         public sealed class TheConstructor : TokenResetViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(SixParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool userLoginManager, bool userNavigationService, bool useDataSource, bool useDialogService, bool useUserPreferences, bool useOnboardingStorage)
+            [ClassData(typeof(SevenParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(
+                bool userLoginManager, 
+                bool userNavigationService, 
+                bool useDataSource, 
+                bool useDialogService, 
+                bool useUserPreferences,
+                bool useOnboardingStorage,
+                bool useAnalyticsService
+            )
             {
                 var loginManager = userLoginManager ? LoginManager : null;
                 var navigationService = userNavigationService ? NavigationService : null;
@@ -43,9 +58,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var dialogService = useDialogService ? DialogService : null;
                 var userPreferences = useUserPreferences ? UserPreferences : null;
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
+                var analyticsService = useAnalyticsService ? AnalyticsService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new TokenResetViewModel(loginManager, dataSource, dialogService, navigationService, userPreferences, onboardingStorage);
+                    () => new TokenResetViewModel(loginManager, dataSource, dialogService, navigationService, userPreferences, onboardingStorage, analyticsService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -166,14 +182,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public void ResetsOnboarding()
-            {
-                ViewModel.SignOutCommand.Execute();
-
-                OnboardingStorage.Received().Reset();
-            }
-
-            [Fact, LogIfTooSlow]
             public void ResetsUserPreferences()
             {
                 ViewModel.SignOutCommand.Execute();
@@ -182,11 +190,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public void NavigatesToTheOnboardingViewModel()
+            public void NavigatesToTheLoginViewModel()
             {
                 ViewModel.SignOutCommand.Execute();
 
-                NavigationService.Received().Navigate<OnboardingViewModel>();
+                NavigationService.Received().Navigate<LoginViewModel>();
             }
 
             [Fact, LogIfTooSlow]
@@ -213,6 +221,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.SignOutCommand.Execute();
 
                 await DataSource.DidNotReceive().Logout();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksLogoutEvent()
+            {
+                ViewModel.SignOutCommand.Execute();
+
+                AnalyticsService.Received().TrackLogoutEvent(Analytics.LogoutSource.TokenReset);
             }
         }
     }

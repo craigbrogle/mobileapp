@@ -12,6 +12,7 @@ using MvvmCross.Platform.Plugins;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.MvvmCross;
+using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Suggestions;
 using Toggl.Giskard.Presenters;
 using Toggl.Giskard.Services;
@@ -39,7 +40,7 @@ namespace Toggl.Giskard
         {
         }
 
-        protected override IMvxApplication CreateApp() => new App();
+        protected override IMvxApplication CreateApp() => new App<LoginViewModel>();
 
         protected override IMvxTrace CreateDebugTrace() => new DebugTrace();
 
@@ -106,7 +107,7 @@ namespace Toggl.Giskard
                     navigationService,
                     new OnePasswordService())
                .RevokeNewUserIfNeeded()
-               .Initialize(app as App, Scheduler.Default);
+               .Initialize(app as App<LoginViewModel>, Scheduler.Default);
         }
     }
 }

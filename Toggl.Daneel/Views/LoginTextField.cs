@@ -23,10 +23,23 @@ namespace Toggl.Daneel.Views
 
         private readonly CGColor placeholderColor
             = Color.Login.TextViewPlaceholder.ToNativeColor().CGColor;
-
         private readonly CALayer underlineLayer = new CALayer();
-
         private readonly CATextLayer placeholderLayer = new CATextLayer();
+
+        private bool placeholderDrawn;
+
+        public override string Text
+        {
+            get => base.Text;
+            set
+            {
+                if (string.IsNullOrEmpty(base.Text))
+                    movePlaceholderUp();
+                if (string.IsNullOrEmpty(value))
+                    movePlaceholderDown();
+                base.Text = value;
+            }
+        }
 
         public LoginTextField(IntPtr handle) : base(handle) {}
 
@@ -40,6 +53,8 @@ namespace Toggl.Daneel.Views
             Font = UIFont.SystemFontOfSize(textSize);
             underlineLayer.BackgroundColor = placeholderColor;
             VerticalAlignment = UIControlContentVerticalAlignment.Top;
+            DrawPlaceholder(Frame);
+            
         }
 
         public override void LayoutSubviews()
@@ -56,6 +71,8 @@ namespace Toggl.Daneel.Views
 
         public override void DrawPlaceholder(CGRect rect)
         {
+            if (placeholderDrawn) return;
+
             placeholderLayer.String = Placeholder;
             placeholderLayer.ForegroundColor = placeholderColor;
             placeholderLayer.FontSize = bigPlaceholderSize;
@@ -68,6 +85,7 @@ namespace Toggl.Daneel.Views
             );
             //For antialiasing
             placeholderLayer.ContentsScale = UIScreen.MainScreen.Scale;
+            placeholderDrawn = true;
         }
 
         public override bool BecomeFirstResponder()
@@ -76,15 +94,8 @@ namespace Toggl.Daneel.Views
 
             IsFirstResponderChanged?.Raise(this);
 
-            if (placeholderLayer.Frame.Top == 0)
-                return true;
-
-            var yOffset = -placeholderLayer.Frame.Top;
-            CATransaction.Begin();
-            CATransaction.AnimationDuration = placeholderAnimationDuration;
-            placeholderLayer.AffineTransform = CGAffineTransform.MakeTranslation(0, yOffset);
-            placeholderLayer.FontSize = smallPlaceholderSize;
-            CATransaction.Commit();
+            if (placeholderLayer.Frame.Top != 0)
+                movePlaceholderUp();
 
             return true;
         }
@@ -95,14 +106,8 @@ namespace Toggl.Daneel.Views
 
             IsFirstResponderChanged?.Raise(this);
 
-            if (!string.IsNullOrEmpty(Text))
-                return true;
-
-            CATransaction.Begin();
-            CATransaction.AnimationDuration = placeholderAnimationDuration;
-            placeholderLayer.AffineTransform = CGAffineTransform.MakeIdentity();
-            placeholderLayer.FontSize = bigPlaceholderSize;
-            CATransaction.Commit();
+            if (string.IsNullOrEmpty(Text))
+                movePlaceholderDown();
 
             return true;
         }
@@ -115,6 +120,25 @@ namespace Toggl.Daneel.Views
                 Frame.Width,
                 underlineHeight
             );
+        }
+
+        private void movePlaceholderUp()
+        {
+            var yOffset = -placeholderLayer.Frame.Top;
+            CATransaction.Begin();
+            CATransaction.AnimationDuration = placeholderAnimationDuration;
+            placeholderLayer.AffineTransform = CGAffineTransform.MakeTranslation(0, yOffset);
+            placeholderLayer.FontSize = smallPlaceholderSize;
+            CATransaction.Commit();
+        }
+
+        private void movePlaceholderDown()
+        {
+            CATransaction.Begin();
+            CATransaction.AnimationDuration = placeholderAnimationDuration;
+            placeholderLayer.AffineTransform = CGAffineTransform.MakeIdentity();
+            placeholderLayer.FontSize = bigPlaceholderSize;
+            CATransaction.Commit();
         }
     }
 }

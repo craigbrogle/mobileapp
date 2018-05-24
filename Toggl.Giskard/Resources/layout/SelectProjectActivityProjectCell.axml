@@ -57,7 +57,7 @@
         android:layout_alignParentRight="true" />
     <ImageView
         android:id="@+id/SelectProjectActivityTaskCollapseArrow"
-        local:MvxBind="VerticalFlip TasksVisible; Visibility Visibility(HasTasks)"
+        local:MvxBind="UpsideDown TasksVisible; Visibility Visibility(HasTasks)"
         android:src="@drawable/dropdown"
         android:layout_marginRight="8dp"
         android:layout_width="wrap_content"

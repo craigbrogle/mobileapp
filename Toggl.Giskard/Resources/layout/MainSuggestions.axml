@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <TextView
@@ -18,22 +19,22 @@
         android:layout_height="wrap_content" />
     <TextView
         android:id="@+id/SuggestionsIndicatorTextView"
+        tools:text="1 of 3"
         android:textSize="12sp"
         android:letterSpacing="0.04"
         android:textColor="@color/defaultText"
         android:fontFamily="sans-serif-medium"
-        tools:text="1 of 3"
         android:layout_marginTop="16dp"
         android:layout_marginRight="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true" />
     <toggl.giskard.views.SuggestionsRecyclerView
+        android:id="@+id/SuggestionsRecyclerView"
         local:MvxBind="ItemsSource Suggestions; ItemClick StartTimeEntryCommand"
         local:MvxTemplateSelector="@string/SuggestionsTemplateSelector"
-        android:id="@+id/SuggestionsRecyclerView"
         android:layout_marginTop="12dp"
-        android:layout_below="@id/SuggestionsHintTextView"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_width="match_parent" />
+        android:layout_below="@id/SuggestionsHintTextView" />
 </RelativeLayout>

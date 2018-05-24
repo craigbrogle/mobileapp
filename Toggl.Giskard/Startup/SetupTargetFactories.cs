@@ -30,6 +30,11 @@ namespace Toggl.Giskard
                 view => new ViewMarginTargetBinding(view, ViewMarginTargetBinding.BoundMargin.Bottom)
             );
 
+            registry.RegisterCustomBindingFactory<TogglDroidDatePicker>(
+                DatePickerBoundariesTargetBinding.BindingName,
+                view => new DatePickerBoundariesTargetBinding(view)
+            );
+
             registry.RegisterCustomBindingFactory<View>(
                 DrawableColorTargetBinding.BindingName,
                 view => new DrawableColorTargetBinding(view)
@@ -50,14 +55,19 @@ namespace Toggl.Giskard
                 view => new FabVisibilityTargetBinding(view)
             );
 
-            registry.RegisterCustomBindingFactory<ImageView>(
-                ImageViewVerticalFlipTargetBinding.BindingName,
-                view => new ImageViewVerticalFlipTargetBinding(view)
-            );
-
             registry.RegisterCustomBindingFactory<TextView>(
                 TextViewFontWeightTargetBinding.BindingName,
                 view => new TextViewFontWeightTargetBinding(view)
+            );
+
+            registry.RegisterCustomBindingFactory<View>(
+                ViewAlphaTargetBinding.BindingName,
+                view => new ViewAlphaTargetBinding(view)
+            );
+
+            registry.RegisterCustomBindingFactory<View>(
+                ViewHeightTargetBinding.BindingName,
+                view => new ViewHeightTargetBinding(view)
             );
 
             registry.RegisterCustomBindingFactory<View>(
@@ -68,6 +78,11 @@ namespace Toggl.Giskard
             registry.RegisterCustomBindingFactory<ViewPager>(
                 ViewPagerCurrentPageTargetBinding.BindingName,
                 view => new ViewPagerCurrentPageTargetBinding(view)
+            );
+
+            registry.RegisterCustomBindingFactory<View>(
+                ViewUpsideDownTargetBinding.BindingName,
+                view => new ViewUpsideDownTargetBinding(view)
             );
 
             registry.RegisterCustomBindingFactory<View>(

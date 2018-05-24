@@ -303,6 +303,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     await DataSource.SyncManager.DidNotReceive().PushSync();
                 }
+
+                [Fact]
+                public async Task TracksTheEventUsingTheAnaltyticsService()
+                {
+                    await ViewModel.DeleteCommand.ExecuteAsync();
+
+                    AnalyticsService.Received().TrackDeletingTimeEntry();
+                }
             }
 
             public sealed class WhenUserCancels : TheDeleteCommand

@@ -17,7 +17,6 @@ namespace Toggl.Foundation.DataSources
         ITimeEntriesSource TimeEntries { get; }
 
         ISyncManager SyncManager { get; }
-        IAutocompleteProvider AutocompleteProvider { get; }
 
         IObservable<Unit> StartSyncing();
         IReportsProvider ReportsProvider { get; }

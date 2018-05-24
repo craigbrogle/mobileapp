@@ -48,7 +48,7 @@ namespace Toggl.Ultrawave.ApiClients
             Email email,
             Password password,
             bool termsAccepted,
-            int countryId
+            int? countryId
         )
         {
             if (!email.IsValid)
@@ -76,7 +76,7 @@ namespace Toggl.Ultrawave.ApiClients
         public IObservable<IUser> SignUpWithGoogle(string googleToken)
         {
             Ensure.Argument.IsNotNull(googleToken, nameof(googleToken));
-            var parameters = new GoogleSignUpParameters 
+            var parameters = new GoogleSignUpParameters
             {
                 GoogleAccessToken = googleToken,
                 Workspace = new WorkspaceParameters
@@ -117,7 +117,8 @@ namespace Toggl.Ultrawave.ApiClients
             [JsonProperty("tos_accepted")]
             public bool TermsAccepted { get; set; }
 
-            public int CountryId { get; set; }
+            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+            public int? CountryId { get; set; }
         }
 
         [Preserve(AllMembers = true)]

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Linq;
 using Android.Runtime;
 using Android.Support.V7.Widget;
@@ -53,6 +54,11 @@ namespace Toggl.Giskard.Adapters
 
             var actualViewPosition = viewPosition - (IsSuggestingCreation ? 1 : 0);
             return Collection.First()[actualViewPosition];
+        }
+
+        protected override void OnItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsSourceCollectionChanged(sender, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         protected override MvxObservableCollection<WorkspaceGroupedCollection<AutocompleteSuggestion>> Collection

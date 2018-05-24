@@ -17,6 +17,7 @@ namespace Toggl.Giskard.Views
         private const int calendarAnimationDuration = 500;
         private const int calendarAnimationFlingDuration = 200;
 
+        private float initialY;
         private float currentX;
         private float currentY;
         private View calendarContainer;
@@ -88,18 +89,26 @@ namespace Toggl.Giskard.Views
             {
                 currentX = ev.RawX;
                 currentY = ev.RawY;
+                initialY = currentY;
                 return false;
             }
+
+            int[] outLocation = new int[2];
+            GetLocationOnScreen(outLocation);
+            var minValidY = outLocation[1] + Math.Abs(negativeContainerHeight);
+            var isScrollingInsideCalendar = initialY <= minValidY;
+            if (isScrollingInsideCalendar)
+                return false;
 
             if (ev.Action != Move)
                 return false;
 
             var marginParams = CalendarContainer.LayoutParameters as MarginLayoutParams;
 
-            var calendarIsTotallyVisible = marginParams.TopMargin == 0;
-            var calendarIsTotallyHidden = marginParams.TopMargin <= negativeContainerHeight;
             var offsetY = ev.RawY - currentY;
             var offsetX = ev.RawX - currentX;
+            var calendarIsTotallyVisible = marginParams.TopMargin == 0;
+            var calendarIsTotallyHidden = marginParams.TopMargin <= negativeContainerHeight;
 
             var isSwipingUp = offsetY < 0;
             var isSwipingDown = !isSwipingUp;
@@ -183,11 +192,16 @@ namespace Toggl.Giskard.Views
         {
             var marginParams = CalendarContainer.LayoutParameters as MarginLayoutParams;
             var isHidding = forceHide || marginParams.TopMargin != negativeContainerHeight;
-            var newMargin = isHidding ? negativeContainerHeight : 0;
 
+            if (isHidding && marginParams.TopMargin < negativeContainerHeight)
+                return;
+
+            var newMargin = isHidding ? negativeContainerHeight : 0;
             var animation = new TopMarginAnimation(CalendarContainer, newMargin, isHidding);
             animation.Duration = isFling ? calendarAnimationFlingDuration : calendarAnimationDuration;
             CalendarContainer.StartAnimation(animation);
+            CalendarContainer.RequestLayout();
+            Invalidate();
         }
 
         private class TopMarginAnimation : Animation

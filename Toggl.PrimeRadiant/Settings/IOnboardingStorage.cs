@@ -8,6 +8,7 @@ namespace Toggl.PrimeRadiant.Settings
         IObservable<bool> IsNewUser { get; }
         IObservable<bool> UserSignedUpUsingTheApp { get; }
         IObservable<bool> StartButtonWasTappedBefore { get; }
+        IObservable<bool> HasTappedTimeEntry { get; }
         IObservable<bool> HasEditedTimeEntry { get; }
         IObservable<bool> StopButtonWasTappedBefore { get; }
         IObservable<bool> HasSelectedProject { get; }

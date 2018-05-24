@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Linq;
 using Android.Runtime;
 using Android.Support.V7.Widget;
@@ -74,6 +75,11 @@ namespace Toggl.Giskard.Adapters
             };
 
             return viewHolder;
+        }
+
+        protected override void OnItemsSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.OnItemsSourceCollectionChanged(sender, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         protected override int SuggestCreationViewType

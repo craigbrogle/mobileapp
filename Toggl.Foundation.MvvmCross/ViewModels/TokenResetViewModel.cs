@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Services;
@@ -21,6 +22,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IMvxNavigationService navigationService;
         private readonly IUserPreferences userPreferences;
         private readonly IOnboardingStorage onboardingStorage;
+        private readonly IAnalyticsService analyticsService;
 
         private bool needsSync;
 
@@ -50,7 +52,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IDialogService dialogService,
             IMvxNavigationService navigationService,
             IUserPreferences userPreferences,
-            IOnboardingStorage onboardingStorage)
+            IOnboardingStorage onboardingStorage,
+            IAnalyticsService analyticsService
+        )
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
@@ -58,6 +62,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(userPreferences, nameof(userPreferences));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
 
             this.dataSource = dataSource;
             this.loginManager = loginManager;
@@ -65,6 +70,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.navigationService = navigationService;
             this.userPreferences = userPreferences;
             this.onboardingStorage = onboardingStorage;
+            this.analyticsService = analyticsService;
 
             DoneCommand = new MvxCommand(done);
             SignOutCommand = new MvxAsyncCommand(signout);
@@ -94,10 +100,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (!shouldLogout) return;
 
+            analyticsService.TrackLogoutEvent(LogoutSource.TokenReset);
             userPreferences.Reset();
-            onboardingStorage.Reset();
             await dataSource.Logout();
-            await navigationService.Navigate<OnboardingViewModel>();
+            await navigationService.Navigate<LoginViewModel>();
         }
 
         private void done()

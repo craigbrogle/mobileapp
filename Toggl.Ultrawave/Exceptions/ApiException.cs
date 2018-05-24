@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Toggl.Ultrawave.Models;
 using Toggl.Ultrawave.Network;
@@ -9,51 +8,50 @@ namespace Toggl.Ultrawave.Exceptions
 {
     public class ApiException : Exception
     {
-        internal IRequest Request { get; }
+        private const string badJsonLocalisedError = "Encountered unexpected error.";
 
+        private readonly string message;
+        internal IRequest Request { get; }
         internal IResponse Response { get; }
 
         public string LocalizedApiErrorMessage { get; }
-
-        private readonly string message;
+        public override string Message => ToString();
 
         internal ApiException(IRequest request, IResponse response, string defaultMessage)
         {
+            message = defaultMessage;
             Request = request;
             Response = response;
             LocalizedApiErrorMessage = getLocalizedMessageFromResponse(response);
-            this.message = defaultMessage;
         }
 
         public override string ToString()
-            => $"{GetType().Name} for request {Request.HttpMethod} {Request.Endpoint}: "
-                + $"Response: "
-                + $"(Status: [{(int)Response.StatusCode} {Response.StatusCode}]) "
-                + $"(Headers: [{SerializeHeaders(Response.Headers)}]) "
-                + $"(Body: {Response.RawData}) "
-                + $"(Message: {message})";
+            => $"{GetType().Name} ({message}) for request {Request.HttpMethod} {Request.Endpoint} "
+               + $"with response {serialisedResponse}";
 
-        internal static string SerializeHeaders(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers)
-            => String.Join(", ", headers.Select(pair => $"'{pair.Key}': [{String.Join(", ", pair.Value.Select(v => $"'{v}'").ToArray())}]").ToArray());
-
-        public override string Message => ToString();
-
-        private string getLocalizedMessageFromResponse(IResponse response)
-        {
-            if (response.IsJson)
+        private string serialisedResponse => new JsonSerializer().Serialize(
+            new
             {
-                try
-                {
-                    var serializer = new JsonSerializer();
-                    var error = serializer.Deserialize<ResponseError>(response.RawData);
-                    return error.Message;
-                }
-                catch (DeserializationException<ResponseError>)
-                {
-                    return "";
-                }
+                Status = $"{(int)Response.StatusCode} {Response.StatusCode}",
+                Headers = Response.Headers.ToDictionary(h => h.Key, h => h.Value),
+                Body = Response.RawData
+            });
+
+
+        private static string getLocalizedMessageFromResponse(IResponse response)
+        {
+            if (!response.IsJson)
+                return response.RawData;
+
+            try
+            {
+                var error = new JsonSerializer().Deserialize<ResponseError>(response.RawData);
+                return error?.Message ?? badJsonLocalisedError;
             }
-            return response.RawData;
+            catch (DeserializationException)
+            {
+                return badJsonLocalisedError;
+            }
         }
     }
 }

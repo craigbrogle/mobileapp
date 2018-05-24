@@ -95,9 +95,9 @@ namespace Toggl.Foundation {
             }
         }
         
-        public static string LoginBackButton {
+        public static string Back {
             get {
-                return ResourceManager.GetString("LoginBackButton", resourceCulture);
+                return ResourceManager.GetString("Back", resourceCulture);
             }
         }
         
@@ -323,9 +323,21 @@ namespace Toggl.Foundation {
             }
         }
         
+        public static string PrivacyPolicyUrl {
+            get {
+                return ResourceManager.GetString("PrivacyPolicyUrl", resourceCulture);
+            }
+        }
+        
         public static string TermsOfService {
             get {
                 return ResourceManager.GetString("TermsOfService", resourceCulture);
+            }
+        }
+        
+        public static string TermsOfServiceUrl {
+            get {
+                return ResourceManager.GetString("TermsOfServiceUrl", resourceCulture);
             }
         }
         
@@ -587,6 +599,12 @@ namespace Toggl.Foundation {
             }
         }
         
+        public static string Other {
+            get {
+                return ResourceManager.GetString("Other", resourceCulture);
+            }
+        }
+        
         public static string StartTimeEntry {
             get {
                 return ResourceManager.GetString("StartTimeEntry", resourceCulture);
@@ -716,6 +734,30 @@ namespace Toggl.Foundation {
         public static string SignUpCountryRequired {
             get {
                 return ResourceManager.GetString("SignUpCountryRequired", resourceCulture);
+            }
+        }
+        
+        public static string CountriesJson {
+            get {
+                return ResourceManager.GetString("CountriesJson", resourceCulture);
+            }
+        }
+        
+        public static string GetPasswordResetLink {
+            get {
+                return ResourceManager.GetString("GetPasswordResetLink", resourceCulture);
+            }
+        }
+        
+        public static string TermsOfServiceDialogMessage {
+            get {
+                return ResourceManager.GetString("TermsOfServiceDialogMessage", resourceCulture);
+            }
+        }
+        
+        public static string SelectCountry {
+            get {
+                return ResourceManager.GetString("SelectCountry", resourceCulture);
             }
         }
     }

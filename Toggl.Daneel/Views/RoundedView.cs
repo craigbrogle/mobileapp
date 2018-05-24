@@ -101,11 +101,12 @@ namespace Toggl.Daneel.Views
 
             maskingLayer.Opacity = 1;
             maskingLayer.BackgroundColor = BackgroundColor.CGColor;
+            var maskingLayerWidth = Bounds.Width - CornerRadius;
             maskingLayer.Frame = new CGRect
             {
-                X = RoundLeft ? CornerRadius : 0,
+                X = RoundLeft ? maskingLayerWidth : 0,
                 Y = 0,
-                Width = Bounds.Width - CornerRadius,
+                Width = maskingLayerWidth,
                 Height = Bounds.Height
             };
         }

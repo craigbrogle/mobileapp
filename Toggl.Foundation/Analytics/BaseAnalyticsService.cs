@@ -14,10 +14,20 @@ namespace Toggl.Foundation.Analytics
         private const string currentPageEventName = "CurrentPage";
         private const string onboardingSkipEventName = "OnboardingSkip";
         private const string startTimeEntryEventName = "TimeEntryStarted";
+        private const string deleteTimeEntryEventName = "DeleteTimeEntry";
 
         private const string loginEventName = "Login";
+        private const string loginErrorEventName = "LoginError";
+        private const string loginErrorSourceParameter = "Source";
+
         private const string signupEventName = "SignUp";
+        private const string signupErrorEventName = "SignUpError";
+        private const string signupErrorSourceParameter = "Source";
+
         private const string resetPasswordEventName = "ResetPassword";
+
+        private const string logoutEventName = "Logout";
+        private const string logoutSourceParameter = "Source";
 
         private const string passwordManagerButtonClicked = "PasswordManagerButtonClicked";
         private const string passwordManagerContainsValidEmail = "PasswordManagerContainsValidEmail";
@@ -43,6 +53,11 @@ namespace Toggl.Foundation.Analytics
             track(startTimeEntryEventName, originParameter, origin.ToString());
         }
 
+        public void TrackDeletingTimeEntry()
+        {
+            track(deleteTimeEntryEventName);
+        }
+
         public void TrackCurrentPage(Type viewModelType)
         {
             var dict = new Dictionary<string, string> { { viewModelNameParameter, viewModelType.ToString() } };
@@ -54,9 +69,24 @@ namespace Toggl.Foundation.Analytics
             track(loginEventName, authenticationMethodParameter, authenticationMethod.ToString());
         }
 
+        public void TrackLoginErrorEvent(LoginErrorSource source)
+        {
+            track(loginErrorEventName, loginErrorSourceParameter, source.ToString());
+        }
+
         public void TrackSignUpEvent(AuthenticationMethod authenticationMethod)
         {
             track(signupEventName, authenticationMethodParameter, authenticationMethod.ToString());
+        }
+
+        public void TrackSignUpErrorEvent(SignUpErrorSource source)
+        {
+            track(signupErrorEventName, signupErrorSourceParameter, source.ToString());
+        }
+
+        public void TrackLogoutEvent(LogoutSource source)
+        {
+            track(loginEventName, logoutSourceParameter, source.ToString());
         }
 
         public void TrackResetPassword()

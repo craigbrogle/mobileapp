@@ -6,6 +6,8 @@ namespace Toggl.Ultrawave.Models
 {
     internal sealed partial class Tag : ITag
     {
+        private static readonly DateTimeOffset defaultAt = new DateTimeOffset(2000, 01, 02, 03, 04, 05, TimeSpan.Zero);
+
         public long Id { get; set; }
 
         public long WorkspaceId { get; set; }
@@ -22,7 +24,7 @@ namespace Toggl.Ultrawave.Models
             Id = id;
             WorkspaceId = workspaceId;
             Name = name;
-            At = at ?? new DateTimeOffset(DateTime.UtcNow);
+            At = at ?? defaultAt;
             DeletedAt = deletedAt;
         }
     }

@@ -30,7 +30,7 @@ namespace Toggl.Giskard.Views
         public CalendarRecyclerView(Context context, IAttributeSet attrs, int defStyle)
             : base(context, attrs, defStyle, new CalendarRecyclerAdapter())
         {
-            SetLayoutManager(new GridLayoutManager(context, 7, LinearLayoutManager.Vertical, false));
+            SetLayoutManager(new CalendarLayoutManager(context));
         }
 
         protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -40,6 +40,16 @@ namespace Toggl.Giskard.Views
             var newWidth = width - offset; 
             var newWidthMeasureSpec = MeasureSpec.MakeMeasureSpec(newWidth, MeasureSpecMode.Exactly);
             base.OnMeasure(newWidthMeasureSpec, heightMeasureSpec);
+        }
+
+        private class CalendarLayoutManager : GridLayoutManager
+        {
+            public CalendarLayoutManager(Context context)
+                : base(context, 7, LinearLayoutManager.Vertical, false)
+            {
+            }
+
+            public override bool CanScrollVertically() => false;
         }
     }
 }

@@ -19,16 +19,15 @@ namespace Toggl.Foundation.Tests.MvvmCross
     {
         public abstract class AppStartTest : BaseMvvmCrossTests
         {
-            protected AppStart AppStart { get; }
+            protected AppStart<OnboardingViewModel> AppStart { get; }
             protected ISyncManager SyncManager { get; } = Substitute.For<ISyncManager>();
-            protected ITogglDataSource DataSource { get; } = Substitute.For<ITogglDataSource>();
             protected ILoginManager LoginManager { get; } = Substitute.For<ILoginManager>();
             protected IAccessRestrictionStorage AccessRestrictionStorage { get; } =
                 Substitute.For<IAccessRestrictionStorage>();
 
             protected AppStartTest()
             {
-                AppStart = new AppStart(LoginManager, NavigationService, AccessRestrictionStorage);
+                AppStart = new AppStart<OnboardingViewModel>(LoginManager, NavigationService, AccessRestrictionStorage);
                 DataSource.SyncManager.Returns(SyncManager);
                 LoginManager.GetDataSourceIfLoggedIn().Returns(DataSource);
             }
@@ -45,7 +44,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                 var accessRestrictionStorage = useAccessRestrictionStorage ? AccessRestrictionStorage : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new AppStart(loginManager, navigationService, accessRestrictionStorage);
+                    () => new AppStart<OnboardingViewModel>(loginManager, navigationService, accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();

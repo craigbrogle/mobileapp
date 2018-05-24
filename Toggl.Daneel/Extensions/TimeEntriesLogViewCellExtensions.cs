@@ -3,6 +3,7 @@ using Foundation;
 using CoreAnimation;
 using Toggl.Daneel.Views;
 using static Toggl.Foundation.MvvmCross.Helper.Animation;
+using System.Reactive.Disposables;
 
 namespace Toggl.Daneel.Extensions
 {
@@ -16,6 +17,9 @@ namespace Toggl.Daneel.Extensions
     {
         public static IDisposable RevealSwipeActionAnimation(this TimeEntriesLogViewCell cell, Direction direction)
         {
+            if (cell == null)
+                return Disposable.Empty;
+
             var animation = CAKeyFrameAnimation.FromKeyPath("transform.translation.x");
 
             animation.Duration = 1.51;

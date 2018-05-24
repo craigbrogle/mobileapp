@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<android.support.design.widget.CoordinatorLayout xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/MainCoordinatorLayout"
     android:background="@color/lightGray"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <mvvmcross.droid.support.v4.MvxSwipeRefreshLayout
-        local:MvxBind="RefreshCommand RefreshCommand; Refreshing ShowSyncIndicator"
         android:id="@+id/MainSwipeRefreshLayout"
+        local:MvxBind="RefreshCommand RefreshCommand; Refreshing ShowSyncIndicator"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize">
         <toggl.giskard.views.MainRecyclerView
-            local:MvxBind="ItemsSource TimeEntriesLogViewModel.TimeEntries; SuggestionsViewModel SuggestionsViewModel; TimeEntriesLogViewModel TimeEntriesLogViewModel"
-            local:MvxTemplateSelector="@string/MainTemplateSelector"
+            local:MvxBind="ItemsSource TimeEntriesLogViewModel.TimeEntries; SuggestionsViewModel SuggestionsViewModel; TimeEntriesLogViewModel TimeEntriesLogViewModel; IsTimeEntryRunning IsTimeEntryRunning"
             android:scrollbars="vertical"
+            local:MvxTemplateSelector="@string/MainTemplateSelector"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </mvvmcross.droid.support.v4.MvxSwipeRefreshLayout>
@@ -22,10 +22,10 @@
         layout="@layout/MainRunningTimeEntry" />
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/MainPlayButton"
-        local:MvxBind="Click StartTimeEntryCommand; DrawableId ManualModeEnabledDrawable(IsInManualMode)"
-        local:backgroundTint="@color/playButtonGreen"
+        local:MvxBind="Click StartTimeEntryCommand; LongClick AlternativeStartTimeEntryCommand; DrawableId ManualModeEnabledDrawable(IsInManualMode)"
         local:elevation="4dp"
         android:src="@drawable/play_white"
+        local:backgroundTint="@color/playButtonGreen"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_marginRight="16dp"
@@ -40,10 +40,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
-            android:layout_gravity="start"
             android:src="@drawable/logo"
-            android:layout_width="wrap_content"
-            android:layout_height="24dp" />
+            android:layout_height="24dp"
+            android:layout_gravity="start"
+            android:layout_width="wrap_content" />
         <ImageView
             local:MvxBind="Click OpenSettingsCommand"
             android:clickable="true"

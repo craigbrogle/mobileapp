@@ -17,6 +17,7 @@ using static Toggl.Multivac.Extensions.StringExtensions;
 using Toggl.Multivac.Extensions;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.Interactors;
+using Toggl.Foundation.MvvmCross.Helper;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -160,7 +161,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var createdProject = await dataSource.Projects.Create(new CreateProjectDTO
             {
                 Name = TrimmedName,
-                Color = $"#{Color.R:X2}{Color.G:X2}{Color.B:X2}",
+                Color = Color.ToHexString(),
                 IsPrivate = IsPrivate,
                 ClientId = clientId,
                 Billable = billable,

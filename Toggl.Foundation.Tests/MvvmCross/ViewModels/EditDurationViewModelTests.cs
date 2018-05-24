@@ -149,7 +149,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void SubscribesToCurrentTimeObservableIfParameterDoesNotHaveStopTime(DateTimeOffset now)
             {
                 var parameter = DurationParameter.WithStartAndDuration(now, null);
-
+                TimeService.CurrentDateTimeObservable.Returns(Substitute.For<IObservable<DateTimeOffset>>());
                 ViewModel.Prepare(parameter);
 
                 TimeService.CurrentDateTimeObservable.Received().Subscribe(Arg.Any<AnonymousObserver<DateTimeOffset>>());
@@ -305,6 +305,22 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.MinimumDateTime.Should().Be((parameter.Start + parameter.Duration.Value - TimeSpan.FromHours(999)).LocalDateTime);
                 ViewModel.MaximumDateTime.Should().Be((parameter.Start + parameter.Duration.Value).LocalDateTime);
+            }
+        }
+
+        public sealed class TheStartTimeChangingProperty : EditDurationViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void EmitsNewUnitWhenEditStartTimeCommandIsExecuted()
+            {
+                var parameter = DurationParameter.WithStartAndDuration(new DateTimeOffset(2018, 1, 2, 3, 4, 5, TimeSpan.Zero), TimeSpan.Zero);
+                ViewModel.Prepare(parameter);
+                var observer = Substitute.For<IObserver<Unit>>();
+                ViewModel.StartTimeChanging.Subscribe(observer);
+
+                ViewModel.EditStartTimeCommand.Execute();
+
+                observer.Received().OnNext(Unit.Default);
             }
         }
 

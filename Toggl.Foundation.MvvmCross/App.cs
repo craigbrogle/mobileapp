@@ -9,7 +9,8 @@ using Toggl.PrimeRadiant.Settings;
 
 namespace Toggl.Foundation.MvvmCross
 {
-    public sealed class App : MvxApplication
+    public sealed class App<TFirstViewModelWhenNotLoggedIn> : MvxApplication
+        where TFirstViewModelWhenNotLoggedIn : MvxViewModel
     {
         public override void Initialize()
         {
@@ -22,11 +23,12 @@ namespace Toggl.Foundation.MvvmCross
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(accessRestrictionStorage, nameof(accessRestrictionStorage));
 
-            RegisterAppStart(new AppStart(loginManager, navigationService, accessRestrictionStorage));
+            RegisterAppStart(new AppStart<TFirstViewModelWhenNotLoggedIn>(loginManager, navigationService, accessRestrictionStorage));
         }
     }
 
-    public sealed class AppStart : IMvxAppStart
+    public sealed class AppStart<TFirstViewModelWhenNotLoggedIn> : IMvxAppStart
+        where TFirstViewModelWhenNotLoggedIn : MvxViewModel
     {
         private readonly ILoginManager loginManager;
         private readonly IMvxNavigationService navigationService;
@@ -55,7 +57,7 @@ namespace Toggl.Foundation.MvvmCross
             var dataSource = loginManager.GetDataSourceIfLoggedIn();
             if (dataSource == null)
             {
-                await navigationService.Navigate<OnboardingViewModel>();
+                await navigationService.Navigate<TFirstViewModelWhenNotLoggedIn>();
                 return;
             }
 

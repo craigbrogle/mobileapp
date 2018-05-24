@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -13,6 +14,7 @@ using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Reports;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac;
+using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
 
@@ -237,6 +239,38 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         };
                     }
                 }
+            }
+        }
+
+        public sealed class TheSegmentsProperty : ReportsViewModelTest
+        {
+            private readonly ChartSegment[] segments =
+            {
+                new ChartSegment("Project 1", "Client 1", 2, 2, 0, "#ffffff"),
+                new ChartSegment("Project 2", "Client 2", 7, 7, 0, "#ffffff"),
+                new ChartSegment("Project 3", "Client 3", 12, 12, 0, "#ffffff"),
+                new ChartSegment("Project 4", "Client 4", 23, 23, 0, "#ffffff"),
+                new ChartSegment("Project 5", "Client 5", 66, 66, 0, "#ffffff")
+            };
+
+            [Fact]
+            public async Task GroupsProjectSegmentsWithPercentageLessThanTenPercent()
+            {
+                TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
+                ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Return(new ProjectSummaryReport(segments)));
+                ViewModel.Prepare(WorkspaceId);
+
+                await ViewModel.Initialize();
+
+                ViewModel.Segments.Should().HaveCount(4);
+                ViewModel.Segments.Should().Contain(segment =>
+                    segment.ProjectName == Resources.Other &&
+                    segment.Percentage == segments[0].Percentage + segments[1].Percentage);
+                ViewModel.Segments
+                    .Where(project => project.ProjectName != Resources.Other)
+                    .Select(segment => segment.Percentage)
+                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(10));
             }
         }
     }

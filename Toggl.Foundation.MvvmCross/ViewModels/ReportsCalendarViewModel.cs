@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
@@ -108,7 +109,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             initialMonth = new CalendarMonth(now.Year, now.Month).AddMonths(-(monthsToShow - 1));
         }
 
-        public async override Task Initialize()
+        public override async Task Initialize()
         {
             await base.Initialize();
 
@@ -122,6 +123,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Select(quickSelectShortcut => SelectedDateRangeObservable.Subscribe(
                     quickSelectShortcut.OnDateRangeChanged))
                 .ForEach(disposableBag.Add);
+
+            quickSelect(QuickSelectShortcuts.Single(shortcut => shortcut is CalendarThisWeekQuickSelectShortcut));
         }
 
         public void OnToggleCalendar() => selectStartOfSelectionIfNeeded();

@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Onboarding;
+using Toggl.Multivac.Extensions;
 
 namespace Toggl.Daneel.Onboarding.MainView
 {
@@ -9,22 +10,24 @@ namespace Toggl.Daneel.Onboarding.MainView
     {
         private const int minimumTimeEntriesCount = 5;
 
+        private readonly TimeSpan delay = TimeSpan.FromSeconds(2);
+
         public IObservable<bool> ShouldBeVisible { get; }
 
         public SwipeLeftOnboardingStep(
-            IObservable<int> timeEntriesCountObservable,
-            IObservable<bool> swipeRightOnboardingStepIsVisibleObservable)
+            IObservable<bool> conflictingStepsAreNotVisibleObservable,
+            IObservable<int> timeEntriesCountObservable)
         {
-            Ensure.Argument.IsNotNull(timeEntriesCountObservable, nameof(timeEntriesCountObservable));
             Ensure.Argument.IsNotNull(
-                swipeRightOnboardingStepIsVisibleObservable,
-                nameof(swipeRightOnboardingStepIsVisibleObservable));
+                conflictingStepsAreNotVisibleObservable,
+                nameof(conflictingStepsAreNotVisibleObservable));
+            Ensure.Argument.IsNotNull(timeEntriesCountObservable, nameof(timeEntriesCountObservable));
 
             ShouldBeVisible = Observable.CombineLatest(
-                swipeRightOnboardingStepIsVisibleObservable,
+                conflictingStepsAreNotVisibleObservable,
                 timeEntriesCountObservable,
-                (swipeRightIsVisible, timeEntriesCount) => !swipeRightIsVisible
-                && timeEntriesCount >= minimumTimeEntriesCount);
+                (conflictingStepsAreNotVisible, timeEntriesCount) => conflictingStepsAreNotVisible && timeEntriesCount >= minimumTimeEntriesCount)
+                .Throttle(delay);
         }
     }
 }

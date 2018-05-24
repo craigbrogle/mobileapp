@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:tools="http://schemas.android.com/tools"
     xmlns:local="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_marginTop="-2dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="48dp"
+    android:layout_marginTop="-2dp"
     android:layout_width="match_parent">
     <android.support.v7.widget.CardView
+        android:elevation="2dp"
         local:cardCornerRadius="2dp"
         local:cardBackgroundColor="@android:color/white"
-        android:elevation="2dp"
         android:layout_height="48dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
@@ -23,11 +23,11 @@
             <TextView
                 android:id="@+id/ReportsActivityItemProjectName"
                 local:MvxBind="Text ProjectName; TextColor ARGB(Color)"
-                tools:text="Marketing and some aditional text to test the overflow and some stugg and"
                 tools:textColor="#328fff"
                 android:lines="1"
                 android:textSize="15sp"
                 android:singleLine="true"
+                tools:text="Marketing and some aditional text to test the overflow and some stugg and"
                 android:layout_marginLeft="12dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -46,10 +46,14 @@
                 android:id="@+id/ReportsActivityItemFade"
                 android:background="@drawable/TransparentToWhiteGradient"
                 android:layout_width="30dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
                 android:layout_height="match_parent"
                 android:layout_toLeftOf="@+id/ReportsActivityItemPercentage" />
             <View
                 android:background="@android:color/white"
+                android:layout_marginTop="1dp"
+                android:layout_marginBottom="1dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_toRightOf="@+id/ReportsActivityItemFade" />

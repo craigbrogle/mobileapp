@@ -1,13 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <android.support.v7.widget.CardView
-        local:cardBackgroundColor="@android:color/white"
         android:elevation="2dp"
+        local:cardBackgroundColor="@android:color/white"
         android:layout_height="114dp"
         android:layout_marginTop="24dp"
         android:layout_marginLeft="16dp"
@@ -31,9 +32,9 @@
             <TextView
                 android:id="@+id/ReportsSummaryTotal"
                 local:MvxBind="TextFormatted ReportTimeSpanLabel(TotalTime)"
-                android:textSize="24sp"
                 tools:text="104:23:12"
                 tools:textColor="#1ad180"
+                android:textSize="24sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/ReportsSummaryTotalLabel"
@@ -51,9 +52,9 @@
                 android:layout_alignEnd="@+id/ReportsSummaryCenterView" />
             <View
                 android:id="@+id/ReportsSummaryCenterView"
-                android:layout_centerHorizontal="true"
                 android:layout_width="0.5dp"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true" />
             <TextView
                 android:id="@+id/ReportsSummaryBillableLabel"
                 android:textSize="12sp"
@@ -71,9 +72,9 @@
                 local:MvxBind="TextFormatted ReportPercentageLabel(BillablePercentage)"
                 tools:text="86%"
                 android:textSize="24sp"
-                android:fontFamily="sans-serif"
                 android:textStyle="normal"
                 android:textColor="#328fff"
+                android:fontFamily="sans-serif"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/ReportsSummaryBillableLabel"
@@ -89,14 +90,14 @@
                 <View
                     local:MvxBind="WidthPercentage BillablePercentage"
                     android:background="#328FFF"
-                    android:layout_height="match_parent"
-                    android:layout_width="match_parent" />
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
             </FrameLayout>
         </RelativeLayout>
     </android.support.v7.widget.CardView>
     <android.support.v7.widget.CardView
-        local:cardBackgroundColor="@android:color/white"
         android:elevation="2dp"
+        local:cardBackgroundColor="@android:color/white"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_width="match_parent"

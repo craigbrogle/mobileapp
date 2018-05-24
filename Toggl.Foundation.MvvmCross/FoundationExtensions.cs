@@ -3,6 +3,7 @@ using System.Reactive.Concurrency;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Platform;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.Interactors;
@@ -14,6 +15,7 @@ using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
+using MvvmCross.Core.ViewModels;
 
 namespace Toggl.Foundation.MvvmCross
 {
@@ -106,6 +108,7 @@ namespace Toggl.Foundation.MvvmCross
             Mvx.RegisterSingleton(browserService);
             Mvx.RegisterSingleton(self.UserAgent);
             Mvx.RegisterSingleton(self.Scheduler);
+            Mvx.RegisterSingleton(self.ApiFactory);
             Mvx.RegisterSingleton(self.TimeService);
             Mvx.RegisterSingleton(self.MailService);
             Mvx.RegisterSingleton(self.ShortcutCreator);
@@ -151,7 +154,8 @@ namespace Toggl.Foundation.MvvmCross
             return self;
         }
 
-        public static void Initialize(this FoundationMvvmCross self, App app, IScheduler scheduler)
+        public static void Initialize<T>(this FoundationMvvmCross self, App<T> app, IScheduler scheduler)
+            where T : MvxViewModel
         {
             Func<ITogglDataSource, ISyncManager> createSyncManager(ITogglApi api) => dataSource =>
                 TogglSyncManager.CreateSyncManager(self.Database, api, dataSource, self.TimeService, self.AnalyticsService, retryDelayLimit, scheduler);
@@ -162,6 +166,7 @@ namespace Toggl.Foundation.MvvmCross
                     .RegisterServices();
 
                 Mvx.ConstructAndRegisterSingleton<IInteractorFactory, InteractorFactory>();
+                Mvx.ConstructAndRegisterSingleton<IAutocompleteProvider, AutocompleteProvider>();
 
                 return dataSource;
             }

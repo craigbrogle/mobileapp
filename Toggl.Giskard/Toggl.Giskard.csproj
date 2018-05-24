@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Xamarin.Build.Download.0.4.9\build\Xamarin.Build.Download.props" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.9\build\Xamarin.Build.Download.props')" />
   <PropertyGroup>
@@ -261,7 +261,6 @@
     <Compile Include="Adapters\SelectTagsRecyclerAdapter.cs" />
     <Compile Include="Activities\SelectProjectActivity.cs" />
     <Compile Include="Adapters\SelectProjectRecyclerAdapter.cs" />
-    <Compile Include="Bindings\ImageViewVerticalFlipTargetBinding.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LinkerPleaseInclude.cs" />
@@ -379,6 +378,15 @@
     <Compile Include="Tiles\NewTimeEntryTileService.cs" />
     <Compile Include="Views\TagsListRecyclerView.cs" />
     <Compile Include="TemplateSelectors\TagsListTemplateSelector.cs" />
+    <Compile Include="Fragments\SelectTimeFragment.cs" />
+    <Compile Include="Adapters\SelectTimePagerAdapter.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Views\TogglDroidTimePicker.cs" />
+    <Compile Include="Bindings\ViewAlphaTargetBinding.cs" />
+    <Compile Include="Bindings\ViewUpsideDownTargetBinding.cs" />
+    <Compile Include="Bindings\ViewHeightTargetBinding.cs" />
+    <Compile Include="Helper\VibratorExtensions.cs" />
+    <Compile Include="Bindings\DatePickerBoundariesTargetBinding.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
@@ -631,6 +639,7 @@
     <AndroidResource Include="Resources\drawable\TopShadow.xml" />
     <AndroidResource Include="Resources\layout\StartTimeEntryActivity.axml" />
     <AndroidResource Include="Resources\layout\StartTimeEntryActivityTimeEntryCell.axml" />
+    <AndroidResource Include="Resources\layout\StartTimeEntryActivityTimeEntryWithPartialContentCell.axml" />
     <AndroidResource Include="Resources\layout\StartTimeEntryActivityProjectCell.axml" />
     <AndroidResource Include="Resources\layout\StartTimeEntryActivityTagCell.axml" />
     <AndroidResource Include="Resources\layout\StartTimeEntryActivityTaskCell.axml" />
@@ -679,6 +688,44 @@
     <AndroidResource Include="Resources\layout\TokenResetActivity.axml" />
     <AndroidResource Include="Resources\layout\EditTimeEntryTagCell.axml" />
     <AndroidResource Include="Resources\drawable\EditTextWhiteCursor.xml" />
+    <AndroidResource Include="Resources\layout\SelectTimeFragment.axml" />
+    <AndroidResource Include="Resources\layout\SelectTimeDurationPage.axml" />
+    <AndroidResource Include="Resources\layout\SelectStopDateTimeEditorPage.axml" />
+    <AndroidResource Include="Resources\layout\SelectDateTimeStartTimeTabHeader.axml" />
+    <AndroidResource Include="Resources\layout\SelectStartDateTimeEditorPage.axml" />
+    <AndroidResource Include="Resources\layout\SelectDateTimeStopTimeTabHeader.axml" />
+    <AndroidResource Include="Resources\layout\SelectDateTimeDurationTabHeader.axml" />
+    <AndroidResource Include="Resources\drawable-hdpi\date_light.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\date_light.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\date_light.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\date_light.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\date_light.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\logo_black.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\logo_black.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\logo_black.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\logo_black.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\logo_black.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\visibility_off.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\visibility_off.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\visibility_off.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\visibility_off.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\visibility_off.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\visibility_on.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\visibility_on.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\visibility_on.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\visibility_on.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\visibility_on.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\bike.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\bike.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\bike.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\bike.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\bike.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\bg_noise_login.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\bg_noise_login.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\bg_noise_login.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\bg_noise_login.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\bg_noise_login.png" />
+    <AndroidResource Include="Resources\drawable\TagRoundedRectangle.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation\Toggl.Foundation.csproj">

@@ -16,4 +16,10 @@ namespace Toggl.Giskard.Helper
         public static bool AreNotAvailable
             => Build.VERSION.SdkInt < BuildVersionCodes.NMr1;
     }
+
+    public static class OreoApis
+    {
+        public static bool AreAvailable
+            => Build.VERSION.SdkInt >= BuildVersionCodes.O;
+    }
 }

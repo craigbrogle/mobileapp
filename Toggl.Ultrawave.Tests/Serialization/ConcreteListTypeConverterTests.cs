@@ -32,7 +32,7 @@ namespace Toggl.Ultrawave.Tests.Serialization
         {
             Action deserialization = () => serializer.Deserialize<DifferentClass>(JsonArray);
 
-            deserialization.ShouldThrow<JsonSerializationException>();
+            deserialization.ShouldThrow<DeserializationException>();
         }
 
         private JsonSerializer serializer => new JsonSerializer();

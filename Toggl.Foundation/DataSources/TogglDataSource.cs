@@ -61,7 +61,6 @@ namespace Toggl.Foundation.DataSources
             Projects = new ProjectsDataSource(database.IdProvider, database.Projects, timeService);
             TimeEntries = new TimeEntriesDataSource(database.IdProvider, database.TimeEntries, timeService);
 
-            AutocompleteProvider = new AutocompleteProvider(database);
             SyncManager = createSyncManager(this);
 
             ReportsProvider = new ReportsProvider(api, database);
@@ -79,7 +78,6 @@ namespace Toggl.Foundation.DataSources
         public ITimeEntriesSource TimeEntries { get; }
 
         public ISyncManager SyncManager { get; }
-        public IAutocompleteProvider AutocompleteProvider { get; }
 
         public IReportsProvider ReportsProvider { get; }
 

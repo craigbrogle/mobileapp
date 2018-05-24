@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:local="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     tools:background="@color/toolbarBlack"
     android:orientation="vertical"
     android:animateLayoutChanges="true"
@@ -85,13 +86,13 @@
         android:id="@+id/ReportsCalendarFragmentViewPager"
         local:MvxBind="CurrentPage CurrentPage"
         android:minHeight="225dp"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     <mvvmcross.droid.support.v7.recyclerview.MvxRecyclerView
         android:id="@+id/ReportsCalendarFragmentShortcuts"
         local:MvxBind="ItemsSource QuickSelectShortcuts; ItemClick QuickSelectCommand"
-        local:MvxTemplateSelector="@string/CalendarShortcutsTemplateSelector"
         android:scrollbars="vertical"
+        local:MvxTemplateSelector="@string/CalendarShortcutsTemplateSelector"
         android:layout_marginTop="16dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"

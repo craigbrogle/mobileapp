@@ -278,6 +278,7 @@ __pycache__/
 tools/**
 Tools/**
 !tools/packages.config
+!tools/xml-format
 
 # Telerik's JustMock configuration file
 *.jmconfig
@@ -303,4 +304,8 @@ Toggl.Daneel/Views/ActivityIndicatorView.designer.cs
 Toggl.Daneel/service-account.json
 
 giskard.keystore
-Toggl.Giskard/**/Resource.designer.cs
+Toggl.Giskard/Resources/Resource.designer.cs
+
+# macOS Rider creates this .dll folders
+Toggl.Giskard/\*Undefined\*Tools
+Toggl.PrimeRadiant.Realm/\*Undefined\*Tools

@@ -71,4 +71,14 @@ namespace Toggl.Giskard.Converters
         public CalendarShortcutBackgroundColorValueConverter()
             : base(Color.ParseColor("#328fff"), Color.ParseColor("#3e3e3e")) { }
     }
+
+    public sealed class SelectedTabAlphaValueConverter : BoolToConstantValueConverter<float>
+    {
+        public SelectedTabAlphaValueConverter() : base(1, 0.7f) { }
+    }
+
+    public sealed class MainFooterHeightValueConverter : BoolToConstantValueConverter<int>
+    {
+        public MainFooterHeightValueConverter() : base (104, 70) { }
+    }
 }

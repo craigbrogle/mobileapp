@@ -15,8 +15,8 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
 {
-    [MvxRootPresentation]
-    public sealed partial class LoginViewController : MvxViewController<NewLoginViewModel>
+    [MvxRootPresentation(WrapInNavigationController = true)]
+    public sealed partial class LoginViewController : MvxViewController<LoginViewModel>
     {
         private const int iPhoneSeScreenHeight = 568;
 
@@ -33,7 +33,7 @@ namespace Toggl.Daneel.ViewControllers
             var loginButtonTitleConverter = new BoolToConstantValueConverter<string>("", Resources.LoginTitle);
             var invertedBoolConverter = new BoolToConstantValueConverter<bool>(false, true);
 
-            var bindingSet = this.CreateBindingSet<LoginViewController, NewLoginViewModel>();
+            var bindingSet = this.CreateBindingSet<LoginViewController, LoginViewModel>();
 
             //Text
             bindingSet.Bind(ErrorLabel).To(vm => vm.ErrorMessage);
@@ -56,6 +56,10 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Bind(ForgotPasswordButton).To(vm => vm.ForgotPasswordCommand);
             bindingSet.Bind(PasswordManagerButton).To(vm => vm.StartPasswordManagerCommand);
             bindingSet.Bind(ShowPasswordButton).To(vm => vm.TogglePasswordVisibilityCommand);
+
+            bindingSet.Bind(SignupCard)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.SignupCommand);
 
             //Visibilty
             bindingSet.Bind(ErrorLabel)
@@ -100,14 +104,20 @@ namespace Toggl.Daneel.ViewControllers
             if (View.Frame.Height > iPhoneSeScreenHeight)
                 TopConstraint.Constant = 132;
 
-            prepareSignupCard();
-            prepareGoogleLoginButton();
+            SignupCard.SetupBottomCard();
+            GoogleLoginButton.SetupGoogleButton();
+        }
+
+        public override void ViewDidAppear(bool animated)
+        {
+            base.ViewDidAppear(animated);
+
+            ActivityIndicator.Alpha = 0;
+            ActivityIndicator.StartAnimation();
         }
 
         private void prepareViews()
         {
-            ActivityIndicator.StartAnimation();
-
             LoginButton.SetTitleColor(
                 Color.Login.DisabledButtonColor.ToNativeColor(),
                 UIControlState.Disabled
@@ -120,43 +130,21 @@ namespace Toggl.Daneel.ViewControllers
 
             PasswordTextField.ShouldReturn += _ =>
             {
+                ViewModel.LoginCommand.Execute();
                 PasswordTextField.ResignFirstResponder();
                 return false;
             };
 
+            View.AddGestureRecognizer(new UITapGestureRecognizer(() =>
+            {
+                EmailTextField.ResignFirstResponder();
+                PasswordTextField.ResignFirstResponder();
+            }));
+
             PasswordTextField.ResignFirstResponder();
 
-            prepareShowPasswordButton();
+            ShowPasswordButton.SetupShowPasswordButton();
             prepareForgotPasswordButton();
-        }
-
-        private void prepareGoogleLoginButton()
-        {
-            var layer = GoogleLoginButton.Layer;
-            var shadowPath = UIBezierPath.FromRect(GoogleLoginButton.Bounds);
-            layer.MasksToBounds = false;
-            layer.ShadowColor = UIColor.Black.CGColor;
-            layer.ShadowOffset = new CGSize(0, 1);
-            layer.ShadowOpacity = 0.24f;
-            layer.ShadowPath = shadowPath.CGPath;
-            layer.ShadowRadius = 1;
-
-            //Add spacing between button title ang google logo
-            var spacing = 17;
-            GoogleLoginButton.ImageEdgeInsets = new UIEdgeInsets(0, 0, 0, spacing);
-            GoogleLoginButton.TitleEdgeInsets = new UIEdgeInsets(0, spacing, 0, 0);
-        }
-
-        private void prepareSignupCard()
-        {
-            var layer = SignupCard.Layer;
-            var shadowPath = UIBezierPath.FromRect(SignupCard.Bounds);
-            layer.MasksToBounds = false;
-            layer.ShadowColor = UIColor.Black.CGColor;
-            layer.ShadowOffset = new CGSize(0, -2);
-            layer.ShadowOpacity = 0.1f;
-            layer.ShadowPath = shadowPath.CGPath;
-            layer.ShadowRadius = 16;
         }
 
         private void prepareForgotPasswordButton()
@@ -172,15 +160,6 @@ namespace Toggl.Daneel.ViewControllers
                 font: boldFont);
             text.Append(boldText);
             ForgotPasswordButton.SetAttributedTitle(text, UIControlState.Normal);
-        }
-
-        private void prepareShowPasswordButton()
-        {
-            var image = UIImage
-                .FromBundle("icPassword")
-                .ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-            ShowPasswordButton.SetImage(image, UIControlState.Normal);
-            ShowPasswordButton.TintColor = UIColor.Black;
         }
     }
 }

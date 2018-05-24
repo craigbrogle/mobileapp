@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform.Core;
 using PropertyChanged;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Parameters;
@@ -72,7 +76,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                         return StopTime;
 
                     default:
-                        return default(DateTimeOffset);
+                        // any value between start and end time can be returned here
+                        // this constraint is to avoid invalid dates with the date picker
+                        return StartTime;
                 }
             }
 
@@ -94,6 +100,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 }
             }
         }
+
+        private Subject<Unit> startTimeChangingSubject = new Subject<Unit>();
+        public IObservable<Unit> StartTimeChanging
+            => startTimeChangingSubject.AsObservable();
 
         public DateTime MinimumDateTime { get; private set; }
 
@@ -182,6 +192,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
             else
             {
+                startTimeChangingSubject.OnNext(Unit.Default);
                 MinimumDateTime = MinimumStartTime.LocalDateTime;
                 MaximumDateTime = MaximumStartTime.LocalDateTime;
 
@@ -245,6 +256,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             TimeFormat = preferences.TimeOfDayFormat;
 
             RaisePropertyChanged(nameof(DurationFormat));
+        }
+
+        public override void ViewDestroy()
+        {
+            base.ViewDestroy();
+            runningTimeEntryDisposable?.Dispose();
+            preferencesDisposable?.Dispose();
         }
 
         private enum EditMode
