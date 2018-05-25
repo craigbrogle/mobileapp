@@ -36,6 +36,7 @@ namespace Toggl.Daneel.ViewSources
         private bool shouldCalculateOnDeceleration;
         private int syncIndicatorLastShown;
         private bool shouldRefreshOnTap;
+        private bool showBarAutomatically;
 
         public SyncProgress SyncProgress
         {
@@ -124,15 +125,19 @@ namespace Toggl.Daneel.ViewSources
             if (SyncProgress == Unknown)
                 return;
 
+            var showBar = showBarAutomatically || SyncProgress == OfflineModeDetected || SyncProgress == Failed;
             var hideBarAutomatically = SyncProgress == Synced;
             var showSpinner = SyncProgress == Syncing;
             var showDismissButton = SyncProgress == OfflineModeDetected || SyncProgress == Failed;
             shouldRefreshOnTap = SyncProgress == OfflineModeDetected;
+            showBarAutomatically = SyncProgress != Synced && showBarAutomatically;
 
             var (text, backgroundColor) = getSyncIndicatorTextAndBackgroundBasedOnCurrentProgress();
             setSyncIndicatorTextAndBackground(text, backgroundColor);
             setActivityIndicatorVisible(showSpinner);
             dismissSyncBarButton.Hidden = !showDismissButton;
+
+            if (!showBar) return;
 
             int syncIndicatorShown = showSyncBar();
 
@@ -188,6 +193,7 @@ namespace Toggl.Daneel.ViewSources
 
             needsRefresh = false;
             shouldCalculateOnDeceleration = false;
+            showBarAutomatically = true;
 
             if (SyncProgress == Syncing)
             {
