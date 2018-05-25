@@ -30,6 +30,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class StartTimeEntryViewModel : MvxViewModel<StartTimeEntryParameters>, ITimeEntryPrototype
     {
+        private enum StateBundleParams {
+            TextFieldInfoText,
+            StartTime,
+            IsBillable
+        }
+
         //Fields
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
@@ -284,6 +290,31 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             hasAnyTags = (await dataSource.Tags.GetAll()).Any();
             hasAnyProjects = (await dataSource.Projects.GetAll()).Any();
+        }
+
+        protected override void SaveStateToBundle(IMvxBundle bundle)
+        {
+            bundle.Data[StateBundleParams.TextFieldInfoText.ToString()] = TextFieldInfo.Text;
+            bundle.Data[StateBundleParams.StartTime.ToString()] = StartTime.ToString();
+            bundle.Data[StateBundleParams.IsBillable.ToString()] = IsBillable.ToString();
+
+            base.SaveStateToBundle(bundle);
+        }
+
+        protected override void ReloadFromBundle(IMvxBundle state)
+        {
+            base.ReloadFromBundle(state);
+
+            var text = state.Data[StateBundleParams.TextFieldInfoText.ToString()];
+            DateTimeOffset startTime;
+            bool isBillable;
+
+            DateTimeOffset.TryParse(state.Data[StateBundleParams.StartTime.ToString()], out startTime);
+            bool.TryParse(state.Data[StateBundleParams.IsBillable.ToString()], out isBillable);
+
+            TextFieldInfo = new TextFieldInfo().WithTextAndCursor(text, text.Length);
+            StartTime = startTime;
+            IsBillable = isBillable;
         }
 
         private void onPreferencesChanged(IDatabasePreferences preferences)
