@@ -426,25 +426,25 @@ Task("Build.Tests.Integration")
 Task("Build.Tests.UI")
     .IsDependentOn("Nuget")
     .Does(BuildSolution("UITests"))
-    .Does(GenerateApk("Release"));
+    .Does(GenerateApk("Release.Giskard"));
 
 //iOS Builds
 Task("Build.Release.iOS.AdHoc")
     .IsDependentOn("Nuget")
-    .Does(BuildSolution("Release.AdHoc"));
+    .Does(BuildSolution("AdHoc.Daneel"));
 
 Task("Build.Release.iOS.AppStore")
     .IsDependentOn("Nuget")
-    .Does(BuildSolution("Release.AppStore", ""));
+    .Does(BuildSolution("Release.Daneel", ""));
 
 //Android Builds
 Task("Build.Release.Android.AdHoc")
     .IsDependentOn("Nuget")
-    .Does(BuildSolution("Release.AdHoc.Giskard", ""));
+    .Does(BuildSolution("AdHoc.Giskard", ""));
 
 Task("Build.Release.Android.PlayStore")
     .IsDependentOn("Nuget")
-    .Does(BuildSolution("Release.PlayStore", ""));
+    .Does(BuildSolution("Release.Giskard", ""));
 
 //Unit Tests
 Task("Tests.Unit")
