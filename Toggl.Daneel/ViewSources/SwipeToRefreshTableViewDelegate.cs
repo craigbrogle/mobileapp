@@ -11,6 +11,7 @@ using Toggl.Foundation.Sync;
 using Toggl.Multivac;
 using UIKit;
 using static Toggl.Daneel.Extensions.TextExtensions;
+using static Toggl.Foundation.Sync.SyncProgress;
 
 namespace Toggl.Daneel.ViewSources
 {
@@ -33,7 +34,6 @@ namespace Toggl.Daneel.ViewSources
         private bool wasReleased;
         private bool needsRefresh;
         private bool shouldCalculateOnDeceleration;
-        private bool isSyncing => syncProgress == SyncProgress.Syncing;
         private int syncIndicatorLastShown;
         private bool shouldRefreshOnTap;
 
@@ -121,53 +121,22 @@ namespace Toggl.Daneel.ViewSources
 
         private async void OnSyncProgressChanged()
         {
-            bool hideIndicator = false;
-            shouldRefreshOnTap = false;
+            if (SyncProgress == Unknown)
+                return;
 
-            switch (SyncProgress)
-            {
-                case SyncProgress.Unknown:
-                    return;
+            var hideBarAutomatically = SyncProgress == Synced;
+            var showSpinner = SyncProgress == Syncing;
+            var showDismissButton = SyncProgress == OfflineModeDetected || SyncProgress == Failed;
+            shouldRefreshOnTap = SyncProgress == OfflineModeDetected;
 
-                case SyncProgress.Syncing:
-                    setSyncIndicatorTextAndBackground(
-                        new NSAttributedString(Resources.Syncing),
-                        syncingColor);
-                    setActivityIndicatorVisible(true);
-                    break;
-
-                case SyncProgress.OfflineModeDetected:
-                    setSyncIndicatorTextAndBackground(
-                        Resources.Offline.EndingWithRefreshIcon(syncStateLabel.Font.CapHeight),
-                        offlineColor);
-                    dismissSyncBarButton.Hidden = false;
-                    setActivityIndicatorVisible(false);
-                    shouldRefreshOnTap = true;
-                    break;
-
-                case SyncProgress.Synced:
-                    setSyncIndicatorTextAndBackground(
-                        Resources.SyncCompleted.EndingWithTick(syncStateLabel.Font.CapHeight),
-                        syncCompletedColor);
-                    hideIndicator = true;
-                    setActivityIndicatorVisible(false);
-                    break;
-
-                case SyncProgress.Failed:
-                    setSyncIndicatorTextAndBackground(
-                        Resources.SyncFailed.EndingWithRefreshIcon(syncStateLabel.Font.CapHeight),
-                        syncFailedColor);
-                    dismissSyncBarButton.Hidden = false;
-                    setActivityIndicatorVisible(false);
-                    break;
-
-                default:
-                    throw new ArgumentException(nameof(SyncProgress));
-            }
+            var (text, backgroundColor) = getSyncIndicatorTextAndBackgroundBasedOnCurrentProgress();
+            setSyncIndicatorTextAndBackground(text, backgroundColor);
+            setActivityIndicatorVisible(showSpinner);
+            dismissSyncBarButton.Hidden = !showDismissButton;
 
             int syncIndicatorShown = showSyncBar();
 
-            if (!hideIndicator) return;
+            if (!hideBarAutomatically) return;
 
             await hideSyncBar(syncIndicatorShown);
         }
@@ -182,7 +151,7 @@ namespace Toggl.Daneel.ViewSources
             var needsMorePulling = System.Math.Abs(offset) < scrollThreshold;
             needsRefresh = !needsMorePulling;
 
-            if (isSyncing) return;
+            if (SyncProgress == Syncing) return;
 
             dismissSyncBarButton.Hidden = true;
             setSyncIndicatorTextAndBackground(
@@ -220,13 +189,34 @@ namespace Toggl.Daneel.ViewSources
             needsRefresh = false;
             shouldCalculateOnDeceleration = false;
 
-            if (isSyncing)
+            if (SyncProgress == Syncing)
             {
                 showSyncBar();
                 return;
             }
 
             RefreshCommand?.Execute();
+        }
+
+        private (NSAttributedString, UIColor) getSyncIndicatorTextAndBackgroundBasedOnCurrentProgress()
+        {
+            switch (SyncProgress)
+            {
+                case Syncing:
+                    return (new NSAttributedString(Resources.Syncing), syncingColor);
+
+                case OfflineModeDetected:
+                    return (Resources.Offline.EndingWithRefreshIcon(syncStateLabel.Font.CapHeight), offlineColor);
+
+                case Synced:
+                    return (Resources.SyncCompleted.EndingWithTick(syncStateLabel.Font.CapHeight), syncCompletedColor);
+
+                case Failed:
+                    return (Resources.SyncFailed.EndingWithRefreshIcon(syncStateLabel.Font.CapHeight), syncFailedColor);
+
+                default:
+                    throw new ArgumentException(nameof(SyncProgress));
+            }
         }
 
         private void setSyncIndicatorTextAndBackground(NSAttributedString text, UIColor backgroundColor)
