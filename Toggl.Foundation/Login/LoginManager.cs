@@ -6,6 +6,7 @@ using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Shortcuts;
 using Toggl.Multivac;
+using Toggl.Multivac.Extensions;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Settings;
@@ -164,7 +165,7 @@ namespace Toggl.Foundation.Login
         private IObservable<ITogglDataSource> retryWhenUserIsMissingApiTokenException(
             IObservable<ITogglDataSource> observable)
         {
-            return observable.DelayedConditionalRetry(
+            return observable.ConditionalRetryWithBackoffStrategy(
                 NumberOfRetriesBeforeGivingUpOnFetchingAUserWithApiToken,
                 backOffStrategyForDelayedRetry(),
                 exception => exception is UserIsMissingApiTokenException,

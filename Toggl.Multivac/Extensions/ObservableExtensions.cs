@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -67,6 +68,29 @@ namespace Toggl.Multivac.Extensions
                             )
                             .Concat()
                     );
+            });
+        }
+
+        public static IObservable<T> ConditionalRetryWithBackoffStrategy<T>(
+            this IObservable<T> source,
+            int maxRetries,
+            Func<int, TimeSpan> backOffStrategy,
+            Func<Exception, bool> shouldRetryOn,
+            IScheduler scheduler)
+        {
+            return source.RetryWhen(v =>
+            {
+                int retryCount = 0;
+                return v.SelectMany(error =>
+                {
+                    retryCount++;
+                    if (!shouldRetryOn(error) || retryCount > maxRetries)
+                    {
+                        return Observable.Throw<int>(error);
+                    }
+
+                    return Observable.Return(1).Delay(backOffStrategy(retryCount), scheduler);
+                });
             });
         }
     }
