@@ -46,9 +46,9 @@ namespace Toggl.Daneel.ViewControllers
 
         private readonly UIView spiderContainerView = new UIView();
         private readonly SpiderOnARopeView spiderBroView = new SpiderOnARopeView();
-        private readonly UIButton reportsButton = new UIButton(new CGRect(0, 0, 40, 40));
-        private readonly UIButton settingsButton = new UIButton(new CGRect(0, 0, 40, 40));
-        private readonly UIButton syncFailuresButton = new UIButton(new CGRect(0, 0, 40, 40));
+        private readonly UIButton reportsButton = new UIButton(new CGRect(0, 0, 30, 40));
+        private readonly UIButton settingsButton = new UIButton(new CGRect(0, 0, 30, 40));
+        private readonly UIButton syncFailuresButton = new UIButton(new CGRect(0, 0, 30, 40));
         private readonly UIImageView titleImage = new UIImageView(UIImage.FromBundle("togglLogo"));
         private readonly TimeEntriesEmptyLogView emptyStateView = TimeEntriesEmptyLogView.Create();
 
@@ -76,6 +76,7 @@ namespace Toggl.Daneel.ViewControllers
         private IDisposable swipeLeftAnimationDisposable;
         private IDisposable swipeRightAnimationDisposable;
         private IDisposable swipeToContinueWasUsedDisposable;
+        private IDisposable swipeToDeleteWasUsedDisposable;
 
         private readonly ISubject<bool> isRunningSubject = new BehaviorSubject<bool>(false);
         private readonly ISubject<bool> isEmptySubject = new BehaviorSubject<bool>(false);
@@ -248,7 +249,6 @@ namespace Toggl.Daneel.ViewControllers
             NavigationItem.TitleView = titleImage;
             NavigationItem.RightBarButtonItems = new[]
             {
-                new UIBarButtonItem(UIBarButtonSystemItem.FixedSpace) { Width = -10 },
                 new UIBarButtonItem(settingsButton),
                 new UIBarButtonItem(reportsButton)
             };
@@ -284,6 +284,9 @@ namespace Toggl.Daneel.ViewControllers
 
             swipeToContinueWasUsedDisposable?.Dispose();
             swipeToContinueWasUsedDisposable = null;
+
+            swipeToDeleteWasUsedDisposable?.Dispose();
+            swipeToDeleteWasUsedDisposable = null;
         }
 
         public override void ViewDidLayoutSubviews()
@@ -444,7 +447,7 @@ namespace Toggl.Daneel.ViewControllers
             tapToEditStep.DismissByTapping(TapToEditBubbleView);
             tapToEditDisposable = tapToEditStep.ManageVisibilityOf(TapToEditBubbleView);
 
-            prepareSwipeGesturesOnboarding(storage);
+            prepareSwipeGesturesOnboarding(storage, tapToEditStep.ShouldBeVisible);
 
             scrollDisposable = tapToEditStep.ShouldBeVisible
                 .CombineLatest(
@@ -460,16 +463,21 @@ namespace Toggl.Daneel.ViewControllers
             ViewModel.NavigationService.AfterNavigate += onNavigate;
         }
 
-        private void prepareSwipeGesturesOnboarding(IOnboardingStorage storage)
+        private void prepareSwipeGesturesOnboarding(IOnboardingStorage storage, IObservable<bool> tapToEditStepIsVisible)
         {
             timeEntriesCountSubject.OnNext(ViewModel.TimeEntriesCount);
 
             timeEntriesCountDisposable = ViewModel.WeakSubscribe(() => ViewModel.TimeEntriesCount, onTimeEntriesCountChanged);
 
-            swipeRightStep = new SwipeRightOnboardingStep(timeEntriesCountSubject.AsObservable())
+            var swipeRightCanBeShown = tapToEditStepIsVisible.Select(isVisible => !isVisible);
+            swipeRightStep = new SwipeRightOnboardingStep(swipeRightCanBeShown, timeEntriesCountSubject.AsObservable())
                 .ToDismissable(nameof(SwipeRightOnboardingStep), storage);
 
-            swipeLeftStep = new SwipeLeftOnboardingStep(timeEntriesCountSubject.AsObservable(), swipeRightStep.ShouldBeVisible)
+            var swipeLeftCanBeShown = Observable.CombineLatest(
+                tapToEditStepIsVisible,
+                swipeRightStep.ShouldBeVisible,
+                (tapToEditIsVisible, swipeRightIsVisble) => !tapToEditIsVisible && !swipeRightIsVisble);
+            swipeLeftStep = new SwipeLeftOnboardingStep(swipeLeftCanBeShown, timeEntriesCountSubject.AsObservable())
                 .ToDismissable(nameof(SwipeLeftOnboardingStep), storage);
 
             swipeLeftStep.DismissByTapping(SwipeLeftBubbleView);
@@ -487,6 +495,15 @@ namespace Toggl.Daneel.ViewControllers
                     swipeToContinueWasUsedDisposable?.Dispose();
                     swipeToContinueWasUsedDisposable = null;
                 });
+
+            swipeToDeleteWasUsedDisposable = Observable.FromEventPattern(source, nameof(MainTableViewSource.SwipeToDeleteWasUsed))
+                .Subscribe(_ =>
+                {
+                    swipeLeftStep.Dismiss();
+                    swipeToDeleteWasUsedDisposable?.Dispose();
+                    swipeToDeleteWasUsedDisposable = null;
+                });
+
             updateSwipeDismissGestures(firstTimeEntry);
         }
 

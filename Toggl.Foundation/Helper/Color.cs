@@ -2,7 +2,7 @@
 {
     public static class Color
     {
-        public const string NoProject = "#CECECE";
+        public const string NoProject = "#B5BCC0";
 
         public static readonly string[] DefaultProjectColors =
         {

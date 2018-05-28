@@ -5,14 +5,10 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck;
-using FsCheck.Xunit;
 using NSubstitute;
-using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
-using Toggl.Foundation.Tests.Generators;
-using Toggl.PrimeRadiant.Models;
-using Xunit;
 using Toggl.Multivac.Models;
+using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -20,9 +16,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class SelectCountryViewModelTest : BaseViewModelTests<SelectCountryViewModel>
         {
-            protected SelectCountryParameter Parameters { get; }
-                = SelectCountryParameter.With("", "");
-
             protected override SelectCountryViewModel CreateViewModel()
                 => new SelectCountryViewModel(NavigationService);
 
@@ -57,7 +50,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var countries = GenerateCountriesList();
                 
-                ViewModel.Prepare(Parameters);
+                ViewModel.Prepare(10);
 
                 await ViewModel.Initialize();
 
@@ -65,18 +58,26 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Theory, LogIfTooSlow]
-            [InlineData("AL")]
-            [InlineData("GR")]
-            [InlineData("EE")]
-            public async Task SetsTheAppropriateCountryAsTheCurrentlySelectedOne(string code)
+            [InlineData(1)]
+            [InlineData(150)]
+            [InlineData(200)]
+            public async Task SetsTheAppropriateCountryAsTheCurrentlySelectedOne(int id)
             {
-                var parameter = SelectCountryParameter.With(code, "");
-
-                ViewModel.Prepare(parameter);
+                ViewModel.Prepare(id);
 
                 await ViewModel.Initialize();
 
-                ViewModel.Suggestions.Single(c => c.Selected).Country.CountryCode.Should().Be(code);
+                ViewModel.Suggestions.Single(c => c.Selected).Country.Id.Should().Be(id);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task DoesNotSetTheSelectedCountryIfPreparingWithNull()
+            {
+                ViewModel.Prepare(null);
+
+                await ViewModel.Initialize();
+
+                ViewModel.Suggestions.All(suggestion => !suggestion.Selected);
             }
         }
 
@@ -84,7 +85,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             public TheSelectCountryCommand()
             {
-                ViewModel.Prepare(Parameters);
+                ViewModel.Prepare(10);
             }
 
             [Fact, LogIfTooSlow]
@@ -102,7 +103,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.SelectCountryCommand.Execute(selectableCountry);
 
                 await NavigationService.Received()
-                   .Close(Arg.Is(ViewModel), Arg.Any<SelectCountryParameter>());
+                    .Close(Arg.Is(ViewModel), country.Id);
             }
         }
 
@@ -111,7 +112,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task FiltersTheSuggestionsWhenItChanges()
             {
-                ViewModel.Prepare(Parameters);
+                ViewModel.Prepare(10);
                 await ViewModel.Initialize();
 
                 ViewModel.Text = "Greece";

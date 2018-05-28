@@ -15,6 +15,7 @@ using Toggl.Foundation.Services;
 using Toggl.Foundation.Shortcuts;
 using UIKit;
 
+
 namespace Toggl.Daneel
 {
     [Register(nameof(AppDelegate))]
@@ -49,12 +50,13 @@ namespace Toggl.Daneel
             #endif
             #if USE_ANALYTICS
             Microsoft.AppCenter.AppCenter.Start(
-                "{TOGGL_APP_CENTER_ID_IOS}", 
+                "{TOGGL_APP_CENTER_ID_IOS}",
                 typeof(Microsoft.AppCenter.Crashes.Crashes),
                 typeof(Microsoft.AppCenter.Analytics.Analytics));
             Firebase.Core.App.Configure();
             Google.SignIn.SignIn.SharedInstance.ClientID =
                 Firebase.Core.App.DefaultInstance.Options.ClientId;
+            Facebook.CoreKit.ApplicationDelegate.SharedInstance.FinishedLaunching(application, launchOptions);
             #endif
 
             return true;
@@ -64,7 +66,16 @@ namespace Toggl.Daneel
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
         {
             var openUrlOptions = new UIApplicationOpenUrlOptions(options);
-            return Google.SignIn.SignIn.SharedInstance.HandleUrl(url, openUrlOptions.SourceApplication, openUrlOptions.Annotation);
+            var googleResponse = Google.SignIn.SignIn.SharedInstance.HandleUrl(url, openUrlOptions.SourceApplication, openUrlOptions.Annotation);
+
+            var facebookResponse = Facebook.CoreKit.ApplicationDelegate.SharedInstance.OpenUrl(app, url, options);
+
+            return googleResponse || facebookResponse;
+        }
+
+        public override void OnActivated(UIApplication application)
+        {
+            Facebook.CoreKit.AppEvents.ActivateApp();
         }
         #endif
 

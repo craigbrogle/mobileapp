@@ -1,5 +1,6 @@
 ﻿using MvvmCross.Core.ViewModels;
 using NSubstitute;
+using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.Services;
@@ -15,10 +16,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         where TViewModel : MvxViewModel
     {
         protected ITogglApi Api { get; } = Substitute.For<ITogglApi>();
-        protected UserAgent UserAgent { get; } = new UserAgent("Foundation.Tests", "1.0");
+        protected IApiFactory ApiFactory { get; } = Substitute.For<IApiFactory>();
         protected IMailService MailService { get; } = Substitute.For<IMailService>();
         protected ITogglDatabase Database { get; } = Substitute.For<ITogglDatabase>();
         protected ILoginManager LoginManager { get; } = Substitute.For<ILoginManager>();
+        protected UserAgent UserAgent { get; } = new UserAgent("Foundation.Tests", "1.0");
         protected IDialogService DialogService { get; } = Substitute.For<IDialogService>();
         protected IBrowserService BrowserService { get; } = Substitute.For<IBrowserService>();
         protected ILicenseProvider LicenseProvider { get; } = Substitute.For<ILicenseProvider>();
@@ -27,6 +29,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         protected IPasswordManagerService PasswordManagerService { get; } = Substitute.For<IPasswordManagerService>();
         protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
         protected ISuggestionProviderContainer SuggestionProviderContainer { get; } = Substitute.For<ISuggestionProviderContainer>();
+        protected IAutocompleteProvider AutocompleteProvider { get; } = Substitute.For<IAutocompleteProvider>();
 
         protected TViewModel ViewModel { get; private set; }
 

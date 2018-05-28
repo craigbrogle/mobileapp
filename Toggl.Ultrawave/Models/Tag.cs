@@ -1,6 +1,6 @@
 ﻿using System;
-using Toggl.Multivac.Models;
 using Newtonsoft.Json;
+using Toggl.Multivac.Models;
 
 namespace Toggl.Ultrawave.Models
 {
@@ -16,7 +16,8 @@ namespace Toggl.Ultrawave.Models
 
         public DateTimeOffset At { get; set; }
 
-        public DateTimeOffset? DeletedAt { get; set; }
+        [JsonProperty("deleted_at")]
+        public DateTimeOffset? ServerDeletedAt { get; set; }
 
         [JsonConstructor]
         public Tag(long id, long workspaceId, string name, DateTimeOffset? at, DateTimeOffset? deletedAt)
@@ -25,7 +26,7 @@ namespace Toggl.Ultrawave.Models
             WorkspaceId = workspaceId;
             Name = name;
             At = at ?? defaultAt;
-            DeletedAt = deletedAt;
+            ServerDeletedAt = deletedAt;
         }
     }
 }

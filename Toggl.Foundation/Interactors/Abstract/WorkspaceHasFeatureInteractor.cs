@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 
@@ -7,17 +8,17 @@ namespace Toggl.Foundation.Interactors
 {
     internal abstract class WorkspaceHasFeatureInteractor<TValue> : IInteractor<IObservable<TValue>>
     {
-        protected ITogglDatabase Database { get; }
+        protected ITogglDataSource DataSource { get; }
 
-        public WorkspaceHasFeatureInteractor(ITogglDatabase database)
+        public WorkspaceHasFeatureInteractor(ITogglDataSource dataSource)
         {
-            Ensure.Argument.IsNotNull(database, nameof(database));
+            Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
 
-            Database = database;
+            DataSource = dataSource;
         }
 
         public IObservable<bool> CheckIfFeatureIsEnabled(long workspaceId, WorkspaceFeatureId featureId)
-            => Database.WorkspaceFeatures
+            => DataSource.WorkspaceFeatures
                 .GetById(workspaceId)
                 .Select(featureCollection => featureCollection.IsEnabled(featureId));
 

@@ -2,15 +2,13 @@
 
 namespace Toggl.Multivac.Models
 {
-    public interface IWorkspace : IBaseModel
+    public interface IWorkspace : IIdentifiable, IDeletable, ILastChangedDatable
     {
         string Name { get; }
 
         bool Admin { get; }
 
         DateTimeOffset? SuspendedAt { get; }
-
-        DateTimeOffset? ServerDeletedAt { get; }
 
         double? DefaultHourlyRate { get; }
 
@@ -27,8 +25,6 @@ namespace Toggl.Multivac.Models
         int Rounding { get; }
 
         int RoundingMinutes { get; }
-
-        DateTimeOffset? At { get; }
 
         string LogoUrl { get; }
     }

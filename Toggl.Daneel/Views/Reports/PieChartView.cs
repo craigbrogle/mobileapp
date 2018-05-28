@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using UIKit;
 using System.Linq;
-using System.Collections.ObjectModel;
 using CoreGraphics;
 using Foundation;
 using Toggl.Foundation.Reports;
-using Toggl.Multivac.Extensions;
 using MvvmCross.Platform.UI;
 using MvvmCross.Plugins.Color.iOS;
 using static Toggl.Multivac.Math;
@@ -22,8 +21,8 @@ namespace Toggl.Daneel.Views.Reports
             ForegroundColor = UIColor.White
         };
 
-        private ObservableCollection<ChartSegment> segments = new ObservableCollection<ChartSegment>();
-        public ObservableCollection<ChartSegment> Segments
+        private IEnumerable<ChartSegment> segments = new ChartSegment[0];
+        public IEnumerable<ChartSegment> Segments
         {
             get => segments;
             set

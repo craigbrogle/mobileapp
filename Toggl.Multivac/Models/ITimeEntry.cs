@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Toggl.Multivac.Models
 {
-    public interface ITimeEntry : IBaseModel
+    public interface ITimeEntry : IIdentifiable, IDeletable, ILastChangedDatable
     {
         long WorkspaceId { get; }
 
@@ -20,10 +20,6 @@ namespace Toggl.Multivac.Models
         string Description { get; }
 
         IEnumerable<long> TagIds { get; }
-
-        DateTimeOffset At { get; }
-
-        DateTimeOffset? ServerDeletedAt { get; }
 
         long UserId { get; }
     }

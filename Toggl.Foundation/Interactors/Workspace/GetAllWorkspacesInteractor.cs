@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Interactors
 {
-    internal sealed class GetAllWorkspacesInteractor : IInteractor<IObservable<IEnumerable<IDatabaseWorkspace>>>
+    internal sealed class GetAllWorkspacesInteractor : IInteractor<IObservable<IEnumerable<IThreadSafeWorkspace>>>
     {
-        private readonly ITogglDatabase database;
+        private readonly ITogglDataSource dataSource;
 
-        public GetAllWorkspacesInteractor(ITogglDatabase database)
+        public GetAllWorkspacesInteractor(ITogglDataSource dataSource)
         {
-            Ensure.Argument.IsNotNull(database, nameof(database));
+            Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
 
-            this.database = database;
+            this.dataSource = dataSource;
         }
 
-        public IObservable<IEnumerable<IDatabaseWorkspace>> Execute()
-            => database.Workspaces.GetAll();
+        public IObservable<IEnumerable<IThreadSafeWorkspace>> Execute()
+            => dataSource.Workspaces.GetAll();
     }
 }

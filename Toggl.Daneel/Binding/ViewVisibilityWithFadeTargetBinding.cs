@@ -20,9 +20,6 @@ namespace Toggl.Daneel.Binding
 
         protected override void SetValue(bool value)
         {
-            var alreadyVisible = Target.Alpha > 0.5f;
-            if (value == alreadyVisible) return;
-
             var alpha = value ? 1 : 0;
 
             Task.Delay(1).ContinueWith(_ =>

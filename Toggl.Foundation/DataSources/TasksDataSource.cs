@@ -1,29 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using Toggl.Multivac;
+﻿using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Sync.ConflictResolution;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.DataSources
 {
-    public sealed class TasksDataSource : ITasksSource
+    public sealed class TasksDataSource
+        : DataSource<IThreadSafeTask, IDatabaseTask>, ITasksSource
     {
-        private readonly IRepository<IDatabaseTask> repository;
-
         public TasksDataSource(IRepository<IDatabaseTask> repository)
+            : base(repository)
         {
-            Ensure.Argument.IsNotNull(repository, nameof(repository));
-
-            this.repository = repository;
         }
 
-        public IObservable<IEnumerable<IDatabaseTask>> GetAll()
-            => repository.GetAll();
+        protected override IThreadSafeTask Convert(IDatabaseTask entity)
+            => Task.From(entity);
 
-        public IObservable<IEnumerable<IDatabaseTask>> GetAll(Func<IDatabaseTask, bool> predicate)
-            => repository.GetAll(predicate);
-
-        public IObservable<IDatabaseTask> GetById(long id)
-            => repository.GetById(id);
+        protected override ConflictResolutionMode ResolveConflicts(IDatabaseTask first, IDatabaseTask second)
+            => Resolver.ForTasks.Resolve(first, second);
     }
 }

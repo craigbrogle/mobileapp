@@ -38,6 +38,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IInteractorFactory interactorFactory;
         private readonly IMvxNavigationService navigationService;
         private readonly IAnalyticsService analyticsService;
+        private readonly IAutocompleteProvider autocompleteProvider;
         private readonly Subject<TextFieldInfo> infoSubject = new Subject<TextFieldInfo>();
         private readonly Subject<AutocompleteSuggestionType> queryByTypeSubject = new Subject<AutocompleteSuggestionType>();
         private bool hasAnyTags;
@@ -195,7 +196,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IOnboardingStorage onboardingStorage,
             IInteractorFactory interactorFactory,
             IMvxNavigationService navigationService,
-            IAnalyticsService analyticsService
+            IAnalyticsService analyticsService,
+            IAutocompleteProvider autocompleteProvider
         )
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
@@ -206,6 +208,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
+            Ensure.Argument.IsNotNull(autocompleteProvider, nameof(autocompleteProvider));
 
             this.dataSource = dataSource;
             this.timeService = timeService;
@@ -214,6 +217,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.navigationService = navigationService;
             this.interactorFactory = interactorFactory;
             this.analyticsService = analyticsService;
+            this.autocompleteProvider = autocompleteProvider;
 
             OnboardingStorage = onboardingStorage;
 
@@ -243,14 +247,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             var queryByTypeObservable = queryByTypeSubject
                 .AsObservable()
-                .SelectMany(type => dataSource.AutocompleteProvider.Query(new QueryInfo("", type)));
+                .SelectMany(type => autocompleteProvider.Query(new QueryInfo("", type)));
 
             queryDisposable = infoSubject.AsObservable()
                 .StartWith(TextFieldInfo)
                 .Where(shouldUpdateSuggestions)
                 .Select(QueryInfo.ParseFieldInfo)
                 .Do(onParsedQuery)
-                .SelectMany(dataSource.AutocompleteProvider.Query)
+                .SelectMany(autocompleteProvider.Query)
                 .Merge(queryByTypeObservable)
                 .Subscribe(onSuggestions);
         }
@@ -271,7 +275,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await base.Initialize();
 
             TextFieldInfo =
-                await dataSource.User.Current.Select(user => TextFieldInfo.Empty(user.DefaultWorkspaceId));
+                await dataSource.User.Current.FirstAsync().Select(user => TextFieldInfo.Empty(user.DefaultWorkspaceId));
 
             await setBillableValues(lastProjectId);
 

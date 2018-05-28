@@ -12,12 +12,16 @@ namespace Toggl.Daneel.Onboarding.MainView
 
         public IObservable<bool> ShouldBeVisible { get; }
 
-        public SwipeRightOnboardingStep(IObservable<int> timeEntriesCountObservable)
+        public SwipeRightOnboardingStep(IObservable<bool> conflictingStepsAreNotVisibleObservable, IObservable<int> timeEntriesCountObservable)
         {
+            Ensure.Argument.IsNotNull(conflictingStepsAreNotVisibleObservable, nameof(conflictingStepsAreNotVisibleObservable));
             Ensure.Argument.IsNotNull(timeEntriesCountObservable, nameof(timeEntriesCountObservable));
 
             ShouldBeVisible = UIDevice.CurrentDevice.CheckSystemVersion(11, 0)
-                ? timeEntriesCountObservable.Select(timeEntriesCount => timeEntriesCount >= minimumTimeEntriesCount)
+                ? Observable.CombineLatest(
+                    conflictingStepsAreNotVisibleObservable,
+                    timeEntriesCountObservable,
+                    (conflictingStepsAreNotVisible, timeEntriesCount) => conflictingStepsAreNotVisible && timeEntriesCount >= minimumTimeEntriesCount)
                 : Observable.Return(false);
         }
     }

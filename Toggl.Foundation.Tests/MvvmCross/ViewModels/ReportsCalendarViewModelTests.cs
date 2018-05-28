@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck;
 using FsCheck.Xunit;
 using NSubstitute;
+using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
@@ -16,7 +16,6 @@ using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
-using static Toggl.Multivac.Extensions.FunctionalExtensions;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -109,7 +108,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Property]
             public void InitializesTheBeginningOfWeekProperty(BeginningOfWeek beginningOfWeek)
             {
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(beginningOfWeek);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 4, 20, 16, 20, 0, TimeSpan.Zero));
@@ -122,7 +121,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public void InitializesTheDateRangeWithTheCurrentWeek()
             {
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(BeginningOfWeek.Sunday);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 var now = new DateTimeOffset(2018, 7, 1, 1, 1, 1, TimeSpan.Zero);
@@ -190,7 +189,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var now = new DateTimeOffset(currentYear, currentMonth, 1, 0, 0, 0, TimeSpan.Zero);
                 TimeService.CurrentDateTime.Returns(now);
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(beginningOfWeek);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 ViewModel.Prepare();
@@ -413,7 +412,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var now = dates[1];
                 var end = dates[2];
                 TimeService.CurrentDateTime.Returns(now);
-                var selectedRange = DateRangeParameter.WithDates(start, end);
+                var selectedRange = DateRangeParameter.WithDates(start, end).WithSource(ReportsSource.Calendar);
                 var customShortcut = new CustomShortcut(selectedRange, TimeService);
 
                 // in this property test it is not possible to use the default ViewModel,

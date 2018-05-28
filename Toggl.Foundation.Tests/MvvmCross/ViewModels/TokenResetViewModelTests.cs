@@ -190,11 +190,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             [Fact, LogIfTooSlow]
-            public void NavigatesToTheOnboardingViewModel()
+            public void NavigatesToTheLoginViewModel()
             {
                 ViewModel.SignOutCommand.Execute();
 
-                NavigationService.Received().Navigate<OnboardingViewModel>();
+                NavigationService.Received().Navigate<LoginViewModel>();
             }
 
             [Fact, LogIfTooSlow]

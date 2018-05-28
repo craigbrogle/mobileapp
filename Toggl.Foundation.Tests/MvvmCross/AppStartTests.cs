@@ -5,6 +5,7 @@ using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Login;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
@@ -19,16 +20,15 @@ namespace Toggl.Foundation.Tests.MvvmCross
     {
         public abstract class AppStartTest : BaseMvvmCrossTests
         {
-            protected AppStart AppStart { get; }
+            protected AppStart<OnboardingViewModel> AppStart { get; }
             protected ISyncManager SyncManager { get; } = Substitute.For<ISyncManager>();
-            protected ITogglDataSource DataSource { get; } = Substitute.For<ITogglDataSource>();
             protected ILoginManager LoginManager { get; } = Substitute.For<ILoginManager>();
             protected IAccessRestrictionStorage AccessRestrictionStorage { get; } =
                 Substitute.For<IAccessRestrictionStorage>();
 
             protected AppStartTest()
             {
-                AppStart = new AppStart(LoginManager, NavigationService, AccessRestrictionStorage);
+                AppStart = new AppStart<OnboardingViewModel>(LoginManager, NavigationService, AccessRestrictionStorage);
                 DataSource.SyncManager.Returns(SyncManager);
                 LoginManager.GetDataSourceIfLoggedIn().Returns(DataSource);
             }
@@ -45,7 +45,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                 var accessRestrictionStorage = useAccessRestrictionStorage ? AccessRestrictionStorage : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new AppStart(loginManager, navigationService, accessRestrictionStorage);
+                    () => new AppStart<OnboardingViewModel>(loginManager, navigationService, accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -121,7 +121,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             {
                 var oldApiToken = Guid.NewGuid().ToString();
                 var newApiToken = Guid.NewGuid().ToString();
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 var dataSource = Substitute.For<ITogglDataSource>();
                 var userSource = Substitute.For<IUserSource>();
                 user.ApiToken.Returns(newApiToken);

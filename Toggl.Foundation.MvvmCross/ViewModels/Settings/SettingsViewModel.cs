@@ -171,7 +171,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public override async Task Initialize()
         {
-            var user = await dataSource.User.Current;
+            var user = await dataSource.User.Current.FirstAsync();
             var defaultWorkspace = await interactorFactory.GetDefaultWorkspace().Execute();
 
             Email = user.Email;
@@ -338,7 +338,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             analyticsService.TrackLogoutEvent(LogoutSource.Settings);
             userPreferences.Reset();
             await dataSource.Logout();
-            await navigationService.Navigate<OnboardingViewModel>();
+            await navigationService.Navigate<LoginViewModel>();
         }
 
         private async Task<bool> isSynced()

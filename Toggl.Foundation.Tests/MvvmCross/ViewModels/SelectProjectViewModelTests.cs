@@ -1,14 +1,16 @@
-﻿using System;
+﻿using FluentAssertions;
+using FsCheck.Xunit;
+using NSubstitute;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using FluentAssertions;
-using FsCheck.Xunit;
-using NSubstitute;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
@@ -30,9 +32,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Theory, LogIfTooSlow]
             [ClassData(typeof(FourParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
-                bool useDataSource, 
+                bool useDataSource,
                 bool useInteractorFactory,
-                bool useNavigationService, 
+                bool useNavigationService,
                 bool useDialogService)
             {
                 var dataSource = useDataSource ? DataSource : null;
@@ -101,7 +103,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedProjectIdWhenSelectingAProject()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(13);
                 var selectedProject = new ProjectSuggestion(project);
 
@@ -116,7 +118,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsNoTaskIdWhenSelectingAProject()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(13);
                 var selectedProject = new ProjectSuggestion(project);
 
@@ -131,7 +133,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedProjectIdWhenSelectingATask()
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(13);
                 task.ProjectId.Returns(10);
                 var selectedTask = new TaskSuggestion(task);
@@ -147,7 +149,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedTaskIdWhenSelectingATask()
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(13);
                 task.ProjectId.Returns(10);
                 var selectedTask = new TaskSuggestion(task);
@@ -210,7 +212,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var oldWorkspaceId = 10;
                 var newWorkspaceId = 11;
                 ViewModel.Prepare(SelectProjectParameter.WithIds(null, null, oldWorkspaceId));
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.WorkspaceId.Returns(newWorkspaceId);
 
                 ViewModel.SelectProjectCommand.Execute(new ProjectSuggestion(project));
@@ -228,7 +230,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var workspaceId = 10;
                 ViewModel.Prepare(SelectProjectParameter.WithIds(null, null, workspaceId));
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.WorkspaceId.Returns(workspaceId);
 
                 ViewModel.SelectProjectCommand.Execute(new ProjectSuggestion(project));
@@ -244,7 +246,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsWorkspaceIdOfTheProjectIfProjectWasSelected()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.WorkspaceId.Returns(13);
                 var projectSuggestion = new ProjectSuggestion(project);
                 prepareDialogService();
@@ -268,7 +270,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsWorkspaceIdOfTheTaskIfTaskWasSelected()
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(13);
                 var taskSuggestion = new TaskSuggestion(task);
                 prepareDialogService();
@@ -297,20 +299,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheTextProperty : SelectProjectViewModelTest
         {
             [Fact, LogIfTooSlow]
-            public async Task WhenChangedQueriesTheAutocompleteProvider()
+            public async Task WhenChangedUsesTheGetProjectsAutocompleteSuggestionsInteractor()
             {
                 var text = "Some text";
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
                 await ViewModel.Initialize();
 
                 ViewModel.Text = text;
 
-                await autocompleteProvider.Received()
-                    .Query(Arg.Is<QueryInfo>(info 
-                        => info.Text == text 
-                        && info.SuggestionType == AutocompleteSuggestionType.Projects)
-                );
+                InteractorFactory
+                    .Received()
+                    .GetProjectsAutocompleteSuggestions(Arg.Is<IList<string>>(
+                        words => words.SequenceEqual(text.SplitToQueryWords())));
             }
         }
 
@@ -320,11 +319,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             public TheSuggestCreationProperty()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Name.Returns(name);
                 var suggestion = new ProjectSuggestion(project);
-                DataSource.AutocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(info => info.SuggestionType == AutocompleteSuggestionType.Projects))
+
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(new List<ProjectSuggestion> { suggestion }));
 
                 ViewModel.Prepare();
@@ -399,7 +400,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 if (returnedId == null) return;
 
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(returnedId.Value);
                 DataSource.Projects.GetById(returnedId.Value).Returns(Observable.Return(project));
             }
@@ -415,30 +416,25 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private ProjectSuggestion getProjectSuggestion(int projectId, int workspaceId)
             {
-                var workspace = Substitute.For<IDatabaseWorkspace>();
+                var workspace = Substitute.For<IThreadSafeWorkspace>();
                 workspace.Name.Returns($"Workspace{workspaceId}");
                 workspace.Id.Returns(workspaceId);
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Name.Returns($"Project{projectId}");
                 project.Workspace.Returns(workspace);
+                project.Active.Returns(true);
                 return new ProjectSuggestion(project);
             }
 
             [Fact, LogIfTooSlow]
             public async Task IsClearedWhenTextIsChanged()
             {
-                var oldSuggestions = getProjectSuggestions(3, 1);
-                var newSuggestions = getProjectSuggestions(1, 1);
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
+                var suggestions = getProjectSuggestions(1, 1);
                 var queryText = "Query text";
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        info => info.SuggestionType == AutocompleteSuggestionType.Projects))
-                    .Returns(Observable.Return(oldSuggestions));
-                autocompleteProvider.Query(Arg.Is<QueryInfo>(
-                        info => info.Text == queryText && info.SuggestionType == AutocompleteSuggestionType.Projects))
-                    .Returns(Observable.Return(newSuggestions));
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
+                    .Returns(Observable.Return(suggestions));
                 await ViewModel.Initialize();
 
                 ViewModel.Text = queryText;
@@ -452,12 +448,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var projectSuggestions = getProjectSuggestions(10, 0);
                 var suggestionsObservable = Observable.Return(projectSuggestions);
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        info => info.SuggestionType == AutocompleteSuggestionType.Projects))
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(suggestionsObservable);
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
 
                 await ViewModel.Initialize();
 
@@ -474,10 +468,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 suggestions.AddRange(getProjectSuggestions(1, 10));
                 suggestions.AddRange(getProjectSuggestions(10, 54));
                 var suggestionsObservable = Observable.Return(suggestions);
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        info => info.SuggestionType == AutocompleteSuggestionType.Projects))
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(suggestionsObservable);
 
                 await ViewModel.Initialize();
@@ -522,11 +515,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 suggestions.AddRange(getProjectSuggestions(1, workspaceIds[2]));
                 suggestions.AddRange(getProjectSuggestions(10, workspaceIds[3]));
                 var suggestionsObservable = Observable.Return(suggestions);
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        info => info.SuggestionType == AutocompleteSuggestionType.Projects))
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(suggestionsObservable);
 
                 await ViewModel.Initialize();
@@ -554,12 +545,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 suggestions.Add(getProjectSuggestion(33, 1));
                 suggestions.Add(getProjectSuggestion(10, 1));
                 var suggestionsObservable = Observable.Return(suggestions);
-                var autocompleteProvider = Substitute.For<IAutocompleteProvider>();
-                DataSource.AutocompleteProvider.Returns(autocompleteProvider);
-                autocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        info => info.SuggestionType == AutocompleteSuggestionType.Projects))
-                    .Returns(suggestionsObservable);
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
+                     .Returns(suggestionsObservable);
 
                 await ViewModel.Initialize();
 
@@ -617,14 +606,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var projects = Enumerable.Range(0, 30)
                     .Select(i =>
                     {
-                        var project = Substitute.For<IDatabaseProject>();
+                        var project = Substitute.For<IThreadSafeProject>();
                         project.Id.Returns(i);
                         project.Workspace.Name.Returns("Ws");
                         return new ProjectSuggestion(project);
                     });
-                DataSource.AutocompleteProvider
-                    .Query(Arg.Is<QueryInfo>(
-                        arg => arg.SuggestionType == AutocompleteSuggestionType.Projects))
+
+                InteractorFactory
+                    .GetProjectsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
                     .Returns(Observable.Return(projects));
             }
         }
@@ -633,9 +623,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             const long workspaceId = 1;
 
-            private IDatabaseProject createArbitraryProject(int id)
+            private IThreadSafeProject createArbitraryProject(int id)
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(id);
                 project.WorkspaceId.Returns(workspaceId);
                 project.Name.Returns(Guid.NewGuid().ToString());
@@ -672,7 +662,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 DataSource.Projects.Returns(projectsSource);
 
-                DataSource.AutocompleteProvider
+                AutocompleteProvider
                           .Query(Arg.Is<QueryInfo>(arg => arg.SuggestionType == AutocompleteSuggestionType.Projects))
                           .Returns(Observable.Return(new List<ProjectSuggestion>()));
 
@@ -688,7 +678,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ReturnsTrueIfHasNoProjects()
             {
                 var projectsSource = Substitute.For<IProjectsSource>();
-                projectsSource.GetAll().Returns(Observable.Return(new List<IDatabaseProject>()));
+                projectsSource.GetAll().Returns(Observable.Return(new List<IThreadSafeProject>()));
 
                 DataSource.Projects.Returns(projectsSource);
 
@@ -702,7 +692,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void ReturnsFalseBeforeLoadingProjectsFromDatabase()
             {
                 var projectsSource = Substitute.For<IProjectsSource>();
-                projectsSource.GetAll().Returns(Observable.Return(new List<IDatabaseProject>()));
+                projectsSource.GetAll().Returns(Observable.Return(new List<IThreadSafeProject>()));
 
                 DataSource.Projects.Returns(projectsSource);
 

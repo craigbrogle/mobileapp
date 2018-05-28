@@ -25,8 +25,12 @@
     <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Models\FoundationModels.cs">
       <DependentUpon>FoundationModels.tt</DependentUpon>
     </Compile>
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Models\Interfaces\ThreadsafeModels.cs">
+      <DependentUpon>ThreadsafeModels.tt</DependentUpon>
+    </Compile>
     <None Remove="Models\FoundationConstructors.tt" />
     <None Remove="Models\FoundationModels.tt" />
+    <None Remove="Models\Interfaces\ThreadsafeModels.tt" />
     <None Include="Models\FoundationModels.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FoundationModels.cs</LastGenOutput>
@@ -34,6 +38,10 @@
     <None Include="Models\FoundationConstructors.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FoundationConstructors.cs</LastGenOutput>
+    </None>
+    <None Include="Models\Interfaces\ThreadsafeModels.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ThreadsafeModels.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -50,7 +58,6 @@
   <ItemGroup>
     <Folder Include="Analytics\" />
     <Folder Include="Interactors\Sync\" />
-    <Folder Include="Interactors\Country\" />
     <Folder Include="Serialization\" />
   </ItemGroup>
 </Project>

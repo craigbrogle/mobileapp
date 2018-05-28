@@ -84,7 +84,7 @@ namespace Toggl.Foundation.Login
                 .Select(dataSourceFromUser)
                 .Do(shortcutCreator.OnLogin);
 
-        public IObservable<ITogglDataSource> SignUp(Email email, Password password, bool termsAccepted, int? countryId)
+        public IObservable<ITogglDataSource> SignUp(Email email, Password password, bool termsAccepted, int countryId)
         {
             if (!email.IsValid)
                 throw new ArgumentException($"A valid {nameof(email)} must be provided when trying to signup");
@@ -153,7 +153,7 @@ namespace Toggl.Foundation.Login
             return createDataSource(api);
         }
 
-        private IObservable<IUser> signUp(Email email, Password password, bool termsAccepted, int? countryId)
+        private IObservable<IUser> signUp(Email email, Password password, bool termsAccepted, int countryId)
         {
             return apiFactory
                 .CreateApiWith(Credentials.None)

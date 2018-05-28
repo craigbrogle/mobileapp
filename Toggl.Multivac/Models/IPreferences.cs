@@ -1,6 +1,6 @@
 ﻿namespace Toggl.Multivac.Models
 {
-    public interface IPreferences : IBaseModel
+    public interface IPreferences
     {
         TimeFormat TimeOfDayFormat { get; }
 

@@ -4,6 +4,7 @@
 #><#@ import namespace="System.Linq"
 #>using System;
 using System.Collections.Generic;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 using Toggl.Multivac;
@@ -22,7 +23,10 @@ namespace Toggl.Foundation.Models
     foreach(var modelFile in modelsToGenerate)
     {
         var interfaceName = Path.GetFileName(modelFile).Replace(".cs", "");
-        if (interfaceName == "IBaseModel") continue;
+        if (interfaceName == "IIdentifiable"
+            || interfaceName == "IDeletable"
+            || interfaceName == "ILastChangedDatable")
+            continue;
 
         var className = interfaceName.Substring(1, interfaceName.Length - 1);
         
@@ -30,24 +34,30 @@ namespace Toggl.Foundation.Models
         var databaseInterfaceFileName = Path.Combine(filePath, "../../Toggl.PrimeRadiant/Models/", databaseInterfaceName + ".cs");
         var databaseInterfaceExists = File.Exists(databaseInterfaceFileName);
 
+        if (!databaseInterfaceExists) continue;
+
         var implementsIDatabaseSyncable = databaseInterfaceExists
             && File.ReadAllLines(databaseInterfaceFileName).Any(l => l.Contains("IDatabaseSyncable"));
+
+        var implementsIDeletable = File.ReadAllLines(modelFile).Any(l => l.Contains("IDeletable"));
+
+        var implementsILastChangedDatabale = File.ReadAllLines(modelFile).Any(l => l.Contains("ILastChangedDatable"));
+
+        var implementsIIdentifiable = File.ReadAllLines(modelFile).Any(l => l.Contains("IIdentifiable"));
 
         if (!isFirstClass)
             WriteLine("");
 
-        WriteLine($"    internal partial class {className} : IDatabase{className}");
+        WriteLine($"    internal partial class {className} : IThreadSafe{className}");
         WriteLine( "    {");
+
+        if (implementsIIdentifiable)
+        {
+            WriteLine("        public long Id { get; }\n");
+        }
 
         foreach(var line in File.ReadAllLines(modelFile))
         {
-            var extendsIBaseModel = line.Contains(": IBaseModel");
-            if (extendsIBaseModel)
-            {
-                WriteLine("        public long Id { get; }\n");
-                continue;
-            }
-        
             var isProperty = line.Contains("get;");
             if (!isProperty) continue;
 
@@ -72,6 +82,18 @@ namespace Toggl.Foundation.Models
             WriteLine("        public bool IsDeleted { get; }\n");
             WriteLine("        public SyncStatus SyncStatus { get; }\n");
             WriteLine("        public string LastSyncErrorMessage { get; }");
+            if (implementsILastChangedDatabale || implementsIDeletable) WriteLine("");
+        }
+        
+        if (implementsILastChangedDatabale)
+        {
+            WriteLine("        public DateTimeOffset At { get; }");
+            if (implementsIDeletable) WriteLine("");
+        }
+        
+        if (implementsIDeletable)
+        {
+            WriteLine("        public DateTimeOffset? ServerDeletedAt { get; }");
         }
         WriteLine("    }");
 

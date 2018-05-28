@@ -12,7 +12,6 @@ namespace Toggl.Foundation.Tests
     {
         protected IIdProvider IdProvider { get; } = Substitute.For<IIdProvider>();
         protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
-        protected ITogglDatabase Database { get; } = Substitute.For<ITogglDatabase>();
         protected ITogglDataSource DataSource { get; } = Substitute.For<ITogglDataSource>();
         protected IUserPreferences UserPreferences { get; } = Substitute.For<IUserPreferences>();
         protected IAnalyticsService AnalyticsService { get; } = Substitute.For<IAnalyticsService>();
@@ -25,7 +24,6 @@ namespace Toggl.Foundation.Tests
         {
             InteractorFactory = new InteractorFactory(
                 IdProvider,
-                Database,
                 TimeService,
                 DataSource,
                 UserPreferences,

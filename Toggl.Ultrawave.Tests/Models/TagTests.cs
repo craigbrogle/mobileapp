@@ -16,7 +16,7 @@ namespace Toggl.Ultrawave.Tests.Models
             WorkspaceId = 424213,
             Name = "mobile",
             At = new DateTimeOffset(2014, 04, 25, 10, 10, 13, TimeSpan.Zero),
-            DeletedAt = new DateTimeOffset(2014, 04, 25, 10, 10, 10, TimeSpan.Zero)
+            ServerDeletedAt = new DateTimeOffset(2014, 04, 25, 10, 10, 10, TimeSpan.Zero)
         };
 
         [Fact, LogIfTooSlow]

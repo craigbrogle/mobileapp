@@ -44,25 +44,54 @@ namespace Toggl.Foundation.Reports
                 .SelectMany(response => summaryReportFromResponse(response, workspaceId));
 
         private IObservable<ProjectSummaryReport> summaryReportFromResponse(IProjectsSummary response, long workspaceId)
-            => response.ProjectsSummaries
-                    .Select(s => s.ProjectId)
-                    .SelectNonNulls()
-                    .Apply(ids => searchProjects(workspaceId, ids.ToArray()))
-                    .Select(projectsInReport => 
-                    {
-                        var totalSeconds = response.ProjectsSummaries.Select(s => s.TrackedSeconds).Sum();
-                        return response.ProjectsSummaries
-                            .Select(summary =>
-                            {
-                                var project = projectsInReport.FirstOrDefault(p => p.Id == summary.ProjectId);
-                                return findClient(project)
-                                    .Select(client => chartFromSummary(summary, project, client, totalSeconds));
-                            });
-                    })
-                    .SelectMany(segmentsObservable => segmentsObservable.Merge())
-                    .ToArray()
-                    .Select(segments => segments.OrderByDescending(c => c.Percentage).ToArray())
-                    .Select(segments => new ProjectSummaryReport(segments));
+        {
+            IObservable<ChartSegment[]> summarySegments = getChartSegmentsForWorkspace(response, workspaceId);
+            IObservable<long[]> projectIdsNotSynced = getProjectIdsNotSynced(response);
+
+            var result = Observable.CombineLatest(
+                summarySegments,
+                projectIdsNotSynced,
+                (segments, ids) => new ProjectSummaryReport(segments, ids.Length)
+            );
+
+            return result;
+        }
+
+        private IObservable<ChartSegment[]> getChartSegmentsForWorkspace(IProjectsSummary projectsSummary, long workspaceId)
+        {
+            return projectsSummary.ProjectsSummaries
+                                  .Select(s => s.ProjectId)
+                                  .SelectNonNulls()
+                                  .Apply(ids => searchProjects(workspaceId, ids.ToArray()))
+                                  .Select(projectsInReport => getChartSegmentsForProjectsInReport(projectsSummary, projectsInReport))
+                                  .SelectMany(segmentsObservable => segmentsObservable.Merge())
+                                  .ToArray()
+                                  .Select(s => s.OrderByDescending(c => c.Percentage).ToArray());
+        }
+
+        private IEnumerable<IObservable<ChartSegment>> getChartSegmentsForProjectsInReport(IProjectsSummary projectsSummary, IList<IProject> projectsInReport)
+        {
+            var totalSeconds = projectsSummary.ProjectsSummaries.Select(s => s.TrackedSeconds).Sum();
+            return projectsSummary.ProjectsSummaries
+                .Select(summary =>
+                {
+                    var project = projectsInReport.FirstOrDefault(p => p.Id == summary.ProjectId);
+                    return findClient(project)
+                        .Select(client => chartFromSummary(summary, project, client, totalSeconds));
+                });
+        }
+
+        private IObservable<long[]> getProjectIdsNotSynced(IProjectsSummary response)
+        {
+            var summaryProjectIds = response.ProjectsSummaries
+                                                        .Select(s => s.ProjectId)
+                                                        .SelectNonNulls()
+                                                        .ToArray();
+
+            var projectIdsNotSynced = Observable.Return(summaryProjectIds)
+                                                .SelectMany(projectsIdsNotInDatabase);
+            return projectIdsNotSynced;
+        }
 
         private IObservable<IClient> findClient(IProject project)
             => project != null && project.ClientId.HasValue
@@ -73,7 +102,7 @@ namespace Toggl.Foundation.Reports
                 : Observable.Return<IClient>(null);
 
         private ChartSegment chartFromSummary(
-            IProjectSummary summary, 
+            IProjectSummary summary,
             IProject project,
             IClient client,
             long totalSeconds)
@@ -82,7 +111,7 @@ namespace Toggl.Foundation.Reports
             var billableSeconds = summary.BillableSeconds ?? 0;
 
             return project == null
-                ? new ChartSegment(Resources.NoProject, null, percentage,  summary.TrackedSeconds, billableSeconds, Color.NoProject)
+                ? new ChartSegment(Resources.NoProject, null, percentage, summary.TrackedSeconds, billableSeconds, Color.NoProject)
                 : new ChartSegment(project.Name, client?.Name, percentage, summary.TrackedSeconds, billableSeconds, project.Color);
         }
 
@@ -153,6 +182,18 @@ namespace Toggl.Foundation.Reports
             {
                 apiProjects.ForEach(memoryCache.Add);
             }
+        }
+
+        private IObservable<long[]> projectsIdsNotInDatabase(long[] projectIds)
+        {
+            var projectsIds = projectIds
+                .Select(id => tryGetProjectFromDatabase(id))
+                .Merge()
+                .ToList()
+                .Select(ids => ids.SelectAllLeft().ToArray())
+                .DefaultIfEmpty(Array.Empty<long>());
+
+            return projectsIds;
         }
     }
 }

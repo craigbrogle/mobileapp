@@ -7,7 +7,7 @@ using FsCheck.Xunit;
 using NSubstitute;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
-using Toggl.Multivac;
+using Toggl.Foundation.Tests.Extensions;
 using Xunit;
 using static Toggl.Foundation.Sync.SyncState;
 
@@ -281,32 +281,6 @@ namespace Toggl.Foundation.Tests.Sync
                 Orchestrator.Freeze();
 
                 StateMachine.Received().Freeze();
-            }
-        }
-    }
-
-    internal static class StateMachineOrchestratorTestExtensions
-    {
-        public static void ShouldBeSameEventsAs(this List<SyncState> actualEvents,
-            params SyncState[] expectedEvents)
-        {
-            Ensure.Argument.IsNotNull(expectedEvents, nameof(expectedEvents));
-
-            actualEvents.Should().HaveCount(expectedEvents.Length);
-
-            for (var i = 0; i < expectedEvents.Length; i++)
-            {
-                var actual = actualEvents[i];
-                var expected = expectedEvents[i];
-
-                try
-                {
-                    actual.Should().Be(expected);
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Found unexpected event at index {i}.", e);
-                }
             }
         }
     }

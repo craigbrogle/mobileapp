@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using Toggl.Multivac.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Models;
 using Toggl.Ultrawave;
 
 namespace Toggl.Foundation.Sync.States
@@ -14,7 +15,7 @@ namespace Toggl.Foundation.Sync.States
         private readonly ITimeService timeService;
         private const int SinceDateLimitMonths = 2;
 
-        public StateResult<FetchObservables> FetchStarted { get; } = new StateResult<FetchObservables>();
+        public StateResult<IFetchObservables> FetchStarted { get; } = new StateResult<IFetchObservables>();
 
         public FetchAllSinceState(ITogglDatabase database, ITogglApi api, ITimeService timeService)
         {
@@ -25,18 +26,16 @@ namespace Toggl.Foundation.Sync.States
 
         public IObservable<ITransition> Start() => Observable.Create<ITransition>(observer =>
         {
-            var databaseSinceDates = database.SinceParameters.Get();
-            var sinceDates = new SinceParameters(databaseSinceDates);
-
-            var observables = new FetchObservables(sinceDates,
+            var since = database.SinceParameters;
+            var observables = new FetchObservables(
                 api.Workspaces.GetAll().ConnectedReplay(),
                 api.WorkspaceFeatures.GetAll().ConnectedReplay(),
                 api.User.Get(),
-                getSinceOrAll(sinceDates.Clients, api.Clients.GetAllSince, api.Clients.GetAll).ConnectedReplay(),
-                getSinceOrAll(sinceDates.Projects, api.Projects.GetAllSince, api.Projects.GetAll).ConnectedReplay(),
-                getSinceOrAll(sinceDates.TimeEntries, api.TimeEntries.GetAllSince, api.TimeEntries.GetAll).ConnectedReplay(),
-                getSinceOrAll(sinceDates.Tags, api.Tags.GetAllSince, api.Tags.GetAll).ConnectedReplay(),
-                getSinceOrAll(sinceDates.Tasks, api.Tasks.GetAllSince, api.Tasks.GetAll).ConnectedReplay(),
+                getSinceOrAll(since.Get<IDatabaseClient>(), api.Clients.GetAllSince, api.Clients.GetAll).ConnectedReplay(),
+                getSinceOrAll(since.Get<IDatabaseProject>(), api.Projects.GetAllSince, api.Projects.GetAll).ConnectedReplay(),
+                getSinceOrAll(since.Get<IDatabaseTimeEntry>(), api.TimeEntries.GetAllSince, api.TimeEntries.GetAll).ConnectedReplay(),
+                getSinceOrAll(since.Get<IDatabaseTag>(), api.Tags.GetAllSince, api.Tags.GetAll).ConnectedReplay(),
+                getSinceOrAll(since.Get<IDatabaseTask>(), api.Tasks.GetAllSince, api.Tasks.GetAll).ConnectedReplay(),
                 api.Preferences.Get().ConnectedReplay()
             );
 

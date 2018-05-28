@@ -82,7 +82,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await base.Initialize();
 
             needsSync = await dataSource.HasUnsyncedData();
-            var user = await dataSource.User.Current;
+            var user = await dataSource.User.Current.FirstAsync();
             Email = user.Email;
         }
 
@@ -103,7 +103,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             analyticsService.TrackLogoutEvent(LogoutSource.TokenReset);
             userPreferences.Reset();
             await dataSource.Logout();
-            await navigationService.Navigate<OnboardingViewModel>();
+            await navigationService.Navigate<LoginViewModel>();
         }
 
         private void done()

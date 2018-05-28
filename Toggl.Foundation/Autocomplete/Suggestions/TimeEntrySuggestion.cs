@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Autocomplete.Suggestions
 {
     public sealed class TimeEntrySuggestion : AutocompleteSuggestion
     {
         public static IEnumerable<TimeEntrySuggestion> FromTimeEntries(
-            IEnumerable<IDatabaseTimeEntry> timeEntries
+            IEnumerable<IThreadSafeTimeEntry> timeEntries
         ) => timeEntries.Select(te => new TimeEntrySuggestion(te));
 
         public string Description { get; } = "";
@@ -17,7 +17,7 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
         public long? ProjectId { get; }
 
         public string ProjectName { get; } = "";
-        
+
         public string ProjectColor { get; } = "";
 
         public long? TaskId { get; }
@@ -26,7 +26,7 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
 
         public string ClientName { get; } = "";
 
-        public TimeEntrySuggestion(IDatabaseTimeEntry timeEntry)
+        public TimeEntrySuggestion(IThreadSafeTimeEntry timeEntry)
         {
             Description = timeEntry.Description;
             WorkspaceId = timeEntry.WorkspaceId;

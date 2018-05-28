@@ -66,16 +66,15 @@ namespace Toggl.Foundation.Tests.Sync.States
                 var seconds = twoMonths.TotalSeconds * percent;
                 var since = now.AddSeconds(-seconds);
 
-                var sinceParameters = Substitute.For<ISinceParameters>();
-                sinceParameters.Clients.Returns(since);
-                sinceParameters.Projects.Returns(since);
-                sinceParameters.Tasks.Returns(since);
-                sinceParameters.Tags.Returns(since);
-                sinceParameters.Workspaces.Returns(since);
-                sinceParameters.TimeEntries.Returns(since);
+                var sinceParameters = Substitute.For<ISinceParameterRepository>();
+                sinceParameters.Get<IDatabaseClient>().Returns(since);
+                sinceParameters.Get<IDatabaseProject>().Returns(since);
+                sinceParameters.Get<IDatabaseTask>().Returns(since);
+                sinceParameters.Get<IDatabaseTag>().Returns(since);
+                sinceParameters.Get<IDatabaseWorkspace>().Returns(since);
+                sinceParameters.Get<IDatabaseTimeEntry>().Returns(since);
 
-                database.SinceParameters.Returns(Substitute.For<ISinceParameterRepository>());
-                database.SinceParameters.Get().Returns(sinceParameters);
+                database.SinceParameters.Returns(sinceParameters);
 
                 state.Start().Wait();
                 
@@ -91,16 +90,16 @@ namespace Toggl.Foundation.Tests.Sync.States
             public void MakesApiCallsWithoutTheSinceParameterWhenTheThresholdIsMoreThanTwoMonthsInThePast()
             {
                 var now = timeService.CurrentDateTime;
-                var sinceParameters = Substitute.For<ISinceParameters>();
-                sinceParameters.Clients.Returns(now.AddMonths(-3));
-                sinceParameters.Projects.Returns(now.AddMonths(-4));
-                sinceParameters.Tasks.Returns(now.AddMonths(-5));
-                sinceParameters.Tags.Returns(now.AddMonths(-6));
-                sinceParameters.Workspaces.Returns(now.AddMonths(-7));
-                sinceParameters.TimeEntries.Returns(now.AddMonths(-8));
+                
+                var sinceParameters = Substitute.For<ISinceParameterRepository>();
+                sinceParameters.Get<IDatabaseClient>().Returns(now.AddMonths(-3));
+                sinceParameters.Get<IDatabaseProject>().Returns(now.AddMonths(-4));
+                sinceParameters.Get<IDatabaseTask>().Returns(now.AddMonths(-5));
+                sinceParameters.Get<IDatabaseTag>().Returns(now.AddMonths(-6));
+                sinceParameters.Get<IDatabaseWorkspace>().Returns(now.AddMonths(-7));
+                sinceParameters.Get<IDatabaseTimeEntry>().Returns(now.AddMonths(-8));
 
-                database.SinceParameters.Returns(Substitute.For<ISinceParameterRepository>());
-                database.SinceParameters.Get().Returns(sinceParameters);
+                database.SinceParameters.Returns(sinceParameters);
 
                 state.Start().Wait();
                 
@@ -162,23 +161,15 @@ namespace Toggl.Foundation.Tests.Sync.States
                 api.Tasks.GetAll().Returns(Observable.Return<List<ITask>>(null));
                 api.Tags.GetAll().Returns(Observable.Return<List<ITag>>(null));
 
-                var transition = (Transition<FetchObservables>)state.Start().SingleAsync().Wait();
+                var transition = (Transition<IFetchObservables>)state.Start().SingleAsync().Wait();
 
                 var observables = transition.Parameter;
-                observables.Workspaces.SingleAsync().Wait().Should().BeNull();
-                observables.Clients.SingleAsync().Wait().Should().BeNull();
-                observables.Projects.SingleAsync().Wait().Should().BeNull();
-                observables.TimeEntries.SingleAsync().Wait().Should().BeNull();
-                observables.Tasks.SingleAsync().Wait().Should().BeNull();
-                observables.Tags.SingleAsync().Wait().Should().BeNull();
-            }
-
-            [Fact, LogIfTooSlow]
-            public void ReturnsSinceParametersFromDatabase()
-            {
-                var transition = (Transition<FetchObservables>)state.Start().SingleAsync().Wait();
-
-                transition.Parameter.SinceParameters.ShouldBeEquivalentTo(database.SinceParameters.Get(), options => options.IncludingProperties());
+                observables.Get<IWorkspace>().SingleAsync().Wait().Should().BeNull();
+                observables.Get<IClient>().SingleAsync().Wait().Should().BeNull();
+                observables.Get<IProject>().SingleAsync().Wait().Should().BeNull();
+                observables.Get<ITimeEntry>().SingleAsync().Wait().Should().BeNull();
+                observables.Get<ITask>().SingleAsync().Wait().Should().BeNull();
+                observables.Get<ITag>().SingleAsync().Wait().Should().BeNull();
             }
         }
     }

@@ -22,7 +22,7 @@ private Action Test(string[] projectPaths)
 {
     var settings = new DotNetCoreTestSettings { NoBuild = true };
 
-    return () => 
+    return () =>
     {
         foreach (var projectPath in projectPaths)
         {
@@ -33,7 +33,7 @@ private Action Test(string[] projectPaths)
 
 private Action UITest(string[] dllPaths)
 {
-    return () => 
+    return () =>
     {
         foreach(var dllPath in dllPaths)
         {
@@ -50,7 +50,7 @@ private Action UITest(string[] dllPaths)
 private Action BuildSolution(string configuration, string platform = "")
 {
     const string togglSolution = "./Toggl.sln";
-    var buildSettings = new MSBuildSettings 
+    var buildSettings = new MSBuildSettings
     {
         Verbosity = Bitrise.IsRunningOnBitrise ? Verbosity.Verbose : Verbosity.Minimal,
         Configuration = configuration
@@ -62,7 +62,7 @@ private Action BuildSolution(string configuration, string platform = "")
 private Action GenerateApk(string configuration)
 {
     const string droidProject = "./Toggl.Giskard/Toggl.Giskard.csproj";
-    var buildSettings = new MSBuildSettings 
+    var buildSettings = new MSBuildSettings
     {
         Verbosity = Bitrise.IsRunningOnBitrise ? Verbosity.Verbose : Verbosity.Minimal,
         Configuration = configuration
@@ -74,7 +74,7 @@ private Action GenerateApk(string configuration)
 }
 
 private string GetCommitHash()
-{   
+{
     IEnumerable<string> redirectedOutput;
     StartProcess("git", new ProcessSettings
     {
@@ -86,7 +86,7 @@ private string GetCommitHash()
 }
 
 private string GetCommitCount()
-{   
+{
     IEnumerable<string> redirectedOutput;
     StartProcess("git", new ProcessSettings
     {
@@ -129,13 +129,14 @@ private TemporaryFileTransformation GetIosAnalyticsServicesConfigurationTransfor
     var projectId = EnvironmentVariable("TOGGL_PROJECT_ID");
     var storageBucket = EnvironmentVariable("TOGGL_STORAGE_BUCKET");
     var googleAppId = EnvironmentVariable("TOGGL_GOOGLE_APP_ID");
+    var facebookAppId = EnvironmentVariable("TOGGL_FACEBOOK_APP_ID");
 
     var filePath = GetFiles(path).Single();
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace("{TOGGL_AD_UNIT_ID_FOR_BANNER_TEST}", adUnitForBannerTest)
                         .Replace("{TOGGL_AD_UNIT_ID_FOR_INTERSTITIAL_TEST}", adUnitIdForInterstitialTest)
@@ -146,6 +147,7 @@ private TemporaryFileTransformation GetIosAnalyticsServicesConfigurationTransfor
                         .Replace("{TOGGL_PROJECT_ID}", projectId)
                         .Replace("{TOGGL_STORAGE_BUCKET}", storageBucket)
                         .Replace("{TOGGL_GOOGLE_APP_ID}", googleAppId)
+                        .Replace("{TOGGL_FACEBOOK_APP_ID}", facebookAppId)
     };
 }
 
@@ -158,8 +160,8 @@ private TemporaryFileTransformation GetIosCrashConfigurationTransformation()
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace("{TOGGL_APP_CENTER_ID_IOS}", appCenterId)
     };
@@ -180,8 +182,8 @@ private TemporaryFileTransformation GetAndroidGoogleServicesTransformation()
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace("{TOGGL_GCM_SENDER_ID}", gcmSenderId)
                         .Replace("{TOGGL_DATABASE_URL}", databaseUrl)
@@ -202,8 +204,8 @@ private TemporaryFileTransformation GetAndroidGoogleLoginTransformation()
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace("{TOGGL_DROID_GOOGLE_SERVICES_CLIENT_ID}", clientId)
     };
@@ -239,8 +241,8 @@ private TemporaryFileTransformation GetIosInfoConfigurationTransformation()
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace("{TOGGL_REVERSED_CLIENT_ID}", reversedClientId)
                         .Replace("IOS_BUNDLE_VERSION", commitCount)
@@ -276,8 +278,8 @@ private TemporaryFileTransformation GetAndroidManifestTransformation()
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace(versionNumberToReplace, commitCount)
                         .Replace(packageNameToReplace, packageName)
@@ -306,8 +308,8 @@ private TemporaryFileTransformation GetAndroidSplashScreenTransformation()
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace(appNameToReplace, appName)
                         .Replace("{TOGGL_APP_CENTER_ID_DROID}", appCenterId)
@@ -315,21 +317,21 @@ private TemporaryFileTransformation GetAndroidSplashScreenTransformation()
 }
 
 private TemporaryFileTransformation GetIntegrationTestsConfigurationTransformation()
-{   
+{
     const string path = "Toggl.Ultrawave.Tests.Integration/Helper/Configuration.cs";
-    var commitHash = GetCommitHash(); 
+    var commitHash = GetCommitHash();
     var filePath = GetFiles(path).Single();
     var file = TransformTextFile(filePath).ToString();
 
     return new TemporaryFileTransformation
-    { 
-        Path = path, 
+    {
+        Path = path,
         Original = file,
         Temporary = file.Replace("{CAKE_COMMIT_HASH}", commitHash)
     };
 }
 
-var transformations = new List<TemporaryFileTransformation> 
+var transformations = new List<TemporaryFileTransformation>
 {
     GetIosInfoConfigurationTransformation(),
     GetIosCrashConfigurationTransformation(),
@@ -378,7 +380,7 @@ Teardown(context =>
 
 //Build
 Task("Clean")
-    .Does(() => 
+    .Does(() =>
         {
             CleanDirectory("./bin");
             CleanDirectory("./Toggl.Daneel/obj");

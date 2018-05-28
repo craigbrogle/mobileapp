@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reactive;
-using Toggl.Multivac.Models;
+﻿using Toggl.Multivac.Models;
+using Toggl.Ultrawave.ApiClients.Interfaces;
 
 namespace Toggl.Ultrawave.ApiClients
 {
     public interface ITimeEntriesApi
+        : IDeletingApiClient<ITimeEntry>,
+          ICreatingApiClient<ITimeEntry>,
+          IUpdatingApiClient<ITimeEntry>,
+          IPullingApiClient<ITimeEntry>,
+          IPullingChangedApiClient<ITimeEntry>
     {
-        IObservable<List<ITimeEntry>> GetAll();
-        IObservable<List<ITimeEntry>> GetAllSince(DateTimeOffset threshold);
-        IObservable<ITimeEntry> Create(ITimeEntry timeEntry);
-        IObservable<ITimeEntry> Update(ITimeEntry timeEntry);
-        IObservable<Unit> Delete(ITimeEntry timeEntry);
     }
 }

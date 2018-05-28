@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Sync.ConflictResolution;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
@@ -10,19 +10,18 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.DataSources
 {
-    public sealed class ProjectsDataSource : IProjectsSource
+    public sealed class ProjectsDataSource
+        : DataSource<IThreadSafeProject, IDatabaseProject>, IProjectsSource
     {
         private readonly IIdProvider idProvider;
         private readonly ITimeService timeService;
-        private readonly IRepository<IDatabaseProject> repository;
 
         public ProjectsDataSource(IIdProvider idProvider, IRepository<IDatabaseProject> repository, ITimeService timeService)
+            : base(repository)
         {
             Ensure.Argument.IsNotNull(idProvider, nameof(idProvider));
-            Ensure.Argument.IsNotNull(repository, nameof(repository));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
 
-            this.repository = repository;
             this.idProvider = idProvider;
             this.timeService = timeService;
         }
@@ -38,16 +37,12 @@ namespace Toggl.Foundation.DataSources
                 .SetAt(timeService.CurrentDateTime)
                 .SetSyncStatus(SyncStatus.SyncNeeded)
                 .Build()
-                .Apply(repository.Create)
-                .Select(Project.From);
+                .Apply(Create);
 
-        public IObservable<IEnumerable<IDatabaseProject>> GetAll()
-            => repository.GetAll();
+        protected override IThreadSafeProject Convert(IDatabaseProject entity)
+            => Project.From(entity);
 
-        public IObservable<IEnumerable<IDatabaseProject>> GetAll(Func<IDatabaseProject, bool> predicate)
-            => repository.GetAll(predicate);
-
-        public IObservable<IDatabaseProject> GetById(long id)
-            => repository.GetById(id);
+        protected override ConflictResolutionMode ResolveConflicts(IDatabaseProject first, IDatabaseProject second)
+            => Resolver.ForProjects.Resolve(first, second);
     }
 }

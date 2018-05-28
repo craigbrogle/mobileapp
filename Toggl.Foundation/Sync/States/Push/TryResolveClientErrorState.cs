@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Toggl.PrimeRadiant;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Ultrawave.Exceptions;
 
-namespace Toggl.Foundation.Sync.States
+namespace Toggl.Foundation.Sync.States.Push
 {
-    public sealed class TryResolveClientErrorState<TModel>
-        where TModel : class, IDatabaseSyncable
+    public sealed class TryResolveClientErrorState<TThreadsafe>
+        where TThreadsafe : class, IThreadSafeModel
     {
         public StateResult UnresolvedTooManyRequests { get; } = new StateResult();
-        public StateResult<(Exception, TModel)> Unresolved { get; } = new StateResult<(Exception, TModel)>();
 
-        public IObservable<ITransition> Start((Exception Error, TModel Entity) parameter)
+        public StateResult<(Exception, TThreadsafe)> Unresolved { get; } = new StateResult<(Exception, TThreadsafe)>();
+
+        public IObservable<ITransition> Start((Exception Error, TThreadsafe Entity) parameter)
             => parameter.Error is ClientErrorException == false
                 ? Observable.Throw<ITransition>(new ArgumentException(nameof(parameter.Error)))
                 : parameter.Error is TooManyRequestsException

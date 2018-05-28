@@ -4,6 +4,7 @@ using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
+using Toggl.Foundation.Sync.States.Push;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.Sync.States.Push

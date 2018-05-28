@@ -1,76 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<RelativeLayout
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:tools="http://schemas.android.com/tools"
     xmlns:local="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@drawable/OnboardingGradient"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <ImageView
-        android:src="@drawable/toggl_logo"
-        android:layout_width="88dp"
-        android:layout_marginTop="24dp"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true" />
-    <ImageView
-        android:src="@drawable/timer"
-        android:layout_width="135dp"
-        android:layout_marginBottom="300dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true" />
-    <ImageView
-        android:src="@drawable/book"
-        android:layout_width="180dp"
-        android:layout_marginBottom="320dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentBottom="true" />
-    <TextView
-        android:textSize="20sp"
-        android:textColor="@android:color/white"
-        android:text="@string/OnboardingGetStarted"
-        android:layout_marginBottom="273dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true" />
-    <TextView
-        android:lines="2"
-        android:textSize="20sp"
-        android:gravity="center"
-        android:textColor="@android:color/white"
-        android:text="@string/OnboardingKickstartProductivity"
-        android:layout_marginBottom="201dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true" />
-    <Button
-        local:MvxBind="Click LoginCommand"
-        android:textSize="14sp"
-        android:textAllCaps="true"
-        android:text="@string/Login"
-        android:textColor="@color/buttonBlue"
-        android:background="@android:color/white"
-        android:layout_weight="1"
-        android:layout_width="248dp"
-        android:layout_height="36dp"
-        android:layout_marginBottom="124dp"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true" />
-    <TextView
-        local:MvxBind="Click SignUpCommand"
-        android:textSize="14sp"
-        android:minHeight="36dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:layout_marginBottom="76dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true" 
-        android:text="@string/OnboardingSignup"
-        android:textColor="@android:color/white"
-        android:gravity="center|center_vertical" />
-</RelativeLayout>
+    android:layout_height="match_parent" />

@@ -90,7 +90,7 @@ namespace Toggl.Foundation.Tests.DataSources
             }
 
             [Property]
-            public void CreatesTAgWithSyncNeeded(
+            public void CreatesTagWithSyncNeeded(
                 NonEmptyString name, NonZeroInt workspaceId)
             {
                 DataSource.Create(name.Get, workspaceId.Get).Wait();

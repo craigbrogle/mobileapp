@@ -1,4 +1,5 @@
-﻿using Toggl.Foundation.MvvmCross.Parameters;
+﻿using Toggl.Foundation.Analytics;
+using Toggl.Foundation.MvvmCross.Parameters;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
 {
@@ -12,7 +13,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
         public override DateRangeParameter GetDateRange()
         {
             var today = TimeService.CurrentDateTime.Date;
-            return DateRangeParameter.WithDates(today, today);
+            return DateRangeParameter
+                .WithDates(today, today)
+                .WithSource(ReportsSource.ShortcutToday);
         }
     }
 }

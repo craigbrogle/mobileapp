@@ -1,6 +1,5 @@
 ﻿using System;
 using CoreGraphics;
-using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.Plugins.Color.iOS;
@@ -14,6 +13,7 @@ using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 using static Toggl.Daneel.Extensions.FontExtensions;
 using Toggl.Daneel.Converters;
+using System.Reactive;
 
 namespace Toggl.Daneel.ViewControllers
 {
@@ -25,6 +25,8 @@ namespace Toggl.Daneel.ViewControllers
         private const int stackViewSpacing = 26;
         private bool viewDidAppear = false;
 
+        private IDisposable startTimeChangingSubscription;
+
         public EditDurationViewController() : base(nameof(EditDurationViewController))
         {
         }
@@ -32,6 +34,8 @@ namespace Toggl.Daneel.ViewControllers
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
+
+            startTimeChangingSubscription = ViewModel.StartTimeChanging.Subscribe(startTimeChanging);
 
             setupDismissingByTappingOnBackground();
             prepareViews();
@@ -200,6 +204,15 @@ namespace Toggl.Daneel.ViewControllers
             adjustHeight();
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (!disposing) return;
+
+            startTimeChangingSubscription?.Dispose();
+        }
+
         public override void ViewDidAppear(bool animated)
         {
             base.ViewDidAppear(animated);
@@ -288,6 +301,9 @@ namespace Toggl.Daneel.ViewControllers
             if (ViewModel.IsEditingTime)
                 ViewModel.StopEditingTimeCommand.Execute();
         }
+
+        private void startTimeChanging(Unit _)
+            => DatePicker.Date = ViewModel.StartTime.Add(ViewModel.Duration).ToNSDate();
     }
 }
 

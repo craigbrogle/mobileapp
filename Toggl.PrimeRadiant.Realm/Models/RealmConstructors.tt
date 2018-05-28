@@ -19,7 +19,10 @@ namespace Toggl.PrimeRadiant.Realm
     foreach(var modelFile in modelsToGenerate)
     {
         var interfaceName = Path.GetFileName(modelFile).Replace(".cs", "");
-        if (interfaceName == "IBaseModel") continue;
+        if (interfaceName == "IIdentifiable"
+            || interfaceName == "IDeletable"
+            || interfaceName == "ILastChangedDatable")
+            continue;
 
         var className = interfaceName.Substring(1, interfaceName.Length - 1);
         var realmClassName = $"Realm{className}";
@@ -28,13 +31,20 @@ namespace Toggl.PrimeRadiant.Realm
         var databaseInterfaceFileName = Path.Combine(filePath, "../../Toggl.PrimeRadiant/Models/", databaseInterfaceName + ".cs");
         var databaseInterfaceExists = File.Exists(databaseInterfaceFileName);
 
+        var implementsIIdentifiable = File.ReadAllLines(modelFile).Any(l => l.Contains("IIdentifiable"));
+
         var implementsIDatabaseSyncable = databaseInterfaceExists
             && File.ReadAllLines(databaseInterfaceFileName).Any(l => l.Contains("IDatabaseSyncable"));
 
-        if (!databaseInterfaceExists)
-            break;
+        var implementsILastChangedDatabale = File.ReadAllLines(modelFile).Any(l => l.Contains("ILastChangedDatable"));
+
+        var implementsIDeletable = File.ReadAllLines(modelFile).Any(l => l.Contains("IDeletable"));
+
+        if (!databaseInterfaceExists) continue;
 
         var updatesFromInterface = databaseInterfaceExists ? databaseInterfaceName : interfaceName;
+
+        var hasModifiableId = implementsIDatabaseSyncable && implementsIIdentifiable;
 
         if (!isFirst)
             WriteLine("");
@@ -44,22 +54,25 @@ namespace Toggl.PrimeRadiant.Realm
             var isStartOfClass = line.Contains($" interface {interfaceName}");
             if (isStartOfClass)
             {
-                var extendsIBaseModel = line.Contains(": IBaseModel");
                 var interfaces = $"IUpdatesFrom<{updatesFromInterface}>";
-                if (implementsIDatabaseSyncable)
+                if (hasModifiableId)
                     interfaces += ", IModifiableId";
 
                 WriteLine($"    internal partial class {realmClassName} : {interfaces}");
                 WriteLine( "    {");
 
-                if (extendsIBaseModel)
+                if (implementsIIdentifiable)
                 {
                     WriteLine( "        public long Id { get; set; }\n");
                 }
 
                 if (implementsIDatabaseSyncable)
                 {
-                    WriteLine( "        public long? OriginalId { get; set; }\n");
+                    if (hasModifiableId)
+                    {
+                        WriteLine("        public long? OriginalId { get; set; }\n");
+                    }
+
                     WriteLine( "        public bool IsDeleted { get; set; }\n");
                     WriteLine( "        public int SyncStatusInt { get; set; }\n");
                     WriteLine( "        [Ignored]");
@@ -81,6 +94,16 @@ namespace Toggl.PrimeRadiant.Realm
                 WriteLine($"        public void SetPropertiesFrom({updatesFromInterface} entity, Realms.Realm realm)");
                 WriteLine( "        {");
 
+                if (implementsILastChangedDatabale)
+                {
+                    WriteLine("            At = entity.At;");
+                }
+
+                if (implementsIDeletable)
+                {
+                    WriteLine("            ServerDeletedAt = entity.ServerDeletedAt;");
+                }
+
                 if (implementsIDatabaseSyncable)
                 {
                     WriteLine("            IsDeleted = entity.IsDeleted;");
@@ -88,7 +111,7 @@ namespace Toggl.PrimeRadiant.Realm
                     WriteLine("            LastSyncErrorMessage = entity.LastSyncErrorMessage;");
                 }
 
-                if (extendsIBaseModel)
+                if (implementsIIdentifiable)
                 {
                     WriteLine("            Id = entity.Id;");
                 }

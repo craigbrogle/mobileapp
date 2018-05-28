@@ -1,5 +1,4 @@
 ﻿using System;
-using Toggl.Foundation.Shortcuts;
 
 namespace Toggl.Foundation.Analytics
 {
@@ -25,6 +24,7 @@ namespace Toggl.Foundation.Analytics
         void TrackNonFatalException(Exception ex);
 
         void TrackStartedTimeEntry(TimeEntryStartOrigin origin);
+        void TrackDeletingTimeEntry();
 
         void TrackSyncError(Exception exception);
 
@@ -35,5 +35,8 @@ namespace Toggl.Foundation.Analytics
 
         void TrackStartOpensProjectSelector(ProjectTagSuggestionSource source);
         void TrackStartOpensTagSelector(ProjectTagSuggestionSource source);
+
+        void TrackReportsSuccess(ReportsSource source, int totalDays, int projectsNotSyncedCount, double loadingTime);
+        void TrackReportsFailure(ReportsSource source, int totalDays, double loadingTime);
     }
 }

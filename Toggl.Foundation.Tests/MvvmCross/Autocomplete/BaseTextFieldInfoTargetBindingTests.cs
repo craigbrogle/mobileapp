@@ -4,6 +4,7 @@ using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Autocomplete;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
@@ -123,14 +124,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.Autocomplete
             [InlineData(1)]
             public void RemovesTheReportedTagFromTheCurrentTextFieldInfo(int index)
             {
-                var workspace = Substitute.For<IDatabaseWorkspace>();
+                var workspace = Substitute.For<IThreadSafeWorkspace>();
                 workspace.Name.Returns("Some workspace");
-                var tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 tag.Name.Returns("Some tag");
                 tag.Id.Returns(1);
                 tag.Workspace.Returns(workspace);
                 tag.WorkspaceId.Returns(3);
-                var tag2 = Substitute.For<IDatabaseTag>();
+                var tag2 = Substitute.For<IThreadSafeTag>();
                 tag2.Name.Returns("Some tag 2");
                 tag2.Id.Returns(2);
                 tag2.Workspace.Returns(workspace);
@@ -213,7 +214,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Autocomplete
 
         public sealed class TestableTextFieldInfoTargetBinding : BaseTextFieldInfoTargetBinding<object>
         {
-            public TestableTextFieldInfoTargetBinding(object target) 
+            public TestableTextFieldInfoTargetBinding(object target)
                 : base(target)
             {
             }
@@ -232,9 +233,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.Autocomplete
             public string CurrentTimeEntryDescription { get; set; }
 
             protected override void MarkViewForRedrawing() { }
-            
+
             protected override void UpdateTarget(TextFieldInfo textFieldInfo) { }
-            
+
             protected override bool CheckIfSelectingText() => IsSelectingText;
 
             protected override int GetCurrentCursorPosition() => CurrentCursorPosition;

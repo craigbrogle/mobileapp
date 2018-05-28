@@ -34,7 +34,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IAnalyticsService analyticsService;
 
         private readonly HashSet<long> tagIds = new HashSet<long>();
-        private IDisposable deleteDisposable;
         private IDisposable tickingDisposable;
         private IDisposable confirmDisposable;
         private IDisposable preferencesDisposable;
@@ -278,18 +277,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (!shouldDelete)
                 return;
 
-            deleteDisposable = dataSource.TimeEntries
-                .Delete(Id)
-                .Subscribe(onDeleteError, onDeleteCompleted);
-        }
+            try
+            {
+                await interactorFactory.DeleteTimeEntry(Id).Execute();
 
-        private void onDeleteCompleted()
-        {
-            dataSource.SyncManager.PushSync();
-            navigationService.Close(this);
+                analyticsService.TrackDeletingTimeEntry();
+                dataSource.SyncManager.PushSync();
+                await navigationService.Close(this);
+            }
+            catch (Exception exception)
+            {
+            }
         }
-
-        private void onDeleteError(Exception exception) { }
 
         private void confirm()
         {
@@ -560,7 +559,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public override void ViewDestroy()
         {
             base.ViewDestroy();
-            deleteDisposable?.Dispose();
             confirmDisposable?.Dispose();
             tickingDisposable?.Dispose();
             preferencesDisposable?.Dispose();

@@ -1,10 +1,10 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockWorkspace : IDatabaseWorkspace
+    public sealed class MockWorkspace : IThreadSafeWorkspace
     {
         public string Name { get; set; }
 
@@ -30,7 +30,7 @@ namespace Toggl.Foundation.Tests.Mocks
 
         public int RoundingMinutes { get; set; }
 
-        public DateTimeOffset? At { get; set; }
+        public DateTimeOffset At { get; set; }
 
         public string LogoUrl { get; set; }
 

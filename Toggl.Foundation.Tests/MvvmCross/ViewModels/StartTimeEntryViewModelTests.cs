@@ -25,6 +25,7 @@ using static Toggl.Multivac.Extensions.FunctionalExtensions;
 using static Toggl.Multivac.Extensions.StringExtensions;
 using ITimeEntryPrototype = Toggl.Foundation.Models.ITimeEntryPrototype;
 using TextFieldInfo = Toggl.Foundation.Autocomplete.TextFieldInfo;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -48,8 +49,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             protected StartTimeEntryViewModelTest()
             {
-                DataSource.AutocompleteProvider.Returns(AutocompleteProvider);
-
                 ViewModel.TextFieldInfo = TextFieldInfo.Empty(1);
             }
 
@@ -72,14 +71,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     OnboardingStorage,
                     InteractorFactory,
                     NavigationService,
-                    AnalyticsService
+                    AnalyticsService,
+                    AutocompleteProvider
             );
         }
 
         public sealed class TheConstructor : StartTimeEntryViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(EightParameterConstructorTestData))]
+            [ClassData(typeof(NineParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
                 bool useDataSource,
                 bool useTimeService,
@@ -88,7 +88,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 bool useInteractorFactory,
                 bool useOnboardingStorage,
                 bool useNavigationService,
-                bool useAnalyticsService)
+                bool useAnalyticsService,
+                bool useAutocompleteProvider)
             {
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
@@ -98,6 +99,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = useNavigationService ? NavigationService : null;
                 var analyticsService = useAnalyticsService ? AnalyticsService : null;
+                var autocompleteProvider = useAutocompleteProvider ? AutocompleteProvider : null;
 
                 Action tryingToConstructWithEmptyParameters =
                     () => new StartTimeEntryViewModel(
@@ -108,7 +110,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         onboardingStorage,
                         interactorFactory,
                         navigationService,
-                        analyticsService);
+                        analyticsService,
+                        autocompleteProvider);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -272,14 +275,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 public WhenSuggestingProjects()
                 {
-                    var project = Substitute.For<IDatabaseProject>();
+                    var project = Substitute.For<IThreadSafeProject>();
                     project.Id.Returns(10);
                     project.Name.Returns(ProjectName);
                     project.WorkspaceId.Returns(40);
                     project.Workspace.Name.Returns("Some workspace");
                     var projectSuggestion = new ProjectSuggestion(project);
 
-                    DataSource.AutocompleteProvider
+                    AutocompleteProvider
                         .Query(Arg.Is<QueryInfo>(info => info.SuggestionType == AutocompleteSuggestionType.Projects))
                               .Returns(Observable.Return(new ProjectSuggestion[] { projectSuggestion }));
 
@@ -328,12 +331,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 public WhenSuggestingTags()
                 {
-                    var tag = Substitute.For<IDatabaseTag>();
+                    var tag = Substitute.For<IThreadSafeTag>();
                     tag.Id.Returns(20);
                     tag.Name.Returns(TagName);
                     var tagSuggestion = new TagSuggestion(tag);
 
-                    DataSource.AutocompleteProvider
+                    AutocompleteProvider
                         .Query(Arg.Is<QueryInfo>(info => info.SuggestionType == AutocompleteSuggestionType.Tags))
                         .Returns(Observable.Return(new TagSuggestion[] { tagSuggestion }));
 
@@ -387,7 +390,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 public WhenSuggestingProjects()
                 {
-                    var project = Substitute.For<IDatabaseProject>();
+                    var project = Substitute.For<IThreadSafeProject>();
                     project.Id.Returns(10);
                     DataSource.Projects.GetById(Arg.Any<long>()).Returns(Observable.Return(project));
                     ViewModel.TextFieldInfo = TextFieldInfo.Empty(1).WithTextAndCursor($"@{currentQuery}", 15);
@@ -421,7 +424,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     NavigationService
                         .Navigate<EditProjectViewModel, string, long?>(Arg.Is(currentQuery))
                         .Returns(projectId);
-                    var project = Substitute.For<IDatabaseProject>();
+                    var project = Substitute.For<IThreadSafeProject>();
                     project.Id.Returns(projectId);
                     project.Name.Returns(currentQuery);
                     DataSource.Projects.GetById(Arg.Is(projectId)).Returns(Observable.Return(project));
@@ -457,7 +460,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     long workspaceId = 100;
                     long projectId = 101;
-                    var project = Substitute.For<IDatabaseProject>();
+                    var project = Substitute.For<IThreadSafeProject>();
                     project.Id.Returns(projectId);
                     project.WorkspaceId.Returns(workspaceId);
                     DataSource.Projects.GetById(Arg.Is(projectId))
@@ -475,7 +478,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 public async Task CreatesTagInUsersDefaultWorkspaceIfNoProjectIsSelected()
                 {
                     long workspaceId = 100;
-                    var user = Substitute.For<IDatabaseUser>();
+                    var user = Substitute.For<IThreadSafeUser>();
                     user.DefaultWorkspaceId.Returns(workspaceId);
                     DataSource.User.Current.Returns(Observable.Return(user));
                     await ViewModel.Initialize();
@@ -492,7 +495,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     DataSource.Tags.Create(Arg.Any<string>(), Arg.Any<long>())
                         .Returns(callInfo =>
                         {
-                            var tag = Substitute.For<IDatabaseTag>();
+                            var tag = Substitute.For<IThreadSafeTag>();
                             tag.Name.Returns(callInfo.Arg<string>());
                             return Observable.Return(tag);
                         });
@@ -594,9 +597,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             public TheToggleProjectSuggestionsCommand()
             {
-                var suggestions = ProjectSuggestion.FromProjects(Enumerable.Empty<IDatabaseProject>());
+                var suggestions = ProjectSuggestion.FromProjects(Enumerable.Empty<IThreadSafeProject>());
                 AutocompleteProvider
-                    .Query(Arg.Is<TextFieldInfo>(info => info.Text.Contains("@")))
+                    .Query(Arg.Is<QueryInfo>(info => info.Text.Contains("@")))
                     .Returns(Observable.Return(suggestions));
 
                 AutocompleteProvider
@@ -711,12 +714,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             public TheToggleTagSuggestionsCommand()
             {
-                var tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 tag.Id.Returns(TagId);
                 tag.Name.Returns(TagName);
                 var suggestions = TagSuggestion.FromTags(new[] { tag });
                 AutocompleteProvider
-                    .Query(Arg.Is<TextFieldInfo>(info => info.Text.Contains("#")))
+                    .Query(Arg.Is<QueryInfo>(info => info.Text.Contains("#")))
                     .Returns(Observable.Return(suggestions));
             }
 
@@ -1042,8 +1045,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 private const long projectWorkspaceId = 13;
                 private const string description = "Testing Toggl apps";
 
-                private readonly IDatabaseUser user = Substitute.For<IDatabaseUser>();
-                private readonly IDatabaseProject project = Substitute.For<IDatabaseProject>();
+                private readonly IThreadSafeUser user = Substitute.For<IThreadSafeUser>();
+                private readonly IThreadSafeProject project = Substitute.For<IThreadSafeProject>();
 
                 private readonly DateTimeOffset startDate = DateTimeOffset.UtcNow;
 
@@ -1077,7 +1080,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task ExecutesTheCreateTimeEntryInteractor()
                 {
-                    var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                    var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                     InteractorFactory.CreateTimeEntry(Arg.Any<ITimeEntryPrototype>()).Returns(mockedInteractor);
 
                     await ViewModel.DoneCommand.ExecuteAsync();
@@ -1150,7 +1153,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 private TagSuggestion tagSuggestionFromInt(int i)
                 {
-                    var tag = Substitute.For<IDatabaseTag>();
+                    var tag = Substitute.For<IThreadSafeTag>();
                     tag.Id.Returns(i);
                     tag.Name.Returns(i.ToString());
 
@@ -1161,7 +1164,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ClosesTheViewModel()
             {
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.Id.Returns(1);
                 user.DefaultWorkspaceId.Returns(10);
                 DataSource.User.Current.Returns(Observable.Return(user));
@@ -1180,38 +1183,38 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public abstract class SelectSuggestionTest<TSuggestion> : StartTimeEntryViewModelTest
                 where TSuggestion : AutocompleteSuggestion
             {
-                protected IDatabaseTag Tag { get; }
-                protected IDatabaseTask Task { get; }
-                protected IDatabaseProject Project { get; }
-                protected IDatabaseTimeEntry TimeEntry { get; }
-                protected IDatabaseWorkspace Workspace { get; }
+                protected IThreadSafeTag Tag { get; }
+                protected IThreadSafeTask Task { get; }
+                protected IThreadSafeProject Project { get; }
+                protected IThreadSafeTimeEntry TimeEntry { get; }
+                protected IThreadSafeWorkspace Workspace { get; }
 
                 protected abstract TSuggestion Suggestion { get; }
 
                 protected SelectSuggestionTest()
                 {
-                    Workspace = Substitute.For<IDatabaseWorkspace>();
+                    Workspace = Substitute.For<IThreadSafeWorkspace>();
                     Workspace.Id.Returns(WorkspaceId);
 
-                    Project = Substitute.For<IDatabaseProject>();
+                    Project = Substitute.For<IThreadSafeProject>();
                     Project.Id.Returns(ProjectId);
                     Project.Name.Returns(ProjectName);
                     Project.Color.Returns(ProjectColor);
                     Project.Workspace.Returns(Workspace);
                     Project.WorkspaceId.Returns(WorkspaceId);
 
-                    Task = Substitute.For<IDatabaseTask>();
+                    Task = Substitute.For<IThreadSafeTask>();
                     Task.Id.Returns(TaskId);
                     Task.Project.Returns(Project);
                     Task.ProjectId.Returns(ProjectId);
                     Task.WorkspaceId.Returns(WorkspaceId);
                     Task.Name.Returns(TaskId.ToString());
 
-                    TimeEntry = Substitute.For<IDatabaseTimeEntry>();
+                    TimeEntry = Substitute.For<IThreadSafeTimeEntry>();
                     TimeEntry.Description.Returns(Description);
                     TimeEntry.Project.Returns(Project);
 
-                    Tag = Substitute.For<IDatabaseTag>();
+                    Tag = Substitute.For<IThreadSafeTag>();
                     Tag.Id.Returns(TagId);
                     Tag.Name.Returns(TagName);
                 }
@@ -1332,7 +1335,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task ShowsConfirmDialogIfWorkspaceIsAboutToBeChanged()
                 {
-                    var user = Substitute.For<IDatabaseUser>();
+                    var user = Substitute.For<IThreadSafeUser>();
                     user.DefaultWorkspaceId.Returns(100);
                     DataSource.User.Current.Returns(Observable.Return(user));
                     ViewModel.Prepare();
@@ -1351,7 +1354,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task DoesNotShowConfirmDialogIfWorkspaceIsNotGoingToChange()
                 {
-                    var user = Substitute.For<IDatabaseUser>();
+                    var user = Substitute.For<IThreadSafeUser>();
                     user.DefaultWorkspaceId.Returns(WorkspaceId);
                     DataSource.User.Current.Returns(Observable.Return(user));
                     ViewModel.Prepare();
@@ -1370,7 +1373,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task ClearsTagsIfWorkspaceIsChanged()
                 {
-                    var user = Substitute.For<IDatabaseUser>();
+                    var user = Substitute.For<IThreadSafeUser>();
                     user.DefaultWorkspaceId.Returns(100);
                     DataSource.User.Current.Returns(Observable.Return(user));
                     ViewModel.Prepare();
@@ -1378,7 +1381,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Enumerable.Range(100, 10)
                         .Select(i =>
                         {
-                            var tag = Substitute.For<IDatabaseTag>();
+                            var tag = Substitute.For<IThreadSafeTag>();
                             tag.Id.Returns(i);
                             return new TagSuggestion(tag);
                         }).ForEach(ViewModel.SelectSuggestionCommand.Execute);
@@ -1616,14 +1619,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void DoesNotSuggestAnythingWhenAProjectIsAlreadySelected()
             {
                 var description = "abc";
-                var projectA = Substitute.For<IDatabaseProject>();
+                var projectA = Substitute.For<IThreadSafeProject>();
                 projectA.Id.Returns(ProjectId);
-                var projectB = Substitute.For<IDatabaseProject>();
+                var projectB = Substitute.For<IThreadSafeProject>();
                 projectB.Id.Returns(ProjectId + 1);
-                var timeEntryA = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntryA = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntryA.Description.Returns(description);
                 timeEntryA.Project.Returns(projectA);
-                var timeEntryB = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntryB = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntryB.Description.Returns(description);
                 timeEntryB.Project.Returns(projectB);
                 var suggestions = Observable.Return(new AutocompleteSuggestion[]
@@ -1828,7 +1831,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var tags = Enumerable
                     .Range(0, tagCount)
-                    .Select(_ => Substitute.For<IDatabaseTag>());
+                    .Select(_ => Substitute.For<IThreadSafeTag>());
                 DataSource.Tags.GetAll().Returns(Observable.Return(tags));
                 ViewModel.Prepare(DefaultParameter);
                 await ViewModel.Initialize();
@@ -1847,7 +1850,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("x")]
             public async Task ReturnsFalseAfterCreatingATag(string query)
             {
-                var tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 DataSource
                     .Tags.Create(Arg.Any<string>(), Arg.Any<long>())
                     .Returns(Observable.Return(tag));

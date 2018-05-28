@@ -1,30 +1,31 @@
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using Toggl.Multivac.Models;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Sync.States
 {
-    internal sealed class FetchObservables
+    internal sealed class FetchObservables : IFetchObservables
     {
-        public ISinceParameters SinceParameters { get; }
-        public IObservable<IUser> User { get; }
-        public IObservable<List<IWorkspace>> Workspaces { get; }
-        public IObservable<List<IWorkspaceFeatureCollection>> WorkspaceFeatures { get; }
-        public IObservable<List<IClient>> Clients { get; }
-        public IObservable<List<IProject>> Projects { get; }
-        public IObservable<List<ITag>> Tags { get; }
-        public IObservable<List<ITask>> Tasks { get; }
-        public IObservable<List<ITimeEntry>> TimeEntries { get; }
-        public IObservable<IPreferences> Preferences { get; }
+        private readonly IObservable<IUser> user;
 
-        public FetchObservables(FetchObservables old, ISinceParameters sinceParameters)
-            : this(sinceParameters, old.Workspaces, old.WorkspaceFeatures, old.User, old.Clients,
-                   old.Projects, old.TimeEntries, old.Tags, old.Tasks, old.Preferences)
-        {
-        }
+        private readonly IObservable<List<IWorkspace>> workspaces;
 
-        public FetchObservables(ISinceParameters sinceParameters,
+        private readonly IObservable<List<IWorkspaceFeatureCollection>> workspaceFeatures;
+
+        private readonly IObservable<List<IClient>> clients;
+
+        private readonly IObservable<List<IProject>> projects;
+
+        private readonly IObservable<List<ITag>> tags;
+
+        private readonly IObservable<List<ITask>> tasks;
+
+        private readonly IObservable<List<ITimeEntry>> timeEntries;
+
+        private readonly IObservable<IPreferences> preferences;
+
+        public FetchObservables(
             IObservable<List<IWorkspace>> workspaces,
             IObservable<List<IWorkspaceFeatureCollection>> workspaceFeatures, 
             IObservable<IUser> user,
@@ -33,19 +34,49 @@ namespace Toggl.Foundation.Sync.States
             IObservable<List<ITimeEntry>> timeEntries,
             IObservable<List<ITag>> tags,
             IObservable<List<ITask>> tasks,
-            IObservable<IPreferences> preferences
-        )
+            IObservable<IPreferences> preferences)
         {
-            SinceParameters = sinceParameters;
-            Workspaces = workspaces;
-            WorkspaceFeatures = workspaceFeatures;
-            User = user;
-            Clients = clients;
-            Projects = projects;
-            TimeEntries = timeEntries;
-            Tags = tags;
-            Tasks = tasks;
-            Preferences = preferences;
+            this.workspaces = workspaces;
+            this.workspaceFeatures = workspaceFeatures;
+            this.user = user;
+            this.clients = clients;
+            this.projects = projects;
+            this.timeEntries = timeEntries;
+            this.tags = tags;
+            this.tasks = tasks;
+            this.preferences = preferences;
+        }
+
+        public IObservable<List<T>> Get<T>()
+        {
+            if (typeof(T) == typeof(IWorkspace))
+                return (IObservable<List<T>>)workspaces;
+
+            if (typeof(T) == typeof(IWorkspaceFeatureCollection))
+                return (IObservable<List<T>>)workspaceFeatures;
+
+            if (typeof(T) == typeof(IClient))
+                return (IObservable<List<T>>)clients;
+
+            if (typeof(T) == typeof(IProject))
+                return (IObservable<List<T>>)projects;
+
+            if (typeof(T) == typeof(ITag))
+                return (IObservable<List<T>>)tags;
+
+            if (typeof(T) == typeof(ITask))
+                return (IObservable<List<T>>)tasks;
+            
+            if (typeof(T) == typeof(IUser))
+                return (IObservable<List<T>>)user.Select(fetchedUser => new List<IUser> { fetchedUser });
+
+            if (typeof(T) == typeof(IPreferences))
+                return (IObservable<List<T>>)preferences.Select(fetchedPreferences => new List<IPreferences> { fetchedPreferences });
+
+            if (typeof(T) == typeof(ITimeEntry))
+                return (IObservable<List<T>>)timeEntries;
+
+            throw new ArgumentException($"Type {typeof(T).FullName} is not supported by the {nameof(FetchObservables)} class.");
         }
     }
 }

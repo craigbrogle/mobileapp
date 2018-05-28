@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -8,7 +9,9 @@ using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
@@ -22,17 +25,26 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class ReportsViewModel : MvxViewModel<long>
     {
+        private const float minimumPieChartSegmentPercentage = 10f;
+
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
+        private readonly IAnalyticsService analyticsService;
         private readonly ReportsCalendarViewModel calendarViewModel;
         private readonly Subject<Unit> reportSubject = new Subject<Unit>();
         private readonly CompositeDisposable disposeBag = new CompositeDisposable();
 
         private DateTimeOffset startDate;
         private DateTimeOffset endDate;
+        private int totalDays => (endDate - startDate).Days + 1;
+        private ReportsSource source;
+        private int projectsNotSyncedCount;
+        private DateTime reportSubjectStartTime;
         private long workspaceId;
         private DateFormat dateFormat;
+        private IReadOnlyList<ChartSegment> segments = new ChartSegment[0];
+        private IReadOnlyList<ChartSegment> groupedSegments = new ChartSegment[0];
 
         public bool IsLoading { get; private set; }
 
@@ -44,9 +56,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public float? BillablePercentage { get; private set; } = null;
 
-        public MvxObservableCollection<ChartSegment> Segments { get; } = new MvxObservableCollection<ChartSegment>();
+        public IReadOnlyList<ChartSegment> Segments
+        {
+            get => groupedSegments ?? (groupedSegments = groupSegments());
+            private set
+            {
+                segments = value;
+                groupedSegments = null;
+            }
+        }
 
-        public bool ShowEmptyState => !Segments.Any() && !IsLoading;
+        public bool ShowEmptyState => !segments.Any() && !IsLoading;
 
         public string CurrentDateRangeString { get; private set; }
 
@@ -69,16 +89,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand<DateRangeParameter> ChangeDateRangeCommand { get; }
 
-        public ReportsViewModel(ITogglDataSource dataSource,
-                                ITimeService timeService,
-                                IMvxNavigationService navigationService)
+        public ReportsViewModel(
+            ITogglDataSource dataSource,
+            ITimeService timeService,
+            IMvxNavigationService navigationService,
+            IAnalyticsService analyticsService
+        )
         {
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
 
             this.timeService = timeService;
             this.navigationService = navigationService;
+            this.analyticsService = analyticsService;
             this.dataSource = dataSource;
 
             calendarViewModel = new ReportsCalendarViewModel(timeService, dataSource);
@@ -101,13 +126,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     .Current
                     .Select(user => user.DefaultWorkspaceId);
 
-            var currentDate = timeService.CurrentDateTime.Date;
-            startDate = currentDate.AddDays(1 - (int)currentDate.DayOfWeek);
-            endDate = startDate.AddDays(6);
-
             disposeBag.Add(
                 reportSubject
-                    .StartWith(Unit.Default)
                     .AsObservable()
                     .Do(setLoadingState)
                     .SelectMany(_ => dataSource.ReportsProvider.GetProjectSummary(workspaceId, startDate, endDate))
@@ -124,6 +144,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(onPreferencesChanged);
 
             disposeBag.Add(preferencesDisposable);
+
+            IsLoading = true;
         }
 
         public override void ViewAppeared()
@@ -134,8 +156,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void setLoadingState(Unit obj)
         {
+            reportSubjectStartTime = timeService.CurrentDateTime.UtcDateTime;
             IsLoading = true;
-            Segments.Clear();
+            Segments = new ChartSegment[0];
         }
 
         private void onReport(ProjectSummaryReport report)
@@ -143,17 +166,35 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             TotalTime = TimeSpan.FromSeconds(report.TotalSeconds);
             BillablePercentage = report.TotalSeconds == 0 ? null : (float?)report.BillablePercentage;
 
-            var segments = report.Segments.Select(segment => segment.WithDurationFormat(DurationFormat));
-            Segments.AddRange(segments);
+            Segments = report.Segments
+                             .Select(segment => segment.WithDurationFormat(DurationFormat))
+                             .ToList()
+                             .AsReadOnly();
+
             IsLoading = false;
 
-            RaisePropertyChanged(nameof(Segments));
+            trackReportsEvent(true);
         }
 
         private void onError(Exception ex)
         {
             RaisePropertyChanged(nameof(Segments));
             IsLoading = false;
+            trackReportsEvent(false);
+        }
+
+        private void trackReportsEvent(bool success)
+        {
+            var loadingTime = timeService.CurrentDateTime.UtcDateTime - reportSubjectStartTime;
+
+            if (success)
+            {
+                analyticsService.TrackReportsSuccess(source, totalDays, projectsNotSyncedCount, loadingTime.TotalMilliseconds);
+            }
+            else
+            {
+                analyticsService.TrackReportsFailure(source, totalDays, loadingTime.TotalMilliseconds);
+            }
         }
 
         private void toggleCalendar()
@@ -172,18 +213,22 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             startDate = dateRange.StartDate;
             endDate = dateRange.EndDate;
+            source = dateRange.Source;
             updateCurrentDateRangeString();
             reportSubject.OnNext(Unit.Default);
         }
 
         private void updateCurrentDateRangeString()
         {
+            if (startDate == default(DateTimeOffset) || endDate == default(DateTimeOffset))
+                return;
+
             if (startDate == endDate)
             {
                 CurrentDateRangeString = $"{startDate.ToString(dateFormat.Short)} ▾";
                 return;
             }
-            
+
             CurrentDateRangeString = IsCurrentWeek
                 ? $"{Resources.ThisWeek} ▾"
                 : $"{startDate.ToString(dateFormat.Short)} - {endDate.ToString(dateFormat.Short)} ▾";
@@ -194,11 +239,33 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             DurationFormat = preferences.DurationFormat;
             dateFormat = preferences.DateFormat;
 
-            var segments = Segments.Select(segment => segment.WithDurationFormat(DurationFormat));
-            Segments.Clear();
-            Segments.AddRange(segments);
+            Segments = segments.Select(segment => segment.WithDurationFormat(DurationFormat))
+                               .ToList()
+                               .AsReadOnly();
 
             updateCurrentDateRangeString();
+        }
+
+        private IReadOnlyList<ChartSegment> groupSegments()
+        {
+            var otherProjects = segments.Where(segment => segment.Percentage < minimumPieChartSegmentPercentage).ToList();
+            if (otherProjects.Count == 0)
+                return segments;
+
+            var otherSegment = new ChartSegment(
+                Resources.Other,
+                string.Empty,
+                otherProjects.Sum(project => project.Percentage),
+                otherProjects.Sum(project => (float)project.TrackedTime.TotalSeconds),
+                otherProjects.Sum(project => project.BillableSeconds),
+                Color.Reports.OtherProjectsSegmentBackground.ToHexString(),
+                DurationFormat);
+
+            return segments
+                .Where(segment => segment.Percentage >= minimumPieChartSegmentPercentage)
+                .Append(otherSegment)
+                .ToList()
+                .AsReadOnly();
         }
     }
 }

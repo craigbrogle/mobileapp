@@ -15,19 +15,19 @@ namespace Toggl.Daneel.Onboarding.MainView
         public IObservable<bool> ShouldBeVisible { get; }
 
         public SwipeLeftOnboardingStep(
-            IObservable<int> timeEntriesCountObservable,
-            IObservable<bool> swipeRightOnboardingStepIsVisibleObservable)
+            IObservable<bool> conflictingStepsAreNotVisibleObservable,
+            IObservable<int> timeEntriesCountObservable)
         {
-            Ensure.Argument.IsNotNull(timeEntriesCountObservable, nameof(timeEntriesCountObservable));
             Ensure.Argument.IsNotNull(
-                swipeRightOnboardingStepIsVisibleObservable,
-                nameof(swipeRightOnboardingStepIsVisibleObservable));
+                conflictingStepsAreNotVisibleObservable,
+                nameof(conflictingStepsAreNotVisibleObservable));
+            Ensure.Argument.IsNotNull(timeEntriesCountObservable, nameof(timeEntriesCountObservable));
 
             ShouldBeVisible = Observable.CombineLatest(
-                swipeRightOnboardingStepIsVisibleObservable,
+                conflictingStepsAreNotVisibleObservable,
                 timeEntriesCountObservable,
-                (swipeRightIsVisible, timeEntriesCount) => !swipeRightIsVisible && timeEntriesCount >= minimumTimeEntriesCount)
-                .DelayIf(shouldBeVisible => shouldBeVisible, delay);
+                (conflictingStepsAreNotVisible, timeEntriesCount) => conflictingStepsAreNotVisible && timeEntriesCount >= minimumTimeEntriesCount)
+                .Throttle(delay);
         }
     }
 }

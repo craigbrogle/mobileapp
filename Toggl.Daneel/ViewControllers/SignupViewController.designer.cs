@@ -16,6 +16,9 @@ namespace Toggl.Daneel.ViewControllers
 		Toggl.Daneel.Views.ActivityIndicatorView ActivityIndicator { get; set; }
 
 		[Outlet]
+		UIKit.UIImageView CountryNotSelectedImageView { get; set; }
+
+		[Outlet]
 		Toggl.Daneel.Views.LoginTextField EmailTextField { get; set; }
 
 		[Outlet]
@@ -44,11 +47,6 @@ namespace Toggl.Daneel.ViewControllers
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (TopConstraint != null) {
-				TopConstraint.Dispose ();
-				TopConstraint = null;
-			}
-
 			if (ActivityIndicator != null) {
 				ActivityIndicator.Dispose ();
 				ActivityIndicator = null;
@@ -92,6 +90,16 @@ namespace Toggl.Daneel.ViewControllers
 			if (SignupButton != null) {
 				SignupButton.Dispose ();
 				SignupButton = null;
+			}
+
+			if (TopConstraint != null) {
+				TopConstraint.Dispose ();
+				TopConstraint = null;
+			}
+
+			if (CountryNotSelectedImageView != null) {
+				CountryNotSelectedImageView.Dispose ();
+				CountryNotSelectedImageView = null;
 			}
 		}
 	}

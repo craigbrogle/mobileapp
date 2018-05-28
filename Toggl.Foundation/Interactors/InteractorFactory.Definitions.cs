@@ -11,7 +11,6 @@ namespace Toggl.Foundation.Interactors
     public sealed partial class InteractorFactory : IInteractorFactory
     {
         private readonly IIdProvider idProvider;
-        private readonly ITogglDatabase database;
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
         private readonly IUserPreferences userPreferences;
@@ -20,14 +19,12 @@ namespace Toggl.Foundation.Interactors
 
         public InteractorFactory(
             IIdProvider idProvider,
-            ITogglDatabase database,
             ITimeService timeService,
             ITogglDataSource dataSource,
             IUserPreferences userPreferences,
             IAnalyticsService analyticsService,
             IApplicationShortcutCreator shortcutCreator)
         {
-            Ensure.Argument.IsNotNull(database, nameof(database));
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(idProvider, nameof(idProvider));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
@@ -35,7 +32,6 @@ namespace Toggl.Foundation.Interactors
             Ensure.Argument.IsNotNull(shortcutCreator, nameof(shortcutCreator));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
 
-            this.database = database;
             this.dataSource = dataSource;
             this.idProvider = idProvider;
             this.timeService = timeService;

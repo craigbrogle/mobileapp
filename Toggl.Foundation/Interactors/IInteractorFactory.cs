@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive;
+using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Suggestions;
-using Toggl.PrimeRadiant.Models;
-using Toggl.Multivac.Models;
 
 namespace Toggl.Foundation.Interactors
 {
@@ -11,13 +12,17 @@ namespace Toggl.Foundation.Interactors
     {
         #region Time Entries
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> CreateTimeEntry(ITimeEntryPrototype prototype);
+        IInteractor<IObservable<IThreadSafeTimeEntry>> CreateTimeEntry(ITimeEntryPrototype prototype);
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> StartSuggestion(Suggestion suggestion);
+        IInteractor<IObservable<IThreadSafeTimeEntry>> StartSuggestion(Suggestion suggestion);
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> ContinueTimeEntry(ITimeEntryPrototype prototype);
+        IInteractor<IObservable<IThreadSafeTimeEntry>> ContinueTimeEntry(ITimeEntryPrototype prototype);
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> ContinueMostRecentTimeEntry();
+        IInteractor<IObservable<IThreadSafeTimeEntry>> ContinueMostRecentTimeEntry();
+
+        IInteractor<IObservable<Unit>> DeleteTimeEntry(long id);
+
+        IInteractor<IObservable<IEnumerable<IThreadSafeTimeEntry>>> GetAllNonDeletedTimeEntries();
 
         #endregion
 
@@ -31,11 +36,11 @@ namespace Toggl.Foundation.Interactors
 
         #region Workspaces
 
-        IInteractor<IObservable<IDatabaseWorkspace>> GetDefaultWorkspace();
+        IInteractor<IObservable<IThreadSafeWorkspace>> GetDefaultWorkspace();
 
-        IInteractor<IObservable<IEnumerable<IDatabaseWorkspace>>> GetAllWorkspaces();
+        IInteractor<IObservable<IEnumerable<IThreadSafeWorkspace>>> GetAllWorkspaces();
 
-        IInteractor<IObservable<IDatabaseWorkspace>> GetWorkspaceById(long workspaceId);
+        IInteractor<IObservable<IThreadSafeWorkspace>> GetWorkspaceById(long workspaceId);
 
         IInteractor<IObservable<bool?>> AreProjectsBillableByDefault(long workspaceId);
 
@@ -50,6 +55,19 @@ namespace Toggl.Foundation.Interactors
         #region Sync
 
         IInteractor<IObservable<IEnumerable<SyncFailureItem>>> GetItemsThatFailedToSync();
+
+        #endregion
+
+        #region Autocomplete Suggestions
+
+        IInteractor<IObservable<IEnumerable<AutocompleteSuggestion>>> GetTimeEntriesAutocompleteSuggestions(
+            IList<string> wordsToQuery);
+
+        IInteractor<IObservable<IEnumerable<AutocompleteSuggestion>>> GetTagsAutocompleteSuggestions(
+            IList<string> wordsToQuery);
+
+        IInteractor<IObservable<IEnumerable<AutocompleteSuggestion>>> GetProjectsAutocompleteSuggestions(
+            IList<string> wordsToQuery);
 
         #endregion
     }

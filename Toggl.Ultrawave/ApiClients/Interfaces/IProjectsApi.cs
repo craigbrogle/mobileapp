@@ -5,10 +5,10 @@ using Toggl.Multivac.Models;
 namespace Toggl.Ultrawave.ApiClients
 {
     public interface IProjectsApi
+        : IPullingApiClient<IProject>,
+          IPullingChangedApiClient<IProject>,
+          ICreatingApiClient<IProject>
     {
-        IObservable<List<IProject>> GetAll();
-        IObservable<List<IProject>> GetAllSince(DateTimeOffset threshold);
-        IObservable<IProject> Create(IProject project);
         IObservable<List<IProject>> Search(long workspaceId, long[] projectIds);
     }
 }

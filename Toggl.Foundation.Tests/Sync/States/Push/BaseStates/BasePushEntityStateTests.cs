@@ -3,98 +3,97 @@ using System.Reactive.Linq;
 using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Sync;
-using Toggl.Foundation.Sync.States;
-using Toggl.Multivac.Models;
+using Toggl.Foundation.Sync.States.Push;
+using Toggl.Foundation.Tests.Helpers;
 using Toggl.PrimeRadiant;
-using Toggl.Ultrawave;
 using Toggl.Ultrawave.Exceptions;
+using Xunit;
 
-namespace Toggl.Foundation.Tests.Sync.States
+namespace Toggl.Foundation.Tests.Sync.States.Push.BaseStates
 {
-    public abstract class BasePushEntityStateTests<TModel, TApiModel>
-        where TModel : class, IBaseModel, IDatabaseSyncable, TApiModel
+    public abstract class BasePushEntityStateTests
     {
-        private ITogglApi api;
-        private IRepository<TModel> repository;
-
-        public BasePushEntityStateTests(ITogglApi api, IRepository<TModel> repository)
-        {
-            this.api = api;
-            this.repository = repository;
-        }
-
+        [Fact, LogIfTooSlow]
         public void ReturnsFailTransitionWhenEntityIsNull()
         {
-            var state = CreateState(api, repository);
+            var state = CreateState();
 
             var transition = state.Start(null).SingleAsync().Wait();
-            var parameter = ((Transition<(Exception Reason, TModel)>)transition).Parameter;
+            var parameter = ((Transition<(Exception Reason, IThreadSafeTestModel)>)transition).Parameter;
 
             transition.Result.Should().Be(state.UnknownError);
             parameter.Reason.Should().BeOfType<ArgumentNullException>();
         }
 
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ClientExceptionsWhichAreNotReThrownInSyncStates), MemberType = typeof(ApiExceptions))]
         public void ReturnsClientErrorTransitionWhenHttpFailsWithClientErrorException(ClientErrorException exception)
         {
-            var state = CreateState(api, repository);
-            var entity = CreateDirtyEntityWithNegativeId();
+            var state = CreateState();
+            var entity = new TestModel(-1, SyncStatus.SyncNeeded);
             PrepareApiCallFunctionToThrow(exception);
 
             var transition = state.Start(entity).SingleAsync().Wait();
-            var parameter = ((Transition<(Exception Reason, TModel)>)transition).Parameter;
+            var parameter = ((Transition<(Exception Reason, IThreadSafeTestModel)>)transition).Parameter;
 
             transition.Result.Should().Be(state.ClientError);
             parameter.Reason.Should().BeAssignableTo<ClientErrorException>();
         }
 
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ServerExceptions), MemberType = typeof(ApiExceptions))]
         public void ReturnsServerErrorTransitionWhenHttpFailsWithServerErrorException(ServerErrorException exception)
         {
-            var state = CreateState(api, repository);
-            var entity = CreateDirtyEntityWithNegativeId();
+            var state = CreateState();
+            var entity = new TestModel(-1, SyncStatus.SyncNeeded);
             PrepareApiCallFunctionToThrow(exception);
 
             var transition = state.Start(entity).SingleAsync().Wait();
-            var parameter = ((Transition<(Exception Reason, TModel)>)transition).Parameter;
+            var parameter = ((Transition<(Exception Reason, IThreadSafeTestModel)>)transition).Parameter;
 
             transition.Result.Should().Be(state.ServerError);
             parameter.Reason.Should().BeAssignableTo<ServerErrorException>();
         }
 
+        [Fact, LogIfTooSlow]
         public void ReturnsUnknownErrorTransitionWhenHttpFailsWithNonApiException()
         {
-            var state = CreateState(api, repository);
-            var entity = CreateDirtyEntityWithNegativeId();
+            var state = CreateState();
+            var entity = new TestModel(-1, SyncStatus.SyncNeeded);
             PrepareApiCallFunctionToThrow(new TestException());
 
             var transition = state.Start(entity).SingleAsync().Wait();
-            var parameter = ((Transition<(Exception Reason, TModel)>)transition).Parameter;
+            var parameter = ((Transition<(Exception Reason, IThreadSafeTestModel)>)transition).Parameter;
 
             transition.Result.Should().Be(state.UnknownError);
             parameter.Reason.Should().BeOfType<TestException>();
         }
 
+        [Fact, LogIfTooSlow]
         public void ReturnsFailTransitionWhenDatabaseOperationFails()
         {
-            var state = CreateState(api, repository);
-            var entity = CreateDirtyEntityWithNegativeId();
-            PrepareDatabaseFunctionToThrow(new TestException());
+            var state = CreateState();
+            var entity = new TestModel(-1, SyncStatus.SyncNeeded);
+            PrepareDatabaseOperationToThrow(new TestException());
 
             var transition = state.Start(entity).SingleAsync().Wait();
-            var parameter = ((Transition<(Exception Reason, TModel)>)transition).Parameter;
+            var parameter = ((Transition<(Exception Reason, IThreadSafeTestModel)>)transition).Parameter;
 
             transition.Result.Should().Be(state.UnknownError);
             parameter.Reason.Should().BeOfType<TestException>();
         }
 
-        public void ThrowsWhenCertainExceptionsAreCaught(Exception exception)
+        [Theory, LogIfTooSlow]
+        [MemberData(nameof(ApiExceptions.ExceptionsWhichCauseRethrow), MemberType = typeof(ApiExceptions))]
+        public void ThrowsWhenExceptionsWhichShouldBeRethrownAreCaught(Exception exception)
         {
-            var state = CreateState(api, repository); ;
+            var state = CreateState();
             PrepareApiCallFunctionToThrow(exception);
             Exception caughtException = null;
 
             try
             {
-                state.Start(Substitute.For<TModel>()).Wait();
+                state.Start(Substitute.For<IThreadSafeTestModel>()).Wait();
             }
             catch (Exception e)
             {
@@ -105,16 +104,10 @@ namespace Toggl.Foundation.Tests.Sync.States
             caughtException.Should().BeAssignableTo(exception.GetType());
         }
 
-        protected abstract BasePushEntityState<TModel> CreateState(ITogglApi api, IRepository<TModel> repository);
-
-        protected abstract TModel CreateDirtyEntityWithNegativeId();
-
-        protected abstract TModel CreateCleanWithPositiveIdFrom(TModel entity);
-
-        protected abstract TModel CreateCleanEntityFrom(TModel entity);
+        protected abstract BasePushEntityState<IDatabaseTestModel, IThreadSafeTestModel> CreateState();
 
         protected abstract void PrepareApiCallFunctionToThrow(Exception e);
 
-        protected abstract void PrepareDatabaseFunctionToThrow(Exception e);
+        protected abstract void PrepareDatabaseOperationToThrow(Exception e);
     }
 }

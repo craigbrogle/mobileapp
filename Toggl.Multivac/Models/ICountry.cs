@@ -2,7 +2,7 @@
 
 namespace Toggl.Multivac.Models
 {
-    public interface ICountry : IBaseModel
+    public interface ICountry : IIdentifiable
     {
         string Name { get; }
         string CountryCode { get; }

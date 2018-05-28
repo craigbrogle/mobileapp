@@ -2,7 +2,7 @@
 using System.Reactive;
 using System.Reactive.Linq;
 
-namespace Toggl.Foundation.Sync.States
+namespace Toggl.Foundation.Sync.States.Push
 {
     internal sealed class ResetAPIDelayState
     {

@@ -4,7 +4,7 @@ using Xunit;
 using FluentAssertions;
 using Toggl.Foundation.Sync.ConflictResolution;
 using Toggl.PrimeRadiant;
-using Toggl.Foundation.Sync.ConflictResolution.Selectors;
+using Toggl.Multivac.Models;
 
 namespace Toggl.Foundation.Tests.Sync.ConflictResolution
 {
@@ -141,7 +141,7 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
             mode.Should().Be(ConflictResolutionMode.Update);
         }
 
-        private sealed class TestModel : IDatabaseSyncable
+        private sealed class TestModel : IDeletable, IDatabaseSyncable, ILastChangedDatable
         {
             private readonly DateTimeOffset now = new DateTimeOffset(2017, 01, 05, 12, 34, 56, TimeSpan.Zero);
 
@@ -159,18 +159,6 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
             }
         }
 
-        private sealed class TestModelSelector : ISyncSelector<TestModel>
-        {
-            public DateTimeOffset LastModified(TestModel model)
-                => model.At;
-
-            public bool IsInSync(TestModel model)
-                => model.SyncStatus == SyncStatus.InSync;
-
-            public bool IsDeleted(TestModel model)
-                => model.ServerDeletedAt.HasValue;
-        }
-
         private TimeSpan randomTimeSpan(int seed, double max)
         {
             var lessThanMarginOfErrorSeconds = (new Random(seed)).NextDouble() * max;
@@ -178,9 +166,9 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
         }
 
         private PreferNewer<TestModel> resolver { get; }
-            = new PreferNewer<TestModel>(new TestModelSelector(), TimeSpan.FromSeconds(5));
+            = new PreferNewer<TestModel>(TimeSpan.FromSeconds(5));
 
         private PreferNewer<TestModel> zeroMarginOfErrorResolver { get; }
-            = new PreferNewer<TestModel>(new TestModelSelector());
+            = new PreferNewer<TestModel>();
     }
 }

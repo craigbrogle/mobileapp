@@ -599,6 +599,12 @@ namespace Toggl.Foundation {
             }
         }
         
+        public static string Other {
+            get {
+                return ResourceManager.GetString("Other", resourceCulture);
+            }
+        }
+        
         public static string StartTimeEntry {
             get {
                 return ResourceManager.GetString("StartTimeEntry", resourceCulture);
@@ -742,10 +748,16 @@ namespace Toggl.Foundation {
                 return ResourceManager.GetString("GetPasswordResetLink", resourceCulture);
             }
         }
-
+        
         public static string TermsOfServiceDialogMessage {
             get {
                 return ResourceManager.GetString("TermsOfServiceDialogMessage", resourceCulture);
+            }
+        }
+        
+        public static string SelectCountry {
+            get {
+                return ResourceManager.GetString("SelectCountry", resourceCulture);
             }
         }
     }

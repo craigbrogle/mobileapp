@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Android.Content;
 using Android.Graphics;
@@ -11,6 +10,7 @@ using MvvmCross.Platform.UI;
 using MvvmCross.Plugins.Color.Droid;
 using Toggl.Foundation.Reports;
 using Toggl.Giskard.Extensions;
+using System.Collections.Generic;
 
 namespace Toggl.Giskard.Views
 {
@@ -22,8 +22,8 @@ namespace Toggl.Giskard.Views
         private const double radToDegree = 180 / Math.PI;
         private readonly TextPaint textPaint = new TextPaint();
 
-        private ObservableCollection<ChartSegment> segments = new ObservableCollection<ChartSegment>();
-        public ObservableCollection<ChartSegment> Segments
+        private IEnumerable<ChartSegment> segments = new ChartSegment[0];
+        public IEnumerable<ChartSegment> Segments
         {
             get => segments;
             set

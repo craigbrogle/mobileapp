@@ -1,5 +1,6 @@
 ﻿﻿using System;
 using System.Collections.Generic;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 using Toggl.Multivac;
@@ -7,17 +8,13 @@ using Toggl.Multivac.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal partial class Client : IDatabaseClient
+    internal partial class Client : IThreadSafeClient
     {
         public long Id { get; }
 
         public long WorkspaceId { get; }
 
         public string Name { get; }
-
-        public DateTimeOffset At { get; }
-
-        public DateTimeOffset? ServerDeletedAt { get; }
 
         public IDatabaseWorkspace Workspace { get; }
 
@@ -26,12 +23,14 @@ namespace Toggl.Foundation.Models
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
+
+        public DateTimeOffset? ServerDeletedAt { get; }
     }
 
-    internal partial class Preferences : IDatabasePreferences
+    internal partial class Preferences : IThreadSafePreferences
     {
-        public long Id { get; }
-
         public TimeFormat TimeOfDayFormat { get; }
 
         public DateFormat DateFormat { get; }
@@ -47,7 +46,7 @@ namespace Toggl.Foundation.Models
         public string LastSyncErrorMessage { get; }
     }
 
-    internal partial class Project : IDatabaseProject
+    internal partial class Project : IThreadSafeProject
     {
         public long Id { get; }
 
@@ -60,10 +59,6 @@ namespace Toggl.Foundation.Models
         public bool IsPrivate { get; }
 
         public bool Active { get; }
-
-        public DateTimeOffset At { get; }
-
-        public DateTimeOffset? ServerDeletedAt { get; }
 
         public string Color { get; }
 
@@ -92,19 +87,19 @@ namespace Toggl.Foundation.Models
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
+
+        public DateTimeOffset? ServerDeletedAt { get; }
     }
 
-    internal partial class Tag : IDatabaseTag
+    internal partial class Tag : IThreadSafeTag
     {
         public long Id { get; }
 
         public long WorkspaceId { get; }
 
         public string Name { get; }
-
-        public DateTimeOffset At { get; }
-
-        public DateTimeOffset? DeletedAt { get; }
 
         public IDatabaseWorkspace Workspace { get; }
 
@@ -113,9 +108,13 @@ namespace Toggl.Foundation.Models
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
+
+        public DateTimeOffset? ServerDeletedAt { get; }
     }
 
-    internal partial class Task : IDatabaseTask
+    internal partial class Task : IThreadSafeTask
     {
         public long Id { get; }
 
@@ -131,8 +130,6 @@ namespace Toggl.Foundation.Models
 
         public bool Active { get; }
 
-        public DateTimeOffset At { get; }
-
         public long TrackedSeconds { get; }
 
         public IDatabaseUser User { get; }
@@ -146,9 +143,11 @@ namespace Toggl.Foundation.Models
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
     }
 
-    internal partial class TimeEntry : IDatabaseTimeEntry
+    internal partial class TimeEntry : IThreadSafeTimeEntry
     {
         public long Id { get; }
 
@@ -168,10 +167,6 @@ namespace Toggl.Foundation.Models
 
         public IEnumerable<long> TagIds { get; }
 
-        public DateTimeOffset At { get; }
-
-        public DateTimeOffset? ServerDeletedAt { get; }
-
         public long UserId { get; }
 
         public IDatabaseTask Task { get; }
@@ -189,9 +184,13 @@ namespace Toggl.Foundation.Models
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
+
+        public DateTimeOffset? ServerDeletedAt { get; }
     }
 
-    internal partial class User : IDatabaseUser
+    internal partial class User : IThreadSafeUser
     {
         public long Id { get; }
 
@@ -209,16 +208,16 @@ namespace Toggl.Foundation.Models
 
         public string ImageUrl { get; }
 
-        public DateTimeOffset At { get; }
-
         public bool IsDeleted { get; }
 
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
     }
 
-    internal partial class Workspace : IDatabaseWorkspace
+    internal partial class Workspace : IThreadSafeWorkspace
     {
         public long Id { get; }
 
@@ -227,8 +226,6 @@ namespace Toggl.Foundation.Models
         public bool Admin { get; }
 
         public DateTimeOffset? SuspendedAt { get; }
-
-        public DateTimeOffset? ServerDeletedAt { get; }
 
         public double? DefaultHourlyRate { get; }
 
@@ -246,8 +243,6 @@ namespace Toggl.Foundation.Models
 
         public int RoundingMinutes { get; }
 
-        public DateTimeOffset? At { get; }
-
         public string LogoUrl { get; }
 
         public bool IsDeleted { get; }
@@ -255,9 +250,13 @@ namespace Toggl.Foundation.Models
         public SyncStatus SyncStatus { get; }
 
         public string LastSyncErrorMessage { get; }
+
+        public DateTimeOffset At { get; }
+
+        public DateTimeOffset? ServerDeletedAt { get; }
     }
 
-    internal partial class WorkspaceFeature : IDatabaseWorkspaceFeature
+    internal partial class WorkspaceFeature : IThreadSafeWorkspaceFeature
     {
         public WorkspaceFeatureId FeatureId { get; }
 
@@ -265,7 +264,7 @@ namespace Toggl.Foundation.Models
 
     }
 
-    internal partial class WorkspaceFeatureCollection : IDatabaseWorkspaceFeatureCollection
+    internal partial class WorkspaceFeatureCollection : IThreadSafeWorkspaceFeatureCollection
     {
         public long WorkspaceId { get; }
 

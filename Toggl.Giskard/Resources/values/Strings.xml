@@ -6,8 +6,8 @@
     <string name="AppName">Toggl</string>
     <string name="EmailAddress">Email address</string>
     <string name="AddDescription">Add description</string>
-    <string name="TermsOfService"><u>Terms of service</u></string>
-    <string name="PrivacyPolicy"><u>Privacy policy</u></string>
+    <string name="TermsOfService">Terms of service</string>
+    <string name="PrivacyPolicy">Privacy policy</string>
     <string name="Edit">Edit</string>
     <string name="StartTimeEntryHint">What are you working on?</string>
     <string name="PrivateProject">Private project</string>
@@ -42,13 +42,12 @@
     <string name="ManualModeExplanationPartOne">You can add your data manually, instead of</string>
 	<string name="ManualModeExplanationPartTwo">tracking in real time.</string>
     <string name="TryLoggingInInstead"><u>Try logging in instead.</u></string>
-    <string name="ForgotPassword">Forgot your password?</string>
+    <string name="ForgotPassword">Forgot your password? <b>Get help logging in</b></string>
     <string name="Duration">Duration</string>
     <string name="DeleteEntry">Delete this entry</string>
     <string name="FeedbackChooserCopy">Send feedback with</string>
     <string name="NoEmailHandlerErrorTitle">Oops! Seems like your email account is not set up</string>
     <string name="NoEmailHandlerErrorMessage">Set up an email account or send us your feedback to support@toggl.com</string>
-    <string name="OnboardingSignup">Don\'t have an account? <b>Sign up for free!</b></string>
     <string name="OnboardingGetStarted">Let\'s get started!</string>
     <string name="OnboardingKickstartProductivity">Kickstart your productivity\nwith Toggl</string>
 	  <string name="OutdatedAppMessage">Seems you haven’t updated the app
@@ -61,10 +60,27 @@ your app to continue.</string>
     <string name="StopTimer">Stop timer</string>
     <string name="Start">Start</string>
     <string name="Stop">Stop</string>
+    <string name="SelectCountryOfResidence">Select country of residence</string>
     <string name="StartTimeAfterStopTimeWarning">Start time must be before Stop time!</string>
     <string name="StopTimeBeforeStartTimeWarning">Stop time must be after Start time!</string>
     <string name="DurationTooLong">Duration can\'t exceed 999 hours!</string>
-    
+    <string name="Email">Email</string>
+    <string name="Password">Password</string>
+    <string name="SignUpForFree">Sign up for free</string>
+    <string name="AlreadyHaveAnAccount">Already have an account?</string>
+    <string name="DontHaveAnAccount">Don\'t have an account?</string>
+    <string name="LoginWithGoogle">Login With Google</string>
+    <string name="Or">Or</string>
+    <string name="ForgotPasswordEmailExplanation">Please enter your email to reset your password</string>
+    <string name="ResetPasswordEmailSentMessage">Link sent. Please, check your email to reset the password</string>
+    <string name="GetPasswordResetLink">Get Password Reset Link</string>
+    <string name="ForgotPasswordTitle">Forgot your password?</string>
+    <string name="And">and</string>
+	  <string name="IAgree">I Agree</string>
+	  <string name="ReviewTheTerms">Review the Terms</string>
+	  <string name="TermsMessage">By tapping "I Agree", you
+understand and agree to Toggl\'s</string>
+
     <string name="MainTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.MainTemplateSelector, Toggl.Giskard</string>
     <string name="ReportsTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsTemplateSelector, Toggl.Giskard</string>
     <string name="CalendarTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.CalendarTemplateSelector, Toggl.Giskard</string>
@@ -75,6 +91,7 @@ your app to continue.</string>
     <string name="SelectColorTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.SelectColorTemplateSelector, Toggl.Giskard</string>
     <string name="SelectClientTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.SelectClientTemplateSelector, Toggl.Giskard</string>
     <string name="SelectProjectTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.SelectProjectTemplateSelector, Toggl.Giskard</string>
+    <string name="SelectCountryTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.SelectCountryTemplateSelector, Toggl.Giskard</string>
     <string name="SelectWorkspaceTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.SelectWorkspaceTemplateSelector, Toggl.Giskard</string>
     <string name="SelectDateFormatTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.SelectDateFormatTemplateSelector, Toggl.Giskard</string>
     <string name="CalendarShortcutsTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.CalendarShortcutsTemplateSelector, Toggl.Giskard</string>

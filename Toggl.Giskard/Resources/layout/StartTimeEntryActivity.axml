@@ -4,7 +4,8 @@
     xmlns:local="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:importantForAutofill="noExcludeDescendants">
     <toggl.giskard.views.StartTimeEntryRecyclerView
         local:MvxBind="ItemsSource Suggestions; ItemClick SelectSuggestionCommand; CreateCommand CreateCommand; Text CurrentQuery; UseGrouping UseGrouping; IsSuggestingCreation SuggestCreation; IsSuggestingProjects IsSuggestingProjects; ToggleTasksCommand ToggleTaskSuggestionsCommand"
         tools:visibility="gone"

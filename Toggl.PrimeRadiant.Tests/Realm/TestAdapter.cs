@@ -1,29 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant.Realm;
 
 namespace Toggl.PrimeRadiant.Tests.Realm
 {
-    public sealed class TestAdapter : IRealmAdapter<TestModel>
+    public class GenericTestAdapter<T> : IRealmAdapter<T>
+        where T : class, IIdentifiable
     {
-        private readonly List<TestModel> list = new List<TestModel>();
-        private Func<long, Predicate<TestModel>> matchById; 
+        private readonly List<T> list = new List<T>();
+        private readonly Func<long, Predicate<T>> matchById;
 
-        public TestAdapter()
+        public GenericTestAdapter()
             : this(id => e => e.Id == id)
         {
         }
 
-        public TestAdapter(Func<long, Predicate<TestModel>> matchById)
+        public GenericTestAdapter(Func<long, Predicate<T>> matchById)
         {
             this.matchById = matchById;
         }
 
-        public TestModel Get(long id)
+        public T Get(long id)
             => list.Single(entity => matchById(id)(entity));
 
-        public TestModel Create(TestModel entity)
+        public T Create(T entity)
         {
             if (list.Find(matchById(entity.Id)) != null)
                 throw new InvalidOperationException();
@@ -33,7 +35,7 @@ namespace Toggl.PrimeRadiant.Tests.Realm
             return entity;
         }
 
-        public TestModel Update(long id, TestModel entity)
+        public T Update(long id, T entity)
         {
             var index = list.FindIndex(matchById(id));
 
@@ -45,7 +47,7 @@ namespace Toggl.PrimeRadiant.Tests.Realm
             return entity;
         }
 
-        public IQueryable<TestModel> GetAll()
+        public IQueryable<T> GetAll()
             => list.AsQueryable();
 
         public void Delete(long id)
@@ -57,12 +59,25 @@ namespace Toggl.PrimeRadiant.Tests.Realm
             throw new InvalidOperationException();
         }
 
-        public IEnumerable<IConflictResolutionResult<TestModel>> BatchUpdate(
-            IEnumerable<(long Id, TestModel Entity)> entities,
-            Func<TestModel, TestModel, ConflictResolutionMode> conflictResolution,
-            IRivalsResolver<TestModel> resolver)
+        public IEnumerable<IConflictResolutionResult<T>> BatchUpdate(
+            IEnumerable<(long Id, T Entity)> entities,
+            Func<T, T, ConflictResolutionMode> conflictResolution,
+            IRivalsResolver<T> resolver)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public sealed class TestAdapter : GenericTestAdapter<TestModel>
+    {
+        public TestAdapter()
+            : base()
+        {
+        }
+
+        public TestAdapter(Func<long, Predicate<TestModel>> matchById)
+            : base(matchById)
+        {
         }
     }
 }

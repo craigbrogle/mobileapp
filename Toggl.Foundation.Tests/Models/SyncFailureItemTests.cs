@@ -2,8 +2,8 @@
 using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.SyncModel
@@ -25,7 +25,7 @@ namespace Toggl.Foundation.Tests.SyncModel
             [Fact, LogIfTooSlow]
             public void SetsProjectTypeIfConstructedWithAProject()
             {
-                IDatabaseProject project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Name.Returns("My Project");
 
                 SyncFailureItem syncFailure = new SyncFailureItem(project);
@@ -36,7 +36,7 @@ namespace Toggl.Foundation.Tests.SyncModel
             [Fact, LogIfTooSlow]
             public void SetsTagTypeIfConstructedWithATag()
             {
-                IDatabaseTag tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 tag.Name.Returns("My Tag");
 
                 SyncFailureItem syncFailure = new SyncFailureItem(tag);
@@ -47,7 +47,7 @@ namespace Toggl.Foundation.Tests.SyncModel
             [Fact, LogIfTooSlow]
             public void SetsClientTypeIfConstructedWithAClient()
             {
-                IDatabaseClient client = Substitute.For<IDatabaseClient>();
+                var client = Substitute.For<IThreadSafeClient>();
                 client.Name.Returns("My Client");
 
                 SyncFailureItem syncFailure = new SyncFailureItem(client);
@@ -58,7 +58,7 @@ namespace Toggl.Foundation.Tests.SyncModel
             [Fact, LogIfTooSlow]
             public void SetsTheCorrectProperties()
             {
-                IDatabaseClient tag = Substitute.For<IDatabaseClient>();
+                var tag = Substitute.For<IThreadSafeClient>();
                 tag.Name.Returns("My Client");
                 tag.SyncStatus.Returns(SyncStatus.SyncFailed);
                 tag.LastSyncErrorMessage.Returns("Something bad happened");

@@ -1,15 +1,9 @@
-﻿using System;
-
-namespace Toggl.Multivac.Models
+﻿namespace Toggl.Multivac.Models
 {
-    public interface IClient : IBaseModel
+    public interface IClient : IIdentifiable, IDeletable, ILastChangedDatable
     {
         long WorkspaceId { get; }
 
         string Name { get; }
-
-        DateTimeOffset At { get; }
-
-        DateTimeOffset? ServerDeletedAt { get; }
     }
 }

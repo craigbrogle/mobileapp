@@ -1,4 +1,5 @@
 ﻿using System;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.MvvmCross.Parameters;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
@@ -16,7 +17,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
             var thisYear = TimeService.CurrentDateTime.Year;
             var start = new DateTimeOffset(thisYear, 1, 1, 0, 0, 0, TimeSpan.Zero);
             var end = start.AddYears(1).AddDays(-1);
-            return DateRangeParameter.WithDates(start, end);
+            return DateRangeParameter
+                .WithDates(start, end)
+                .WithSource(ReportsSource.ShortcutThisYear);
         }
     }
 }

@@ -13,6 +13,7 @@ using Toggl.Daneel.Services;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.MvvmCross;
+using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Suggestions;
 using Toggl.PrimeRadiant.Realm;
 using Toggl.PrimeRadiant.Settings;
@@ -46,7 +47,7 @@ namespace Toggl.Daneel
 
         protected override IMvxTrace CreateDebugTrace() => new DebugTrace();
 
-        protected override IMvxApplication CreateApp() => new App();
+        protected override IMvxApplication CreateApp() => new App<OnboardingViewModel>();
 
         protected override IMvxNavigationService InitializeNavigationService(IMvxViewModelLocatorCollection collection)
         {
@@ -109,7 +110,7 @@ namespace Toggl.Daneel
                     navigationService,
                     new OnePasswordService())
                 .RevokeNewUserIfNeeded()
-                .Initialize(app as App, Scheduler.Default);
+                .Initialize(app as App<OnboardingViewModel>, Scheduler.Default);
         }
     }
 }

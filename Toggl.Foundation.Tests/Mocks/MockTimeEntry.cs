@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockTimeEntry : IDatabaseTimeEntry
+    public sealed class MockTimeEntry : IThreadSafeTimeEntry
     {
-        private IDatabaseTimeEntry entity;
+        private IThreadSafeTimeEntry entity;
 
         public MockTimeEntry() { }
 
-        public MockTimeEntry(IDatabaseTimeEntry entity)
+        public MockTimeEntry(IThreadSafeTimeEntry entity)
         {
             Id = entity.Id;
             WorkspaceId = entity.WorkspaceId;

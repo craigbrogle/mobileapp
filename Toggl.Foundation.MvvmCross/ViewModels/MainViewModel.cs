@@ -18,6 +18,7 @@ using Toggl.Multivac;
 using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Settings;
 using System.Reactive;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Suggestions;
 
 [assembly: MvxNavigation(typeof(MainViewModel), ApplicationUrls.Main.Regex)]
@@ -123,6 +124,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             ITimeService timeService,
             IUserPreferences userPreferences,
             IOnboardingStorage onboardingStorage,
+            IAnalyticsService analyticsService,
             IInteractorFactory interactorFactory,
             IMvxNavigationService navigationService,
             ISuggestionProviderContainer suggestionProviders)
@@ -144,7 +146,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.navigationService = navigationService;
             this.onboardingStorage = onboardingStorage;
 
-            TimeEntriesLogViewModel = new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, navigationService);
+            TimeEntriesLogViewModel = new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
             SuggestionsViewModel = new SuggestionsViewModel(dataSource, interactorFactory, suggestionProviders);
 
             RefreshCommand = new MvxCommand(refresh);
@@ -186,9 +188,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(progress => SyncingProgress = progress);
 
             var isEmptyChangedDisposable = Observable.Empty<Unit>()
-                .Merge(dataSource.TimeEntries.TimeEntryUpdated.Select(_ => Unit.Default))
-                .Merge(dataSource.TimeEntries.TimeEntryDeleted.Select(_ => Unit.Default))
-                .Merge(dataSource.TimeEntries.TimeEntryCreated.Select(_ => Unit.Default))
+                .Merge(dataSource.TimeEntries.Updated.Select(_ => Unit.Default))
+                .Merge(dataSource.TimeEntries.Deleted.Select(_ => Unit.Default))
+                .Merge(dataSource.TimeEntries.Created.Select(_ => Unit.Default))
                 .Subscribe(_ =>
                 {
                     RaisePropertyChanged(nameof(ShouldShowTimeEntriesLog));
@@ -267,7 +269,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task openReports()
         {
-            var user = await dataSource.User.Current;
+            var user = await dataSource.User.Current.FirstAsync();
             await navigationService.Navigate<ReportsViewModel, long>(user.DefaultWorkspaceId);
         }
 

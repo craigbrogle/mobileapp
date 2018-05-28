@@ -11,6 +11,8 @@ using PropertyChanged;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Extensions;
+using Toggl.Foundation.Interactors;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
@@ -23,6 +25,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     {
         private readonly IMvxNavigationService navigationService;
         private readonly ITogglDataSource dataSource;
+        private readonly IInteractorFactory interactorFactory;
         private readonly Subject<string> textSubject = new Subject<string>();
         private readonly BehaviorSubject<bool> hasTagsSubject = new BehaviorSubject<bool>(false);
         private readonly HashSet<long> selectedTagIds = new HashSet<long>();
@@ -62,13 +65,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand<SelectableTagViewModel> SelectTagCommand { get; }
 
-        public SelectTagsViewModel(ITogglDataSource dataSource, IMvxNavigationService navigationService)
+        public SelectTagsViewModel(ITogglDataSource dataSource, IMvxNavigationService navigationService, IInteractorFactory interactorFactory)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
+            Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
 
             this.dataSource = dataSource;
             this.navigationService = navigationService;
+            this.interactorFactory = interactorFactory;
 
             CloseCommand = new MvxAsyncCommand(close);
             SaveCommand = new MvxAsyncCommand(save);
@@ -98,7 +103,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             textSubject.AsObservable()
                        .StartWith(Text)
-                       .SelectMany(text => dataSource.AutocompleteProvider.Query(new QueryInfo(text, AutocompleteSuggestionType.Tags)))
+                       .Select(text => text.SplitToQueryWords())
+                       .SelectMany(wordsToQuery => interactorFactory.GetTagsAutocompleteSuggestions(wordsToQuery).Execute())
                        .Select(suggestions => suggestions.Cast<TagSuggestion>())
                        .Select(suggestions => suggestions.Where(s => s.WorkspaceId == workspaceId))
                        .Subscribe(onTags);

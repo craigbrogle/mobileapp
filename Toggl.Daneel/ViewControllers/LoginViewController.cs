@@ -16,7 +16,7 @@ using UIKit;
 namespace Toggl.Daneel.ViewControllers
 {
     [MvxRootPresentation(WrapInNavigationController = true)]
-    public sealed partial class LoginViewController : MvxViewController<NewLoginViewModel>
+    public sealed partial class LoginViewController : MvxViewController<LoginViewModel>
     {
         private const int iPhoneSeScreenHeight = 568;
 
@@ -33,7 +33,7 @@ namespace Toggl.Daneel.ViewControllers
             var loginButtonTitleConverter = new BoolToConstantValueConverter<string>("", Resources.LoginTitle);
             var invertedBoolConverter = new BoolToConstantValueConverter<bool>(false, true);
 
-            var bindingSet = this.CreateBindingSet<LoginViewController, NewLoginViewModel>();
+            var bindingSet = this.CreateBindingSet<LoginViewController, LoginViewModel>();
 
             //Text
             bindingSet.Bind(ErrorLabel).To(vm => vm.ErrorMessage);
@@ -130,9 +130,16 @@ namespace Toggl.Daneel.ViewControllers
 
             PasswordTextField.ShouldReturn += _ =>
             {
+                ViewModel.LoginCommand.Execute();
                 PasswordTextField.ResignFirstResponder();
                 return false;
             };
+
+            View.AddGestureRecognizer(new UITapGestureRecognizer(() =>
+            {
+                EmailTextField.ResignFirstResponder();
+                PasswordTextField.ResignFirstResponder();
+            }));
 
             PasswordTextField.ResignFirstResponder();
 

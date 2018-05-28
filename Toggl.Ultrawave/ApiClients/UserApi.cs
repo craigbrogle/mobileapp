@@ -48,7 +48,7 @@ namespace Toggl.Ultrawave.ApiClients
             Email email,
             Password password,
             bool termsAccepted,
-            int? countryId
+            int countryId
         )
         {
             if (!email.IsValid)
@@ -117,8 +117,7 @@ namespace Toggl.Ultrawave.ApiClients
             [JsonProperty("tos_accepted")]
             public bool TermsAccepted { get; set; }
 
-            [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-            public int? CountryId { get; set; }
+            public int CountryId { get; set; }
         }
 
         [Preserve(AllMembers = true)]

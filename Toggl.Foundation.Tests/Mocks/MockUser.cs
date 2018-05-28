@@ -1,11 +1,12 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockUser : IDatabaseUser
+    public sealed class MockUser : IThreadSafeUser
     {
         public MockUser() { }
 

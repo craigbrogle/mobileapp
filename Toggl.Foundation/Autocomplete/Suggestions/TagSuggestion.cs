@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Autocomplete.Suggestions
 {
     public sealed class TagSuggestion : AutocompleteSuggestion
     {
-        public static IEnumerable<TagSuggestion> FromTags(IEnumerable<IDatabaseTag> tags)
+        public static IEnumerable<TagSuggestion> FromTags(IEnumerable<IThreadSafeTag> tags)
             => tags.Select(t => new TagSuggestion(t));
 
         public long TagId { get; }
 
         public string Name { get; }
 
-        public TagSuggestion(IDatabaseTag tag)
+        public TagSuggestion(IThreadSafeTag tag)
         {
             TagId = tag.Id;
             Name = tag.Name;

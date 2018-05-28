@@ -24,6 +24,7 @@ namespace Toggl.Daneel.ViewSources
           IUITableViewDataSource
     {
         public event EventHandler SwipeToContinueWasUsed;
+        public event EventHandler SwipeToDeleteWasUsed;
 
         private const int bottomPadding = 64;
         private const int spaceBetweenSections = 20;
@@ -132,6 +133,7 @@ namespace Toggl.Daneel.ViewSources
 
         private void handleDeleteTableViewRowAction(UITableViewRowAction _, NSIndexPath indexPath)
         {
+            SwipeToDeleteWasUsed?.Invoke(this, EventArgs.Empty);
             var timeEntry = (TimeEntryViewModel)GetItemAt(indexPath);
             DeleteTimeEntryCommand.Execute(timeEntry);
         }

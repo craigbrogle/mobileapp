@@ -8,8 +8,10 @@ using FluentAssertions;
 using FsCheck.Xunit;
 using Microsoft.Reactive.Testing;
 using NSubstitute;
+using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Suggestions;
@@ -37,7 +39,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             protected override MainViewModel CreateViewModel()
             {
-                var vm = new MainViewModel(Scheduler, DataSource, TimeService, UserPreferences, OnboardingStorage, InteractorFactory, NavigationService, SuggestionProviderContainer);
+                var vm = new MainViewModel(Scheduler, DataSource, TimeService, UserPreferences, OnboardingStorage, AnalyticsService, InteractorFactory, NavigationService, SuggestionProviderContainer);
                 vm.Prepare();
                 return vm;
             }
@@ -55,13 +57,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : MainViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(EightParameterConstructorTestData))]
+            [ClassData(typeof(NineParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
                 bool useScheduler,
                 bool useDataSource,
                 bool useTimeService,
                 bool useUserPreferences,
                 bool useOnboardingStorage,
+                bool useAnalyticsService,
                 bool useInteractorFactory,
                 bool useNavigationService,
                 bool useSuggestionProviderContainer)
@@ -73,10 +76,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var navigationService = useNavigationService ? NavigationService : null;
                 var interactorFactory = useInteractorFactory ? InteractorFactory : null;
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
+                var analyticsService = useAnalyticsService ? AnalyticsService : null;
                 var suggestionProviderContainer = useSuggestionProviderContainer ? SuggestionProviderContainer : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new MainViewModel(scheduler, dataSource, timeService, userPreferences, onboardingStorage, interactorFactory, navigationService, suggestionProviderContainer);
+                    () => new MainViewModel(scheduler, dataSource, timeService, userPreferences, onboardingStorage, analyticsService, interactorFactory, navigationService, suggestionProviderContainer);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
@@ -185,7 +189,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async ThreadingTask CannotBeExecutedWhenThereIsARunningTimeEntry()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 var observable = Observable.Return(timeEntry);
                 DataSource.TimeEntries.CurrentlyRunningTimeEntry.Returns(observable);
                 ViewModel.Initialize().Wait();
@@ -240,7 +244,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async ThreadingTask NavigatesToTheReportsViewModel()
             {
                 const long workspaceId = 10;
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.DefaultWorkspaceId.Returns(workspaceId);
                 DataSource.User.Current.Returns(Observable.Return(user));
 
@@ -263,12 +267,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public class TheStopTimeEntryCommand : MainViewModelTest
         {
-            private ISubject<IDatabaseTimeEntry> subject;
+            private ISubject<IThreadSafeTimeEntry> subject;
 
             public TheStopTimeEntryCommand()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
-                subject = new BehaviorSubject<IDatabaseTimeEntry>(timeEntry);
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
+                subject = new BehaviorSubject<IThreadSafeTimeEntry>(timeEntry);
                 var observable = subject.AsObservable();
                 DataSource.TimeEntries.CurrentlyRunningTimeEntry.Returns(observable);
 
@@ -315,7 +319,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async ThreadingTask DoesNotInitiatePushSyncWhenSavingFails()
             {
                 DataSource.TimeEntries.Stop(Arg.Any<DateTimeOffset>())
-                    .Returns(Observable.Throw<IDatabaseTimeEntry>(new Exception()));
+                    .Returns(Observable.Throw<IThreadSafeTimeEntry>(new Exception()));
 
                 Action stopTimeEntry = () => ViewModel.StopTimeEntryCommand.ExecuteAsync().Wait();
 
@@ -358,7 +362,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async ThreadingTask CanBeExecutedForTheSecondTimeIfAnotherTimeEntryIsStartedInTheMeantime()
             {
-                var secondTimeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var secondTimeEntry = Substitute.For<IThreadSafeTimeEntry>();
 
                 await ViewModel.StopTimeEntryCommand.ExecuteAsync();
                 subject.OnNext(secondTimeEntry);
@@ -374,7 +378,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async ThreadingTask NavigatesToTheEditTimeEntryViewModel()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 var observable = Observable.Return(timeEntry);
                 DataSource.TimeEntries.CurrentlyRunningTimeEntry.Returns(observable);
                 ViewModel.Initialize().Wait();
@@ -388,7 +392,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Property]
             public void PassesTheCurrentDateToTheStartTimeEntryViewModel(long id)
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(id);
                 var observable = Observable.Return(timeEntry);
                 DataSource.TimeEntries.CurrentlyRunningTimeEntry.Returns(observable);
@@ -403,7 +407,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async ThreadingTask CannotBeExecutedWhenThereIsNoRunningTimeEntry()
             {
-                var observable = Observable.Return<IDatabaseTimeEntry>(null);
+                var observable = Observable.Return<IThreadSafeTimeEntry>(null);
                 DataSource.TimeEntries.CurrentlyRunningTimeEntry.Returns(observable);
                 ViewModel.Initialize().Wait();
 
@@ -416,8 +420,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public abstract class CurrentTimeEntrypropertyTest<T> : MainViewModelTest
         {
-            private readonly BehaviorSubject<IDatabaseTimeEntry> currentTimeEntrySubject
-                = new BehaviorSubject<IDatabaseTimeEntry>(null);
+            private readonly BehaviorSubject<IThreadSafeTimeEntry> currentTimeEntrySubject
+                = new BehaviorSubject<IThreadSafeTimeEntry>(null);
 
             protected abstract T ActualValue { get; }
             protected abstract T ExpectedValue { get; }
@@ -434,7 +438,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private async ThreadingTask prepare()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(TimeEntryId);
                 timeEntry.Description.Returns(Description);
                 timeEntry.Project.Name.Returns(Project);
@@ -571,14 +575,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Range(0, timeEntryCount)
                     .Select(createTimeEntry)
                     .ToArray();
-                DataSource
-                    .TimeEntries
-                    .GetAll()
+                InteractorFactory.GetAllNonDeletedTimeEntries().Execute()
                     .Returns(Observable.Return(timeEntries));
                 DataSource
                     .TimeEntries
-                    .TimeEntryUpdated
-                    .Returns(Observable.Never<(long Id, IDatabaseTimeEntry Entity)>());
+                    .Updated
+                    .Returns(Observable.Never<EntityUpdate<IThreadSafeTimeEntry>>());
                 await ViewModel.Initialize();
 
                 ViewModel
@@ -587,9 +589,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Be(ViewModel.TimeEntriesLogViewModel.IsWelcome);
             }
 
-            private IDatabaseTimeEntry createTimeEntry(int id)
+            private IThreadSafeTimeEntry createTimeEntry(int id)
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(id);
                 timeEntry.Start.Returns(DateTimeOffset.Now);
                 timeEntry.Duration.Returns(100);
@@ -603,7 +605,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 DataSource.TimeEntries.IsEmpty.Returns(Observable.Return(false));
                 var suggestionProvider = Substitute.For<ISuggestionProvider>();
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(123);
                 timeEntry.Start.Returns(DateTimeOffset.Now);
                 timeEntry.Duration.Returns((long?)null);
@@ -618,18 +620,16 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             protected void PrepareTimeEntry()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(123);
                 timeEntry.Start.Returns(DateTimeOffset.Now);
                 timeEntry.Duration.Returns(100);
-                DataSource
-                    .TimeEntries
-                    .GetAll()
+                InteractorFactory.GetAllNonDeletedTimeEntries().Execute()
                     .Returns(Observable.Return(new[] { timeEntry }));
                 DataSource
                     .TimeEntries
-                    .TimeEntryUpdated
-                    .Returns(Observable.Never<(long Id, IDatabaseTimeEntry Entity)>());
+                    .Updated
+                    .Returns(Observable.Never<EntityUpdate<IThreadSafeTimeEntry>>());
             }
 
             protected void PrepareIsWelcome(bool isWelcome)
@@ -757,7 +757,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async ThreadingTask ExecutesTheContinueMostRecentTimeEntryInteractor()
                 {
-                    var interactor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                    var interactor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                     InteractorFactory.ContinueMostRecentTimeEntry().Returns(interactor);
                     ViewModel.Init(ApplicationUrls.Main.Action.Continue);
 

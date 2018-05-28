@@ -33,7 +33,7 @@ namespace Toggl.Ultrawave.Models
 
         public int RoundingMinutes { get; set; }
 
-        public DateTimeOffset? At { get; set; }
+        public DateTimeOffset At { get; set; }
 
         public string LogoUrl { get; set; }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Interactors;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
@@ -46,9 +48,6 @@ namespace Toggl.Foundation.Tests.Interactors
 
             public TheExecuteMethod()
             {
-                interactor = new ContinueMostRecentTimeEntryInteractor(
-                    IdProvider, TimeService, DataSource, AnalyticsService);
-
                 now = new DateTimeOffset(1973, 1, 2, 3, 4, 5, TimeSpan.Zero);
                 TimeService.CurrentDateTime.Returns(now);
 
@@ -68,7 +67,12 @@ namespace Toggl.Foundation.Tests.Interactors
                         TagIds = new long[] { 100, 101, 100 + i }
                     });
                 mostRecentTimeEntry = timeEntries.Last();
-                DataSource.TimeEntries.GetAll().Returns(Observable.Return(timeEntries));
+                
+                DataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>())
+                    .Returns(Observable.Return(timeEntries));
+
+                interactor = new ContinueMostRecentTimeEntryInteractor(
+                    IdProvider, TimeService, DataSource, AnalyticsService);
             }
 
             [Fact, LogIfTooSlow]
@@ -79,7 +83,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.TagIds.SequenceEqual(mostRecentTimeEntry.TagIds)));
             }
 
@@ -91,7 +95,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.UserId == mostRecentTimeEntry.UserId));
             }
 
@@ -103,7 +107,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.TaskId == mostRecentTimeEntry.TaskId));
             }
 
@@ -115,7 +119,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.Billable == mostRecentTimeEntry.Billable));
             }
 
@@ -127,7 +131,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.ProjectId == mostRecentTimeEntry.ProjectId));
             }
 
@@ -139,7 +143,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.At == now));
             }
 
@@ -151,7 +155,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.SyncStatus == SyncStatus.SyncNeeded));
             }
 
@@ -163,7 +167,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.Description == mostRecentTimeEntry.Description));
             }
 
@@ -175,7 +179,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.Start == now));
             }
 
@@ -187,7 +191,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 await DataSource
                     .TimeEntries
                     .Received()
-                    .Create(Arg.Is<IDatabaseTimeEntry>(
+                    .Create(Arg.Is<IThreadSafeTimeEntry>(
                         te => te.WorkspaceId == mostRecentTimeEntry.WorkspaceId));
             }
 

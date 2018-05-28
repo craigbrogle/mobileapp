@@ -96,7 +96,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 await ViewModel.SkipCommand.ExecuteAsync();
 
-                await NavigationService.Received().Navigate<NewLoginViewModel>();
+                await NavigationService.Received().Navigate<LoginViewModel>();
             }
 
             [Theory, LogIfTooSlow]
@@ -134,7 +134,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.NextCommand.ExecuteAsync();
 
-                await NavigationService.Received().Navigate<NewLoginViewModel>();
+                await NavigationService.Received().Navigate<LoginViewModel>();
             }
 
             [Fact, LogIfTooSlow]
@@ -190,7 +190,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.Initialize();
 
-                await NavigationService.Received().Navigate<NewLoginViewModel>();
+                await NavigationService.Received().Navigate<LoginViewModel>();
             }
         }
     }

@@ -39,7 +39,7 @@ namespace Toggl.PrimeRadiant.Realm
 
         public static Repository<TModel> For<TRealmEntity>(
             Func<Realms.Realm> getRealmInstance, Func<TModel, Realms.Realm, TRealmEntity> convertToRealm)
-            where TRealmEntity : RealmObject, IBaseModel, TModel, IUpdatesFrom<TModel>
+            where TRealmEntity : RealmObject, IIdentifiable, TModel, IUpdatesFrom<TModel>
             => For(getRealmInstance, convertToRealm, matchById<TRealmEntity>, getId<TRealmEntity>);
 
         public static Repository<TModel> For<TRealmEntity>(
@@ -51,11 +51,11 @@ namespace Toggl.PrimeRadiant.Realm
             => new Repository<TModel>(new RealmAdapter<TRealmEntity, TModel>(getRealmInstance, convertToRealm, matchById, getId));
 
         private static Expression<Func<TRealmEntity, bool>> matchById<TRealmEntity>(long id)
-            where TRealmEntity : RealmObject, IBaseModel, TModel, IUpdatesFrom<TModel>
+            where TRealmEntity : RealmObject, IIdentifiable, TModel, IUpdatesFrom<TModel>
             => x => x.Id == id;
 
         private static long getId<TRealmEntity>(TRealmEntity entity)
-            where TRealmEntity : RealmObject, IBaseModel, TModel
+            where TRealmEntity : RealmObject, IIdentifiable, TModel
             => entity.Id;
     }
 }

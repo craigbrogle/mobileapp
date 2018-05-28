@@ -2,7 +2,7 @@
 
 While all Toggl apps are open source, not all things can be made public. This includes, but is not limited to, analytics services' keys and testing credentials. When in doubt, read the company policy before making something public.
 
-Below is a list of all the environment variables you need to configure before building and the purposes they serve: 
+Below is a list of all the environment variables you need to configure before building and the purposes they serve:
 
 - iOS analytics' services :bar_chart:
 `TOGGL_AD_UNIT_ID_FOR_BANNER_TEST`
@@ -14,6 +14,7 @@ Below is a list of all the environment variables you need to configure before bu
 `TOGGL_PROJECT_ID`
 `TOGGL_STORAGE_BUCKET`
 `TOGGL_GOOGLE_APP_ID`
+`TOGGL_FACEBOOK_APP_ID`
 
 - Android Google login :busts_in_silhouette:
 `TOGGL_DROID_GOOGLE_SERVICES_API_KEY`
@@ -54,6 +55,7 @@ export TOGGL_DROID_GOOGLE_SERVICES_CLIENT_ID=""
 export TOGGL_DROID_GOOGLE_SERVICES_MOBILE_SDK_APP_ID=""
 export TOGGL_DROID_GOOGLE_SERVICES_PROJECT_NUMBER=""
 export TOGGL_DROID_GOOGLE_SERVICES_PROJECT_ID=""
+export TOGGL_FACEBOOK_APP_ID=""
 ```
 
 Finish it off with:

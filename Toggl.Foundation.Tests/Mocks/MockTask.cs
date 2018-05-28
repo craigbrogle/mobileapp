@@ -1,10 +1,11 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockTask : IDatabaseTask
+    public sealed class MockTask : IThreadSafeTask
     {
         public IDatabaseUser User { get; set; }
 
