@@ -6,23 +6,24 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using Newtonsoft.Json;
+using Toggl.Foundation;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.Helper;
-using Toggl.Foundation.Interactors;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
+using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using static Toggl.Foundation.Helper.Constants;
-using Toggl.Foundation.MvvmCross.ViewModels;
-using Toggl.Foundation;
-using Toggl.PrimeRadiant.Settings;
-using Toggl.Foundation.Analytics;
 using Toggl.PrimeRadiant.Models;
+using Toggl.PrimeRadiant.Settings;
+using static Toggl.Foundation.Helper.Constants;
 
 [assembly: MvxNavigation(typeof(StartTimeEntryViewModel), ApplicationUrls.StartTimeEntry)]
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -31,7 +32,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class StartTimeEntryViewModel : MvxViewModel<StartTimeEntryParameters>, ITimeEntryPrototype
     {
         private enum StateBundleParams {
-            TextFieldInfoText,
+            TextFieldInfo,
+            WorkspaceId,
             StartTime,
             IsBillable
         }
@@ -294,7 +296,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         protected override void SaveStateToBundle(IMvxBundle bundle)
         {
-            bundle.Data[StateBundleParams.TextFieldInfoText.ToString()] = TextFieldInfo.Text;
+            try {
+                var textFieldInfo = JsonConvert.SerializeObject(TextFieldInfo);
+                bundle.Data[StateBundleParams.TextFieldInfo.ToString()] = textFieldInfo;
+            } 
+            catch (JsonSerializationException) { }
+
+            bundle.Data[StateBundleParams.WorkspaceId.ToString()] = WorkspaceId.ToString();
             bundle.Data[StateBundleParams.StartTime.ToString()] = StartTime.ToString();
             bundle.Data[StateBundleParams.IsBillable.ToString()] = IsBillable.ToString();
 
@@ -305,15 +313,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             base.ReloadFromBundle(state);
 
-            var text = state.Data[StateBundleParams.TextFieldInfoText.ToString()];
+            try {
+                long workspaceId;
+                long.TryParse(state.Data[StateBundleParams.WorkspaceId.ToString()], out workspaceId);
+
+                var textFieldInfo = JsonConvert.DeserializeObject<TextFieldInfo>(state.Data[StateBundleParams.TextFieldInfo.ToString()]);
+                TextFieldInfo = textFieldInfo.WithWorkspace(workspaceId);
+            }
+            catch (JsonSerializationException) { }
+
             DateTimeOffset startTime;
-            bool isBillable;
-
             DateTimeOffset.TryParse(state.Data[StateBundleParams.StartTime.ToString()], out startTime);
-            bool.TryParse(state.Data[StateBundleParams.IsBillable.ToString()], out isBillable);
-
-            TextFieldInfo = new TextFieldInfo().WithTextAndCursor(text, text.Length);
             StartTime = startTime;
+
+            bool isBillable;
+            bool.TryParse(state.Data[StateBundleParams.IsBillable.ToString()], out isBillable);
             IsBillable = isBillable;
         }
 
