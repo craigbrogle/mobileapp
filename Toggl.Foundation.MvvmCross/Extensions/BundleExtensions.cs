@@ -43,7 +43,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
             bundle.Data[nameof(viewModel.IsBillable)] = viewModel.IsBillable.ToString();
         }
 
-        public static void ReloadPropertiesFrom(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
+        public static void ReloadPropertiesInto(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
         {
             if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}", out var text) &&
 

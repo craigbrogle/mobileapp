@@ -300,7 +300,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         protected override void ReloadFromBundle(IMvxBundle state)
         {
             base.ReloadFromBundle(state);
-            state.ReloadPropertiesFrom(this);
+            state.ReloadPropertiesInto(this);
         }
 
         private void onPreferencesChanged(IDatabasePreferences preferences)
