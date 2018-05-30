@@ -6,7 +6,6 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
-using Toggl.Foundation.Serialization;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Autocomplete;
@@ -15,6 +14,7 @@ using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.MvvmCross.Collections;
+using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
@@ -31,13 +31,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class StartTimeEntryViewModel : MvxViewModel<StartTimeEntryParameters>, ITimeEntryPrototype
     {
-        private enum StateBundleParams {
-            TextFieldInfo,
-            WorkspaceId,
-            StartTime,
-            IsBillable
-        }
-
         //Fields
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
@@ -95,7 +88,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public long[] TagIds => TextFieldInfo.Tags.Select(t => t.TagId).Distinct().ToArray();
+        public long[] TagIds
+        {
+            get => TextFieldInfo.Tags.Select(t => t.TagId).Distinct().ToArray();
+            set => reloadTags(value);
+        }
 
         public long? ProjectId => TextFieldInfo.ProjectId;
 
@@ -147,7 +144,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public bool IsBillable { get; private set; } = false;
+        public bool IsBillable { get; set; } = false;
 
         public bool IsBillableAvailable { get; private set; } = false;
 
@@ -163,7 +160,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public bool ShouldShowNoProjectsInfoMessage
             => IsSuggestingProjects && !hasAnyProjects;
 
-        public DateTimeOffset StartTime { get; private set; }
+        public DateTimeOffset StartTime { get; set; }
 
         public TimeSpan? Duration { get; private set; }
 
@@ -296,38 +293,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         protected override void SaveStateToBundle(IMvxBundle bundle)
         {
-            var serializer = new JsonSerializer();
-
-            if (serializer.TrySerialize(TextFieldInfo, out var textFieldInfo))
-            {
-                string workspaceId = WorkspaceId.ToString();
-                string startTime = StartTime.ToString();
-                string isBillable = IsBillable.ToString();
-
-                bundle.Data[StateBundleParams.TextFieldInfo.ToString()] = textFieldInfo;
-                bundle.Data[StateBundleParams.WorkspaceId.ToString()] = workspaceId;
-                bundle.Data[StateBundleParams.StartTime.ToString()] = startTime;
-                bundle.Data[StateBundleParams.IsBillable.ToString()] = isBillable;
-            }
-
+            bundle.SavePropertiesFrom(this);
             base.SaveStateToBundle(bundle);
         }
 
         protected override void ReloadFromBundle(IMvxBundle state)
         {
             base.ReloadFromBundle(state);
-
-            var serializer = new JsonSerializer();
-
-            if (serializer.TryDeserialize<TextFieldInfo>(state.Data[StateBundleParams.TextFieldInfo.ToString()], out var textFieldInfo) &&
-                long.TryParse(state.Data[StateBundleParams.WorkspaceId.ToString()], out var workspaceId) &&
-                DateTimeOffset.TryParse(state.Data[StateBundleParams.StartTime.ToString()], out var startTime) &&
-                bool.TryParse(state.Data[StateBundleParams.IsBillable.ToString()], out var isBillable))
-            {
-                TextFieldInfo = textFieldInfo.WithWorkspace(workspaceId);
-                StartTime = startTime;
-                IsBillable = isBillable;
-            }
+            state.ReloadPropertiesFrom(this);
         }
 
         private void onPreferencesChanged(IDatabasePreferences preferences)
@@ -543,6 +516,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
             appendSymbol(QuerySymbols.TagsString);
+        }
+
+        private void reloadTags(long[] tagsIds)
+        {
         }
 
         private void toggleProjectSuggestions()
