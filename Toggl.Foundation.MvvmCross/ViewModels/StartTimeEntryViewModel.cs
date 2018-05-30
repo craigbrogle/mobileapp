@@ -6,7 +6,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
-using Newtonsoft.Json;
+using Toggl.Foundation.Serialization;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Autocomplete;
@@ -296,15 +296,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         protected override void SaveStateToBundle(IMvxBundle bundle)
         {
-            try {
-                var textFieldInfo = JsonConvert.SerializeObject(TextFieldInfo);
-                bundle.Data[StateBundleParams.TextFieldInfo.ToString()] = textFieldInfo;
-            } 
-            catch (JsonSerializationException) { }
+            var serializer = new JsonSerializer();
 
-            bundle.Data[StateBundleParams.WorkspaceId.ToString()] = WorkspaceId.ToString();
-            bundle.Data[StateBundleParams.StartTime.ToString()] = StartTime.ToString();
-            bundle.Data[StateBundleParams.IsBillable.ToString()] = IsBillable.ToString();
+            if (serializer.TrySerialize(TextFieldInfo, out var textFieldInfo))
+            {
+                string workspaceId = WorkspaceId.ToString();
+                string startTime = StartTime.ToString();
+                string isBillable = IsBillable.ToString();
+
+                bundle.Data[StateBundleParams.TextFieldInfo.ToString()] = textFieldInfo;
+                bundle.Data[StateBundleParams.WorkspaceId.ToString()] = workspaceId;
+                bundle.Data[StateBundleParams.StartTime.ToString()] = startTime;
+                bundle.Data[StateBundleParams.IsBillable.ToString()] = isBillable;
+            }
 
             base.SaveStateToBundle(bundle);
         }
@@ -313,22 +317,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             base.ReloadFromBundle(state);
 
-            try {
-                long workspaceId;
-                long.TryParse(state.Data[StateBundleParams.WorkspaceId.ToString()], out workspaceId);
+            var serializer = new JsonSerializer();
 
-                var textFieldInfo = JsonConvert.DeserializeObject<TextFieldInfo>(state.Data[StateBundleParams.TextFieldInfo.ToString()]);
+            if (serializer.TryDeserialize<TextFieldInfo>(state.Data[StateBundleParams.TextFieldInfo.ToString()], out var textFieldInfo) &&
+                long.TryParse(state.Data[StateBundleParams.WorkspaceId.ToString()], out var workspaceId) &&
+                DateTimeOffset.TryParse(state.Data[StateBundleParams.StartTime.ToString()], out var startTime) &&
+                bool.TryParse(state.Data[StateBundleParams.IsBillable.ToString()], out var isBillable))
+            {
                 TextFieldInfo = textFieldInfo.WithWorkspace(workspaceId);
+                StartTime = startTime;
+                IsBillable = isBillable;
             }
-            catch (JsonSerializationException) { }
-
-            DateTimeOffset startTime;
-            DateTimeOffset.TryParse(state.Data[StateBundleParams.StartTime.ToString()], out startTime);
-            StartTime = startTime;
-
-            bool isBillable;
-            bool.TryParse(state.Data[StateBundleParams.IsBillable.ToString()], out isBillable);
-            IsBillable = isBillable;
         }
 
         private void onPreferencesChanged(IDatabasePreferences preferences)
