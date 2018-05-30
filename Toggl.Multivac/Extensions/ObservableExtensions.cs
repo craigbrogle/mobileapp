@@ -80,16 +80,15 @@ namespace Toggl.Multivac.Extensions
         {
             return source.RetryWhen(v =>
             {
-                int retryCount = 0;
-                return v.SelectMany(error =>
+                return v.SelectMany((error, retryCount) =>
                 {
-                    retryCount++;
-                    if (!shouldRetryOn(error) || retryCount > maxRetries)
+                    var currentTry = retryCount + 1;
+                    if (!shouldRetryOn(error) || currentTry > maxRetries)
                     {
-                        return Observable.Throw<int>(error);
+                        throw error;
                     }
 
-                    return Observable.Return(1).Delay(backOffStrategy(retryCount), scheduler);
+                    return Observable.Return(1).Delay(backOffStrategy(currentTry), scheduler);
                 });
             });
         }
