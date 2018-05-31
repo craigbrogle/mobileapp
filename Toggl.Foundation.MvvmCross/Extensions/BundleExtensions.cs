@@ -53,21 +53,21 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                 bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}", out var workspaceIdString) &&
                 long.TryParse(workspaceIdString, out var workspaceId) &&
 
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}", out var hasProjectString) &&
-                bool.TryParse(hasProjectString, out var hasProject) &&
-
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}", out var hasTaskString) &&
-                bool.TryParse(hasTaskString, out var hasTask) &&
-
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}", out var hasTagsString) &&
-                bool.TryParse(hasTagsString, out var hasTags) &&
-
                 bundle.Data.TryGetValue(nameof(viewModel.StartTime), out var startTimeString) &&
                 DateTimeOffset.TryParse(startTimeString, out var startTime) &&
 
                 bundle.Data.TryGetValue(nameof(viewModel.IsBillable), out var isBillableString) &&
                 bool.TryParse(isBillableString, out var isBillable))
             {
+                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}", out var hasProjectString);
+                bool.TryParse(hasProjectString, out var hasProject);
+
+                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}", out var hasTaskString);
+                bool.TryParse(hasTaskString, out var hasTask);
+
+                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}", out var hasTagsString);
+                bool.TryParse(hasTagsString, out var hasTags);
+
                 var textFieldInfo = TextFieldInfo
                     .Empty(workspaceId)
                     .WithTextAndCursor(text, cursorPosition);
@@ -103,7 +103,9 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                     if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString))
                     {
                         var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
-                        viewModel.TagIds = tagIds;
+                        viewModel.TagIdsToReload = tagIds;
+                    } else {
+                        return;
                     }
                 }
 

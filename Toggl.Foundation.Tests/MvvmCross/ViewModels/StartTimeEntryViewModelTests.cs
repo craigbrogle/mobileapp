@@ -26,6 +26,7 @@ using static Toggl.Multivac.Extensions.StringExtensions;
 using ITimeEntryPrototype = Toggl.Foundation.Models.ITimeEntryPrototype;
 using TextFieldInfo = Toggl.Foundation.Autocomplete.TextFieldInfo;
 using Toggl.Foundation.Models.Interfaces;
+using MvvmCross.Core.ViewModels;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -39,6 +40,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected const long TaskId = 30;
             protected const long ProjectId = 10;
             protected const long WorkspaceId = 40;
+            protected const string TaskName = "Mobile App";
             protected const string ProjectName = "Toggl";
             protected const string ProjectColor = "#F41F19";
             protected const string Description = "Testing Toggl mobile apps";
@@ -199,6 +201,128 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.Initialize();
 
                 ViewModel.IsBillableAvailable.Should().Be(billableValue);
+            }
+        }
+
+        public sealed class TheLifecycle : StartTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void SavesSimpleState()
+            {
+                var date = new DateTimeOffset(2018, 5, 31, 12, 0, 0, TimeSpan.Zero);
+                var parameter = new StartTimeEntryParameters(date, "", null);
+
+                ViewModel.Prepare(parameter);
+
+                var textFieldInfo = TextFieldInfo
+                    .Empty(WorkspaceId)
+                    .WithTextAndCursor(Description, 5);
+
+                ViewModel.TextFieldInfo = textFieldInfo;
+
+                var bundle = new MvxBundle();
+                ViewModel.SaveState(bundle);
+
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Equals(textFieldInfo.Text);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Equals(textFieldInfo.CursorPosition.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Equals(textFieldInfo.WorkspaceId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Equals(false.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Equals(false.ToString());
+                bundle.Data[nameof(ViewModel.StartTime)].Equals(ViewModel.StartTime.ToString());
+                bundle.Data[nameof(ViewModel.IsBillable)].Equals(ViewModel.IsBillable.ToString());
+            }
+
+            [Fact, LogIfTooSlow]
+            public void RestoresSimpleState()
+            {
+                var startTime = new DateTimeOffset(2018, 5, 31, 12, 0, 0, TimeSpan.Zero);
+
+                var bundle = new MvxBundle();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"] = Description;
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"] = "5";
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"] = WorkspaceId.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"] = false.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = false.ToString();
+                bundle.Data[nameof(ViewModel.StartTime)] = startTime.ToString();
+                bundle.Data[nameof(ViewModel.IsBillable)] = false.ToString();
+
+                ViewModel.ReloadState(bundle);
+
+                ViewModel.TextFieldInfo.Text.Equals(Description);
+                ViewModel.TextFieldInfo.CursorPosition.Equals(5);
+                ViewModel.TextFieldInfo.WorkspaceId.Equals(WorkspaceId);
+                ViewModel.TextFieldInfo.ProjectId.Equals(ProjectId);
+                ViewModel.TextFieldInfo.ProjectColor.Equals(ProjectColor);
+                ViewModel.TextFieldInfo.ProjectName.Equals(ProjectName);
+                ViewModel.TextFieldInfo.TaskId.Equals(TaskId);
+                ViewModel.TextFieldInfo.TaskName.Equals(TaskName);
+                ViewModel.StartTime.Equals(startTime);
+                ViewModel.IsBillable.Equals(false);
+            }
+
+            [Fact, LogIfTooSlow]
+            public void SavesComplexState()
+            {
+                var date = new DateTimeOffset(2018, 5, 31, 12, 0, 0, TimeSpan.Zero);
+                var parameter = new StartTimeEntryParameters(date, "", null);
+
+                ViewModel.Prepare(parameter);
+
+                var textFieldInfo = TextFieldInfo
+                    .Empty(WorkspaceId)
+                    .WithTextAndCursor(Description, 5)
+                    .WithProjectAndTaskInfo(WorkspaceId, ProjectId, ProjectColor, ProjectName, TaskId, TaskName);
+
+                ViewModel.TextFieldInfo = textFieldInfo;
+
+                var bundle = new MvxBundle();
+                ViewModel.SaveState(bundle);
+
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Equals(textFieldInfo.Text);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Equals(textFieldInfo.CursorPosition.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Equals(textFieldInfo.WorkspaceId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Equals(textFieldInfo.ProjectId.HasValue.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"].Equals(textFieldInfo.ProjectId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"].Equals(textFieldInfo.ProjectColor);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"].Equals(textFieldInfo.ProjectName);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Equals(ViewModel.TextFieldInfo.TaskId.HasValue.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"].Equals(textFieldInfo.TaskId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"].Equals(textFieldInfo.TaskName);
+                bundle.Data[nameof(ViewModel.StartTime)].Equals(ViewModel.StartTime.ToString());
+                bundle.Data[nameof(ViewModel.IsBillable)].Equals(ViewModel.IsBillable.ToString());
+            }
+
+            [Fact, LogIfTooSlow]
+            public void RestoresComplexState()
+            {
+                var startTime = new DateTimeOffset(2018, 5, 31, 12, 0, 0, TimeSpan.Zero);
+
+                var bundle = new MvxBundle();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"] = Description;
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"] = "5";
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"] = WorkspaceId.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"] = true.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"] = ProjectId.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"] = ProjectColor;
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"] = ProjectName;
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = true.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"] = TaskId.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"] = TaskName;
+                bundle.Data[nameof(ViewModel.StartTime)] = startTime.ToString();
+                bundle.Data[nameof(ViewModel.IsBillable)] = false.ToString();
+
+                ViewModel.ReloadState(bundle);
+
+                ViewModel.TextFieldInfo.Text.Equals(Description);
+                ViewModel.TextFieldInfo.CursorPosition.Equals(5);
+                ViewModel.TextFieldInfo.WorkspaceId.Equals(WorkspaceId);
+                ViewModel.TextFieldInfo.ProjectId.Equals(ProjectId);
+                ViewModel.TextFieldInfo.ProjectColor.Equals(ProjectColor);
+                ViewModel.TextFieldInfo.ProjectName.Equals(ProjectName);
+                ViewModel.TextFieldInfo.TaskId.Equals(TaskId);
+                ViewModel.TextFieldInfo.TaskName.Equals(TaskName);
+                ViewModel.StartTime.Equals(startTime);
+                ViewModel.IsBillable.Equals(false);
             }
         }
 
