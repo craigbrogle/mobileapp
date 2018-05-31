@@ -266,12 +266,23 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var date = new DateTimeOffset(2018, 5, 31, 12, 0, 0, TimeSpan.Zero);
                 var parameter = new StartTimeEntryParameters(date, "", null);
 
+                var tag1 = Substitute.For<IThreadSafeTag>();
+                tag1.Id.Returns(TagId);
+                tag1.Name.Returns($"{TagName} #1");
+                var tagSuggestion1 = new TagSuggestion(tag1);
+
+                var tag2 = Substitute.For<IThreadSafeTag>();
+                tag2.Id.Returns(TagId + 10);
+                tag2.Name.Returns($"{TagName} #2");
+                var tagSuggestion2 = new TagSuggestion(tag2);
+
                 ViewModel.Prepare(parameter);
 
                 var textFieldInfo = TextFieldInfo
                     .Empty(WorkspaceId)
                     .WithTextAndCursor(Description, 5)
-                    .WithProjectAndTaskInfo(WorkspaceId, ProjectId, ProjectColor, ProjectName, TaskId, TaskName);
+                    .WithProjectAndTaskInfo(WorkspaceId, ProjectId, ProjectColor, ProjectName, TaskId, TaskName)
+                    .AddTag(tagSuggestion1).AddTag(tagSuggestion2);
 
                 ViewModel.TextFieldInfo = textFieldInfo;
 
@@ -281,13 +292,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Equals(textFieldInfo.Text);
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Equals(textFieldInfo.CursorPosition.ToString());
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Equals(textFieldInfo.WorkspaceId.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Equals(textFieldInfo.ProjectId.HasValue.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Equals(true.ToString());
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"].Equals(textFieldInfo.ProjectId.ToString());
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"].Equals(textFieldInfo.ProjectColor);
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"].Equals(textFieldInfo.ProjectName);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Equals(ViewModel.TextFieldInfo.TaskId.HasValue.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Equals(true.ToString());
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"].Equals(textFieldInfo.TaskId.ToString());
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"].Equals(textFieldInfo.TaskName);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.Tags.Length)}"].Equals(true.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}"].Equals($"{TagId};{TagId + 10}");
                 bundle.Data[nameof(ViewModel.StartTime)].Equals(ViewModel.StartTime.ToString());
                 bundle.Data[nameof(ViewModel.IsBillable)].Equals(ViewModel.IsBillable.ToString());
             }
@@ -296,6 +309,22 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void RestoresComplexState()
             {
                 var startTime = new DateTimeOffset(2018, 5, 31, 12, 0, 0, TimeSpan.Zero);
+
+                var tag1 = Substitute.For<IThreadSafeTag>();
+                tag1.Id.Returns(TagId);
+                tag1.Name.Returns($"{TagName} #1");
+                var tagSuggestion1 = new TagSuggestion(tag1);
+
+                var tag2 = Substitute.For<IThreadSafeTag>();
+                tag2.Id.Returns(TagId + 10);
+                tag2.Name.Returns($"{TagName} #2");
+                var tagSuggestion2 = new TagSuggestion(tag2);
+
+                var tags = new TagSuggestion[] { tagSuggestion1, tagSuggestion2 };
+                DataSource.Tags.GetById(Arg.Any<long>()).Returns(
+                    Observable.Return<IThreadSafeTag>(tag1),
+                    Observable.Return<IThreadSafeTag>(tag2)
+                );
 
                 var bundle = new MvxBundle();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"] = Description;
@@ -308,6 +337,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = true.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"] = TaskId.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"] = TaskName;
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.Tags.Length)}"] = true.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}"] = $"{TagId};{TagId + 10}";
                 bundle.Data[nameof(ViewModel.StartTime)] = startTime.ToString();
                 bundle.Data[nameof(ViewModel.IsBillable)] = false.ToString();
 
@@ -321,6 +352,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.TextFieldInfo.ProjectName.Equals(ProjectName);
                 ViewModel.TextFieldInfo.TaskId.Equals(TaskId);
                 ViewModel.TextFieldInfo.TaskName.Equals(TaskName);
+                ViewModel.TextFieldInfo.Tags.Length.Equals(tags.Length);
+                ViewModel.TextFieldInfo.Tags[0].TagId.Equals(TagId);
+                ViewModel.TextFieldInfo.Tags[0].Name.Equals($"{TagName} #1");
+                ViewModel.TextFieldInfo.Tags[1].TagId.Equals(TagId + 10);
+                ViewModel.TextFieldInfo.Tags[1].Name.Equals($"{TagName} #2");
                 ViewModel.StartTime.Equals(startTime);
                 ViewModel.IsBillable.Equals(false);
             }
