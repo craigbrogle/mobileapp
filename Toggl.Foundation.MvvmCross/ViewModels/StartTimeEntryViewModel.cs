@@ -88,11 +88,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public long[] TagIds
-        {
-            get => TextFieldInfo.Tags.Select(t => t.TagId).Distinct().ToArray();
-            set => reloadTags(value);
-        }
+        public long[] TagIds => TextFieldInfo.Tags.Select(t => t.TagId).Distinct().ToArray();
+
+        public long[] TagIdsToReload { get; set; } = new long[] { };
 
         public long? ProjectId => TextFieldInfo.ProjectId;
 
@@ -297,10 +295,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             base.SaveStateToBundle(bundle);
         }
 
-        protected override void ReloadFromBundle(IMvxBundle state)
+        protected override async void ReloadFromBundle(IMvxBundle state)
         {
             base.ReloadFromBundle(state);
             state.ReloadPropertiesInto(this);
+            await reloadTags(TagIdsToReload);
         }
 
         private void onPreferencesChanged(IDatabasePreferences preferences)
@@ -518,8 +517,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             appendSymbol(QuerySymbols.TagsString);
         }
 
-        private void reloadTags(long[] tagsIds)
+        private async Task reloadTags(long[] tagIds)
         {
+            var tags = await tagIds.Select(dataSource.Tags.GetById).Merge().ToArray();
+            var tagSuggestions = tags.Select(tag => new TagSuggestion(tag)).ToArray();
+            TextFieldInfo = TextFieldInfo.AddTags(tagSuggestions);
         }
 
         private void toggleProjectSuggestions()

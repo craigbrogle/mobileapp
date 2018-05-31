@@ -99,6 +99,16 @@ namespace Toggl.Foundation.Autocomplete
                 Text, CursorPosition, WorkspaceId, ProjectId, ProjectName, ProjectColor, TaskId, TaskName, tags);
         }
 
+        public TextFieldInfo AddTags(TagSuggestion[] tagSuggestions)
+        {
+            var result = this;
+            foreach (var tagSuggestion in tagSuggestions)
+            {
+                result = result.AddTag(tagSuggestion);
+            }
+            return result;
+        }
+
         public TextFieldInfo RemoveTag(TagSuggestion tag)
         {
             var newTags = Tags.ToList();
