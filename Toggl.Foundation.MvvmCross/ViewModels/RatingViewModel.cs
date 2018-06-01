@@ -1,8 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MvvmCross.Core.ViewModels;
+using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
 
@@ -11,19 +9,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class RatingViewModel : MvxViewModel
     {
-        public bool GotImpression { get; private set; }
-
         private readonly ITogglDataSource dataSource;
-        private IDisposable emptyDatabaseDisposable;
+        private readonly IAnalyticsService analyticsService;
+
+        public bool GotImpression { get; private set; }
 
         public MvxCommand<bool> RegisterImpressionCommand { get; set; }
         public MvxCommand LeaveReviewCommand { get; set; }
         public MvxCommand DismissViewCommand { get; set; }
 
-        public RatingViewModel(ITogglDataSource dataSource)
+        public RatingViewModel(ITogglDataSource dataSource, IAnalyticsService analyticsService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
+
             this.dataSource = dataSource;
+            this.analyticsService = analyticsService;
+
             GotImpression = false;
 
             RegisterImpressionCommand = new MvxCommand<bool>(registerImpression);

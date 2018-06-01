@@ -150,7 +150,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             TimeEntriesLogViewModel = new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
             SuggestionsViewModel = new SuggestionsViewModel(dataSource, interactorFactory, suggestionProviders);
-            RatingViewModel = new RatingViewModel(dataSource);
+            RatingViewModel = new RatingViewModel(dataSource, analyticsService);
 
             RefreshCommand = new MvxCommand(refresh);
             OpenReportsCommand = new MvxAsyncCommand(openReports);

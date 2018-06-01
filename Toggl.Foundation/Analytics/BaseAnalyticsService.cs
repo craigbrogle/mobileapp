@@ -43,6 +43,13 @@ namespace Toggl.Foundation.Analytics
         private const string startEntrySelectTagEventName = "StartEntrySelectTag";
         private const string suggestionSourceParameter = "Source";
 
+        private const string appWasRatedEventName = "AppWasRated";
+        private const string ratingViewWasShownEventName = "RatingViewWasShown";
+        private const string userFinishedRatingViewFirstStepEventName = "UserFinishedRatingViewFirstStep";
+        private const string userFinishedRatingViewFirstStepIsPositiveParameterName = "IsPositive";
+        private const string userFinishedRatingViewSecondStepEventName = "UserFinishedRatingViewSecondStep";
+        private const string userFinishedRatingViewSecondStepOutcomeParameterName = "Outcome";
+
         public void TrackOnboardingSkipEvent(string pageName)
         {
             track(onboardingSkipEventName, pageParameter, pageName);
@@ -142,6 +149,34 @@ namespace Toggl.Foundation.Analytics
         public void TrackStartOpensTagSelector(ProjectTagSuggestionSource source)
         {
             track(startEntrySelectTagEventName, suggestionSourceParameter, source.ToString());
+        }
+
+        public void TrackAppWasRated()
+        {
+            track(appWasRatedEventName);
+        }
+
+        public void TrackRatingViewWasShown()
+        {
+            track(ratingViewWasShownEventName);
+        }
+
+        public void TrackUserFinishedRatingViewFirstStep(bool isPositive)
+        {
+            track(
+                userFinishedRatingViewFirstStepEventName,
+                userFinishedRatingViewFirstStepIsPositiveParameterName,
+                isPositive.ToString()
+            );
+        }
+
+        public void TrackUserFinishedRatingViewSecondStep(RatingViewSecondStepOutcome outcome)
+        {
+            track(
+                userFinishedRatingViewSecondStepEventName,
+                userFinishedRatingViewSecondStepOutcomeParameterName,
+                outcome.ToString()
+            );
         }
 
         private void track(string eventName)
