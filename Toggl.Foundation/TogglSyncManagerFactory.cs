@@ -12,8 +12,10 @@ using System.Reactive;
 using System.Reactive.Subjects;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources.Interfaces;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Sync.States.Pull;
 using Toggl.Foundation.Sync.States.Push;
 using Toggl.Ultrawave.ApiClients;
 using Toggl.Ultrawave.ApiClients.Interfaces;
@@ -75,17 +77,52 @@ namespace Toggl.Foundation
             var statusDelay = new RetryDelayService(rnd);
 
             var fetchAllSince = new FetchAllSinceState(database, api, timeService);
-            var persistWorkspaces = new PersistState<IWorkspace, IDatabaseWorkspace, IThreadSafeWorkspace>(dataSource.Workspaces, database.SinceParameters, Workspace.Clean);
-            var persistWorkspaceFeatures = new PersistState<IWorkspaceFeatureCollection, IDatabaseWorkspaceFeatureCollection, IThreadSafeWorkspaceFeatureCollection>(
-                dataSource.WorkspaceFeatures, database.SinceParameters, WorkspaceFeatureCollection.From);
-            var persistUser = new PersistState<IUser, IDatabaseUser, IThreadSafeUser>(dataSource.User, database.SinceParameters, User.Clean);
-            var persistTags = new PersistState<ITag, IDatabaseTag, IThreadSafeTag>(dataSource.Tags, database.SinceParameters, Tag.Clean);
-            var persistClients = new PersistState<IClient, IDatabaseClient, IThreadSafeClient>(dataSource.Clients, database.SinceParameters, Client.Clean);
-            var persistPreferences = new PersistState<IPreferences, IDatabasePreferences, IThreadSafePreferences>(dataSource.Preferences, database.SinceParameters, Preferences.Clean);
-            var persistProjects = new PersistState<IProject, IDatabaseProject, IThreadSafeProject>(dataSource.Projects, database.SinceParameters, Project.Clean);
-            var persistTimeEntries = new PersistState<ITimeEntry, IDatabaseTimeEntry, IThreadSafeTimeEntry>(dataSource.TimeEntries, database.SinceParameters, TimeEntry.Clean);
-            var persistTasks = new PersistState<ITask, IDatabaseTask, IThreadSafeTask>(dataSource.Tasks, database.SinceParameters, Task.Clean);
+
+            var persistWorkspaces =
+                new PersistListState<IWorkspace, IDatabaseWorkspace, IThreadSafeWorkspace>(dataSource.Workspaces, Workspace.Clean)
+                    .UpdateSince<IWorkspace, IDatabaseWorkspace>(database.SinceParameters)
+                    .CatchApiExceptions();
+
+            var persistWorkspaceFeatures =
+                new PersistListState<IWorkspaceFeatureCollection, IDatabaseWorkspaceFeatureCollection, IThreadSafeWorkspaceFeatureCollection>(
+                        dataSource.WorkspaceFeatures, WorkspaceFeatureCollection.From)
+                    .CatchApiExceptions();
+
+            var persistUser =
+                new PersistSingletonState<IUser, IDatabaseUser, IThreadSafeUser>(dataSource.User, User.Clean)
+                    .CatchApiExceptions();
+
+            var persistTags =
+                new PersistListState<ITag, IDatabaseTag, IThreadSafeTag>(dataSource.Tags, Tag.Clean)
+                    .UpdateSince<ITag, IDatabaseTag>(database.SinceParameters)
+                    .CatchApiExceptions();
+
+            var persistClients =
+                new PersistListState<IClient, IDatabaseClient, IThreadSafeClient>(dataSource.Clients, Client.Clean)
+                    .UpdateSince<IClient, IDatabaseClient>(database.SinceParameters)
+                    .CatchApiExceptions();
+
+            var persistPreferences =
+                new PersistSingletonState<IPreferences, IDatabasePreferences, IThreadSafePreferences>(dataSource.Preferences, Preferences.Clean)
+                    .CatchApiExceptions();
+
+            var persistProjects =
+                new PersistListState<IProject, IDatabaseProject, IThreadSafeProject>(dataSource.Projects, Project.Clean)
+                    .UpdateSince<IProject, IDatabaseProject>(database.SinceParameters)
+                    .CatchApiExceptions();
+
+            var persistTimeEntries =
+                new PersistListState<ITimeEntry, IDatabaseTimeEntry, IThreadSafeTimeEntry>(dataSource.TimeEntries, TimeEntry.Clean)
+                    .UpdateSince<ITimeEntry, IDatabaseTimeEntry>(database.SinceParameters)
+                    .CatchApiExceptions();
+
+            var persistTasks =
+                new PersistListState<ITask, IDatabaseTask, IThreadSafeTask>(dataSource.Tasks, Task.Clean)
+                    .UpdateSince<ITask, IDatabaseTask>(database.SinceParameters)
+                    .CatchApiExceptions();
+
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
+
             var finished = new ResetAPIDelayState(apiDelay);
             var deleteOlderEntries = new DeleteOldEntriesState(timeService, dataSource.TimeEntries);
 
@@ -102,6 +139,7 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(persistTimeEntries.FinishedPersisting, deleteOlderEntries.Start);
 
             transitions.ConfigureTransition(persistWorkspaces.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(persistUser.Failed, checkServerStatus.Start);
             transitions.ConfigureTransition(persistWorkspaceFeatures.Failed, checkServerStatus.Start);
             transitions.ConfigureTransition(persistPreferences.Failed, checkServerStatus.Start);
             transitions.ConfigureTransition(persistTags.Failed, checkServerStatus.Start);

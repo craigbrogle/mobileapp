@@ -531,7 +531,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                             Arg.Is(Resources.WorkspaceChangedAlertMessage),
                             Arg.Is(Resources.Ok),
                             Arg.Is(Resources.Cancel))
-                        .Returns(Task.FromResult(false));
+                        .Returns(Observable.Return(false));
 
                     await ViewModel.DoneCommand.ExecuteAsync();
 
@@ -549,7 +549,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                             Arg.Is(Resources.WorkspaceChangedAlertMessage),
                             Arg.Is(Resources.Ok),
                             Arg.Is(Resources.Cancel))
-                        .Returns(Task.FromResult(true));
+                        .Returns(Observable.Return(true));
 
                     await ViewModel.DoneCommand.ExecuteAsync();
 
@@ -568,7 +568,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                             Arg.Is(Resources.WorkspaceChangedAlertMessage),
                             Arg.Is(Resources.Ok),
                             Arg.Is(Resources.Cancel))
-                        .Returns(Task.FromResult(true));
+                        .Returns(Observable.Return(true));
 
                     await ViewModel.DoneCommand.ExecuteAsync();
 

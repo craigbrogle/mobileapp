@@ -20,5 +20,7 @@ namespace Toggl.Foundation.DataSources.Interfaces
         IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> DeleteAll(IEnumerable<TThreadsafe> entities);
 
         IObservable<Unit> Delete(long id);
+
+        IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> BatchUpdate(IEnumerable<TThreadsafe> entities);
     }
 }

@@ -179,7 +179,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Version = userAgent.Version;
             workspaceId = defaultWorkspace.Id;
             WorkspaceName = defaultWorkspace.Name;
-            IsManualModeEnabled = userPreferences.IsManualModeEnabled();
+            IsManualModeEnabled = userPreferences.IsManualModeEnabled;
             BeginningOfWeek = user.BeginningOfWeek;
 
             var workspaces = await interactorFactory.GetAllWorkspaces().Execute();

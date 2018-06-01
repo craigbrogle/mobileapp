@@ -4,7 +4,9 @@ namespace Toggl.PrimeRadiant.Settings
 {
     public interface IUserPreferences
     {
-        bool IsManualModeEnabled();
+        IObservable<bool> IsManualModeEnabledObservable { get; }
+
+        bool IsManualModeEnabled { get; }
 
         void EnableManualMode();
 

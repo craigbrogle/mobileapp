@@ -40,20 +40,10 @@ namespace Toggl.Foundation.DataSources
             => Repository.UpdateWithConflictResolution(original.Id, entity, ignoreIfChangedLocally(original), RivalsResolver)
                 .Select(result => result.ToThreadSafeResult(Convert));
 
-        public virtual IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> BatchUpdate(IEnumerable<TThreadsafe> entities)
-            => Repository.BatchUpdate(
-                    ConvertEntitiesForBatchUpdate(entities),
-                    ResolveConflicts,
-                    RivalsResolver)
-                .ToThreadSafeResult(Convert);
-
         private Func<TDatabase, TDatabase, ConflictResolutionMode> ignoreIfChangedLocally(TThreadsafe localEntity)
             => (currentLocal, serverEntity) => localEntity.DiffersFrom(currentLocal)
                 ? ConflictResolutionMode.Ignore
                 : ConflictResolutionMode.Update;
-
-        protected IEnumerable<(long, TDatabase)> ConvertEntitiesForBatchUpdate(IEnumerable<TThreadsafe> entities)
-            => entities.Select(entity => (entity.Id, (TDatabase)entity));
 
         protected abstract TThreadsafe Convert(TDatabase entity);
 

@@ -5,6 +5,8 @@ namespace Toggl.Foundation.Sync.States
 {
     public interface IFetchObservables
     {
-        IObservable<List<T>> Get<T>();
+        IObservable<T> GetSingle<T>();
+
+        IObservable<List<T>> GetList<T>();
     }
 }

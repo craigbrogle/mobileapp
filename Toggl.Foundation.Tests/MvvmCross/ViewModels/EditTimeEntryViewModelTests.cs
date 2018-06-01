@@ -236,7 +236,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ClosesTheViewIfUserClicksOnTheDiscardButton()
             {
-                DialogService.ConfirmDestructiveAction(ActionType.DiscardEditingChanges).Returns(true);
+                DialogService
+                    .ConfirmDestructiveAction(ActionType.DiscardEditingChanges)
+                    .Returns(Observable.Return(true));
 
                 ViewModel.Billable = !ViewModel.Billable;
                 await ViewModel.CloseCommand.ExecuteAsync();
@@ -247,7 +249,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task DoesNotCloseTheViewIfUserClicksOnTheContinueEditingButton()
             {
-                DialogService.ConfirmDestructiveAction(ActionType.DiscardEditingChanges).Returns(false);
+                DialogService
+                    .ConfirmDestructiveAction(ActionType.DiscardEditingChanges)
+                    .Returns(Observable.Return(false));
 
                 ViewModel.Billable = !ViewModel.Billable;
                 await ViewModel.CloseCommand.ExecuteAsync();
@@ -261,7 +265,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected void PrepareActionSheet(bool confirm)
             {
                 DialogService.ConfirmDestructiveAction(ActionType.DeleteExistingTimeEntry)
-                    .Returns(Task.FromResult(confirm));
+                    .Returns(Observable.Return(confirm));
             }
 
             [Fact, LogIfTooSlow]

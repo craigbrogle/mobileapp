@@ -164,12 +164,12 @@ namespace Toggl.Foundation.Tests.Sync.States
                 var transition = (Transition<IFetchObservables>)state.Start().SingleAsync().Wait();
 
                 var observables = transition.Parameter;
-                observables.Get<IWorkspace>().SingleAsync().Wait().Should().BeNull();
-                observables.Get<IClient>().SingleAsync().Wait().Should().BeNull();
-                observables.Get<IProject>().SingleAsync().Wait().Should().BeNull();
-                observables.Get<ITimeEntry>().SingleAsync().Wait().Should().BeNull();
-                observables.Get<ITask>().SingleAsync().Wait().Should().BeNull();
-                observables.Get<ITag>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<IWorkspace>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<IClient>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<IProject>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<ITimeEntry>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<ITask>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<ITag>().SingleAsync().Wait().Should().BeNull();
             }
         }
     }

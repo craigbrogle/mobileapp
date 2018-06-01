@@ -235,7 +235,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             base.ViewAppearing();
 
-            IsInManualMode = userPreferences.IsManualModeEnabled();
+            IsInManualMode = userPreferences.IsManualModeEnabled;
         }
 
         private void setRunningEntry(IThreadSafeTimeEntry timeEntry)

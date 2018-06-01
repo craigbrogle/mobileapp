@@ -237,7 +237,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public void Init()
         {
             var now = timeService.CurrentDateTime;
-            var startTimeEntryParameters = userPreferences.IsManualModeEnabled()
+            var startTimeEntryParameters = userPreferences.IsManualModeEnabled
                 ? StartTimeEntryParameters.ForManualMode(now)
                 : StartTimeEntryParameters.ForTimerMode(now);
             Prepare(startTimeEntryParameters);

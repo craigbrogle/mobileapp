@@ -1,5 +1,6 @@
 ﻿using System;
 using Toggl.Foundation.Models.Interfaces;
+using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.DataSources.Interfaces
 {
@@ -9,5 +10,7 @@ namespace Toggl.Foundation.DataSources.Interfaces
         IObservable<T> Current { get; }
 
         IObservable<T> Get();
+
+        IObservable<IConflictResolutionResult<T>> UpdateWithConflictResolution(T entity);
     }
 }

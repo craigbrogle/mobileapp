@@ -214,7 +214,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 DialogService.Confirm(
                     Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
-                    .Returns(Task.FromResult(false));
+                    .Returns(Observable.Return(false));
                 DataSource.HasUnsyncedData().Returns(Observable.Return(true));
                 await ViewModel.Initialize();
 

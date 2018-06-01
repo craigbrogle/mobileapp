@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Sync.States
 
         public FetchObservables(
             IObservable<List<IWorkspace>> workspaces,
-            IObservable<List<IWorkspaceFeatureCollection>> workspaceFeatures, 
+            IObservable<List<IWorkspaceFeatureCollection>> workspaceFeatures,
             IObservable<IUser> user,
             IObservable<List<IClient>> clients,
             IObservable<List<IProject>> projects,
@@ -47,7 +47,18 @@ namespace Toggl.Foundation.Sync.States
             this.preferences = preferences;
         }
 
-        public IObservable<List<T>> Get<T>()
+        public IObservable<T> GetSingle<T>()
+        {
+            if (typeof(T) == typeof(IUser))
+                return (IObservable<T>)user;
+
+            if (typeof(T) == typeof(IPreferences))
+                return (IObservable<T>)preferences;
+
+            throw new ArgumentException($"Type {typeof(T).FullName} is not supported by the {nameof(FetchObservables)} class for fetching single object.");
+        }
+
+        public IObservable<List<T>> GetList<T>()
         {
             if (typeof(T) == typeof(IWorkspace))
                 return (IObservable<List<T>>)workspaces;
@@ -66,17 +77,11 @@ namespace Toggl.Foundation.Sync.States
 
             if (typeof(T) == typeof(ITask))
                 return (IObservable<List<T>>)tasks;
-            
-            if (typeof(T) == typeof(IUser))
-                return (IObservable<List<T>>)user.Select(fetchedUser => new List<IUser> { fetchedUser });
-
-            if (typeof(T) == typeof(IPreferences))
-                return (IObservable<List<T>>)preferences.Select(fetchedPreferences => new List<IPreferences> { fetchedPreferences });
 
             if (typeof(T) == typeof(ITimeEntry))
                 return (IObservable<List<T>>)timeEntries;
 
-            throw new ArgumentException($"Type {typeof(T).FullName} is not supported by the {nameof(FetchObservables)} class.");
+            throw new ArgumentException($"Type {typeof(T).FullName} is not supported by the {nameof(FetchObservables)} class for fetching list of objects.");
         }
     }
 }

@@ -59,7 +59,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                    Arg.Any<string>(),
                    Arg.Any<string>(),
                    Arg.Any<string>()
-               ).Returns(true);
+               ).Returns(Observable.Return(true));
             }
 
             protected override StartTimeEntryViewModel CreateViewModel()
@@ -539,7 +539,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 makeDirty();
                 DialogService.ConfirmDestructiveAction(ActionType.DiscardNewTimeEntry)
-                             .Returns(_ => Task.FromResult(false));
+                             .Returns(_ => Observable.Return(false));
 
                 await ViewModel.BackCommand.ExecuteAsync();
 
@@ -551,7 +551,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 makeDirty();
                 DialogService.ConfirmDestructiveAction(ActionType.DiscardNewTimeEntry)
-                             .Returns(_ => Task.FromResult(true));
+                             .Returns(_ => Observable.Return(true));
 
                 await ViewModel.BackCommand.ExecuteAsync();
 

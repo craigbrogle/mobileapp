@@ -140,7 +140,7 @@ namespace Toggl.Foundation.Tests.DataSources
             }
         }
 
-        public sealed class TheBatchUpdateMethod
+        public sealed class TheUpdateWithConflictResolutionMethod
         {
             [Fact]
             public async Task UpdatesTheCurrentObservableValueWhenTheStoredValueIsCreated()
@@ -152,7 +152,7 @@ namespace Toggl.Foundation.Tests.DataSources
                     .ReturnsForAnyArgs(Observable.Return(new[] { new CreateResult<IDatabaseTestModel>(createdValue) }));
 
                 var dataSource = new TestSingletonSource(storage, null);
-                await dataSource.BatchUpdate(new[] { createdValue });
+                await dataSource.UpdateWithConflictResolution(createdValue);
                 var value = await dataSource.Current.FirstAsync();
 
                 value.Id.Should().Be(createdValue.Id);
@@ -169,7 +169,7 @@ namespace Toggl.Foundation.Tests.DataSources
                     .ReturnsForAnyArgs(Observable.Return(new[] { new UpdateResult<IDatabaseTestModel>(storedValue.Id, updatedValue) }));
 
                 var dataSource = new TestSingletonSource(storage, null);
-                await dataSource.BatchUpdate(new[] { updatedValue });
+                await dataSource.UpdateWithConflictResolution(updatedValue);
                 var value = await dataSource.Current.FirstAsync();
 
                 value.Id.Should().Be(updatedValue.Id);

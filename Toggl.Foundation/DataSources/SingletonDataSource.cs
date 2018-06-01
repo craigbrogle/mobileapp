@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Toggl.Foundation.DataSources.Interfaces;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
@@ -59,9 +60,11 @@ namespace Toggl.Foundation.DataSources
             TThreadsafe original, TThreadsafe entity)
             => base.OverwriteIfOriginalDidNotChange(original, entity).Do(handleConflictResolutionResult);
 
-        public override IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> BatchUpdate(
-            IEnumerable<TThreadsafe> entities)
-            => base.BatchUpdate(entities).Do(results => results.ForEach(handleConflictResolutionResult));
+        public virtual IObservable<IConflictResolutionResult<TThreadsafe>> UpdateWithConflictResolution(
+            TThreadsafe entity)
+            => Repository.UpdateWithConflictResolution(entity.Id, entity, ResolveConflicts, RivalsResolver)
+                .Select(result => result.ToThreadSafeResult(Convert))
+                .Do(handleConflictResolutionResult);
 
         private void handleConflictResolutionResult(IConflictResolutionResult<TThreadsafe> result)
         {

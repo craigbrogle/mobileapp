@@ -103,7 +103,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData(false)]
             public void InitializesTheIsInManualModePropertyAccordingToUsersPreferences(bool isEnabled)
             {
-                UserPreferences.IsManualModeEnabled().Returns(isEnabled);
+                UserPreferences.IsManualModeEnabled.Returns(isEnabled);
 
                 ViewModel.ViewAppearing();
 

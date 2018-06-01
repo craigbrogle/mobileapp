@@ -60,4 +60,7 @@
     <Folder Include="Interactors\Sync\" />
     <Folder Include="Serialization\" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+  </ItemGroup>
 </Project>
