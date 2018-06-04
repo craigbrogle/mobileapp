@@ -973,6 +973,7 @@
     <Compile Include="Views\SyncFailures\SyncFailureCell.designer.cs">
       <DependentUpon>SyncFailureCell.cs</DependentUpon>
     </Compile>
+    <Compile Include="Services\RemoteConfigService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
