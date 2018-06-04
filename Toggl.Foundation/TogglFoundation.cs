@@ -27,6 +27,7 @@ namespace Toggl.Foundation
         public IAnalyticsService AnalyticsService { get; }
         public IBackgroundService BackgroundService { get; }
         public IPlatformConstants PlatformConstants { get; }
+        public IRemoteConfigService RemoteConfigService { get; }
         public IApplicationShortcutCreator ShortcutCreator { get; }
         public ISuggestionProviderContainer SuggestionProviderContainer { get; }
 
@@ -51,6 +52,7 @@ namespace Toggl.Foundation
             AnalyticsService = builder.AnalyticsService;
             PlatformConstants = builder.PlatformConstants;
             BackgroundService = builder.BackgroundService;
+            RemoteConfigService = builder.RemoteConfigService;
             SuggestionProviderContainer = builder.SuggestionProviderContainer;
         }
 
@@ -68,6 +70,7 @@ namespace Toggl.Foundation
 
             public ILicenseProvider LicenseProvider { get; internal set; }
             public IAnalyticsService AnalyticsService { get; internal set; }
+            public IRemoteConfigService RemoteConfigService { get; internal set; }
             public IApplicationShortcutCreator ShortcutCreator { get; internal set; }
             public IBackgroundService BackgroundService { get; internal set; }
             public IPlatformConstants PlatformConstants { get; internal set; }
@@ -75,8 +78,6 @@ namespace Toggl.Foundation
 
             public Builder(UserAgent agent, Version version)
             {
-
-
                 UserAgent = agent;
                 Version = version;
             }
@@ -159,6 +160,12 @@ namespace Toggl.Foundation
                 return this;
             }
 
+            public Builder WithRemoteConfigService(IRemoteConfigService remoteConfigService)
+            {
+                RemoteConfigService = remoteConfigService;
+                return this;
+            }
+
             public Builder WithDatabase<TDatabase>()
                 where TDatabase : ITogglDatabase, new()
                 => WithDatabase(new TDatabase());
@@ -203,6 +210,10 @@ namespace Toggl.Foundation
                 where TSuggestionProviderContainer : ISuggestionProviderContainer, new()
                 => WithSuggestionProviderContainer(new TSuggestionProviderContainer());
 
+            public Builder WithRemoteConfigService<TRemoteConfigService>()
+                where TRemoteConfigService : IRemoteConfigService, new()
+                => WithRemoteConfigService(new TRemoteConfigService());
+
             public TogglFoundation Build()
                 => new TogglFoundation(this);
 
@@ -221,6 +232,7 @@ namespace Toggl.Foundation
                 Ensure.Argument.IsNotNull(AnalyticsService, nameof(AnalyticsService));
                 Ensure.Argument.IsNotNull(BackgroundService, nameof(BackgroundService));
                 Ensure.Argument.IsNotNull(PlatformConstants, nameof(PlatformConstants));
+                Ensure.Argument.IsNotNull(RemoteConfigService, nameof(RemoteConfigService));
                 Ensure.Argument.IsNotNull(SuggestionProviderContainer, nameof(SuggestionProviderContainer));
             }
         }

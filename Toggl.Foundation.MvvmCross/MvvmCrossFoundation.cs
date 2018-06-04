@@ -30,6 +30,7 @@ namespace Toggl.Foundation.MvvmCross
         public IAnalyticsService AnalyticsService { get; }
         public IBackgroundService BackgroundService { get; }
         public IPlatformConstants PlatformConstants { get; }
+        public IRemoteConfigService RemoteConfigService { get; }
         public IApplicationShortcutCreator ShortcutCreator { get; }
         public ISuggestionProviderContainer SuggestionProviderContainer { get; }
 
@@ -71,6 +72,7 @@ namespace Toggl.Foundation.MvvmCross
             AnalyticsService = builder.Foundation.AnalyticsService;
             PlatformConstants = builder.Foundation.PlatformConstants;
             BackgroundService = builder.Foundation.BackgroundService;
+            RemoteConfigService = builder.Foundation.RemoteConfigService;
             SuggestionProviderContainer = builder.Foundation.SuggestionProviderContainer;
         }
 

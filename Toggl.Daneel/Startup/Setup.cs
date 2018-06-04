@@ -98,6 +98,7 @@ namespace Toggl.Daneel
                     .WithLicenseProvider<LicenseProvider>()
                     .WithAnalyticsService(analyticsService)
                     .WithPlatformConstants<PlatformConstants>()
+                    .WithRemoteConfigService<RemoteConfigService>()
                     .WithApiFactory(new ApiFactory(environment, userAgent))
                     .WithBackgroundService(new BackgroundService(timeService))
                     .WithApplicationShortcutCreator<ApplicationShortcutCreator>()
