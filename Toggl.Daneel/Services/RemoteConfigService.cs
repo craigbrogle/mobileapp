@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Firebase.RemoteConfig;
+using Toggl.Foundation.Exceptions;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
 
@@ -17,9 +18,9 @@ namespace Toggl.Daneel.Services
                 var remoteConfig = RemoteConfig.SharedInstance;
                 remoteConfig.Fetch((status, error) =>
                 {
-                    //TODO:
                     if (error != null)
-                        ratingViewConfigurationSubject.OnError(new Exception());
+                        ratingViewConfigurationSubject.OnError(
+                            new RemoteConfigFetchFailedException(error.ToString()));
 
                     remoteConfig.ActivateFetched();
                     var configuration = new RatingViewConfiguration(
@@ -27,6 +28,7 @@ namespace Toggl.Daneel.Services
                         remoteConfig["criterion"].StringValue
                     );
                     ratingViewConfigurationSubject.OnNext(configuration);
+                    ratingViewConfigurationSubject.OnCompleted();
                 });
                 return ratingViewConfigurationSubject.AsObservable();
             }
