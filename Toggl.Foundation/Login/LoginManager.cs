@@ -13,6 +13,7 @@ using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
 using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Network;
+using Math = System.Math;
 
 namespace Toggl.Foundation.Login
 {
@@ -175,7 +176,7 @@ namespace Toggl.Foundation.Login
 
         private Func<int, TimeSpan> backOffStrategyForDelayedRetry()
         {
-            return attempt => TimeSpan.FromSeconds(attempt * 8 - 6);
+            return attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt));
         }
     }
 }
