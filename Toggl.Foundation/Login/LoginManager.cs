@@ -25,7 +25,7 @@ namespace Toggl.Foundation.Login
         private readonly IAccessRestrictionStorage accessRestrictionStorage;
         private readonly Func<ITogglApi, ITogglDataSource> createDataSource;
         private readonly IScheduler scheduler;
-        private const int NumberOfRetriesBeforeGivingUpOnFetchingAUserWithApiToken = 2;
+        private const int numberOfRetriesBeforeGivingUpOnFetchingAUserWithApiToken = 2;
 
         public LoginManager(
             IApiFactory apiFactory,
@@ -35,7 +35,7 @@ namespace Toggl.Foundation.Login
             IAccessRestrictionStorage accessRestrictionStorage,
             Func<ITogglApi, ITogglDataSource> createDataSource,
             IScheduler scheduler
-            )
+        )
         {
             Ensure.Argument.IsNotNull(database, nameof(database));
             Ensure.Argument.IsNotNull(apiFactory, nameof(apiFactory));
@@ -44,6 +44,7 @@ namespace Toggl.Foundation.Login
             Ensure.Argument.IsNotNull(shortcutCreator, nameof(shortcutCreator));
             Ensure.Argument.IsNotNull(createDataSource, nameof(createDataSource));
             Ensure.Argument.IsNotNull(scheduler, nameof(scheduler));
+
             this.database = database;
             this.apiFactory = apiFactory;
             this.accessRestrictionStorage = accessRestrictionStorage;
@@ -72,7 +73,7 @@ namespace Toggl.Foundation.Login
                     .Do(shortcutCreator.OnLogin)
             );
         }
-      
+
         public IObservable<ITogglDataSource> LoginWithGoogle()
             => database
                 .Clear()
@@ -166,7 +167,7 @@ namespace Toggl.Foundation.Login
             IObservable<ITogglDataSource> observable)
         {
             return observable.ConditionalRetryWithBackoffStrategy(
-                NumberOfRetriesBeforeGivingUpOnFetchingAUserWithApiToken,
+                numberOfRetriesBeforeGivingUpOnFetchingAUserWithApiToken,
                 backOffStrategyForDelayedRetry(),
                 exception => exception is UserIsMissingApiTokenException,
                 scheduler);
