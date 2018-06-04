@@ -3,14 +3,14 @@ using System.Reactive.Linq;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Interactors
 {
-    internal sealed class CreateTimeEntryInteractor : IInteractor<IObservable<IDatabaseTimeEntry>>
+    internal sealed class CreateTimeEntryInteractor : IInteractor<IObservable<IThreadSafeTimeEntry>>
     {
         private readonly TimeSpan? duration;
         private readonly IIdProvider idProvider;
@@ -22,12 +22,12 @@ namespace Toggl.Foundation.Interactors
         private readonly IAnalyticsService analyticsService;
 
         public CreateTimeEntryInteractor(
-            IIdProvider idProvider, 
-            ITimeService timeService, 
-            ITogglDataSource dataSource, 
-            IAnalyticsService analyticsService, 
-            ITimeEntryPrototype prototype, 
-            DateTimeOffset startTime, 
+            IIdProvider idProvider,
+            ITimeService timeService,
+            ITogglDataSource dataSource,
+            IAnalyticsService analyticsService,
+            ITimeEntryPrototype prototype,
+            DateTimeOffset startTime,
             TimeSpan? duration)
             : this(idProvider, timeService, dataSource, analyticsService, prototype, startTime, duration,
                 prototype.Duration.HasValue ? TimeEntryStartOrigin.Manual : TimeEntryStartOrigin.Timer) { }
@@ -59,14 +59,15 @@ namespace Toggl.Foundation.Interactors
             this.analyticsService = analyticsService;
         }
 
-        public IObservable<IDatabaseTimeEntry> Execute()
+        public IObservable<IThreadSafeTimeEntry> Execute()
             => dataSource.User.Current
+                .FirstAsync()
                 .Select(userFromPrototype)
                 .SelectMany(dataSource.TimeEntries.Create)
                 .Do(_ => dataSource.SyncManager.PushSync())
                 .Do(_ => analyticsService.TrackStartedTimeEntry(origin));
 
-        private TimeEntry userFromPrototype(IDatabaseUser user)
+        private TimeEntry userFromPrototype(IThreadSafeUser user)
             => idProvider.GetNextIdentifier()
                 .Apply(TimeEntry.Builder.Create)
                 .SetUserId(user.Id)

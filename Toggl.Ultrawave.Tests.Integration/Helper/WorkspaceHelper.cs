@@ -17,17 +17,6 @@ namespace Toggl.Ultrawave.Tests.Integration.Helper
 {
     internal static class WorkspaceHelper
     {
-        public static async Task<Workspace> CreateFor(IUser user)
-        {
-            var newWorkspaceName = $"{Guid.NewGuid()}";
-            var json = $"{{\"name\": \"{newWorkspaceName}\"}}";
-
-            var responseBody = await makeRequest("https://toggl.space/api/v9/workspaces", HttpMethod.Post, user, json);
-
-            var jsonSerializer = new JsonSerializer();
-            return jsonSerializer.Deserialize<Workspace>(responseBody);
-        }
-
         public static async Task SetSubscription(IUser user, long workspaceId, PricingPlans plan)
         {
             var json = $"{{\"pricing_plan_id\":{(int)plan}}}";

@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck.Xunit;
 using NSubstitute;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
+using Toggl.Foundation.Sync.States.Pull;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 using Toggl.Ultrawave;
 using Xunit;
 
-namespace Toggl.Foundation.Tests.Sync.States
+namespace Toggl.Foundation.Tests.Sync.States.Pull
 {
     public sealed class FetchAllSinceStateTests
     {
@@ -66,16 +68,15 @@ namespace Toggl.Foundation.Tests.Sync.States
                 var seconds = twoMonths.TotalSeconds * percent;
                 var since = now.AddSeconds(-seconds);
 
-                var sinceParameters = Substitute.For<ISinceParameters>();
-                sinceParameters.Clients.Returns(since);
-                sinceParameters.Projects.Returns(since);
-                sinceParameters.Tasks.Returns(since);
-                sinceParameters.Tags.Returns(since);
-                sinceParameters.Workspaces.Returns(since);
-                sinceParameters.TimeEntries.Returns(since);
+                var sinceParameters = Substitute.For<ISinceParameterRepository>();
+                sinceParameters.Get<IDatabaseClient>().Returns(since);
+                sinceParameters.Get<IDatabaseProject>().Returns(since);
+                sinceParameters.Get<IDatabaseTask>().Returns(since);
+                sinceParameters.Get<IDatabaseTag>().Returns(since);
+                sinceParameters.Get<IDatabaseWorkspace>().Returns(since);
+                sinceParameters.Get<IDatabaseTimeEntry>().Returns(since);
 
-                database.SinceParameters.Returns(Substitute.For<ISinceParameterRepository>());
-                database.SinceParameters.Get().Returns(sinceParameters);
+                database.SinceParameters.Returns(sinceParameters);
 
                 state.Start().Wait();
                 
@@ -91,23 +92,23 @@ namespace Toggl.Foundation.Tests.Sync.States
             public void MakesApiCallsWithoutTheSinceParameterWhenTheThresholdIsMoreThanTwoMonthsInThePast()
             {
                 var now = timeService.CurrentDateTime;
-                var sinceParameters = Substitute.For<ISinceParameters>();
-                sinceParameters.Clients.Returns(now.AddMonths(-3));
-                sinceParameters.Projects.Returns(now.AddMonths(-4));
-                sinceParameters.Tasks.Returns(now.AddMonths(-5));
-                sinceParameters.Tags.Returns(now.AddMonths(-6));
-                sinceParameters.Workspaces.Returns(now.AddMonths(-7));
-                sinceParameters.TimeEntries.Returns(now.AddMonths(-8));
+                
+                var sinceParameters = Substitute.For<ISinceParameterRepository>();
+                sinceParameters.Get<IDatabaseClient>().Returns(now.AddMonths(-3));
+                sinceParameters.Get<IDatabaseProject>().Returns(now.AddMonths(-4));
+                sinceParameters.Get<IDatabaseTask>().Returns(now.AddMonths(-5));
+                sinceParameters.Get<IDatabaseTag>().Returns(now.AddMonths(-6));
+                sinceParameters.Get<IDatabaseWorkspace>().Returns(now.AddMonths(-7));
+                sinceParameters.Get<IDatabaseTimeEntry>().Returns(now.AddMonths(-8));
 
-                database.SinceParameters.Returns(Substitute.For<ISinceParameterRepository>());
-                database.SinceParameters.Get().Returns(sinceParameters);
+                database.SinceParameters.Returns(sinceParameters);
 
                 state.Start().Wait();
                 
                 api.Workspaces.Received().GetAll();
                 api.Clients.Received().GetAll();
                 api.Projects.Received().GetAll();
-                api.TimeEntries.Received().GetAll();
+                api.TimeEntries.Received().GetAll(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>());
                 api.Tasks.Received().GetAll();
                 api.Tags.Received().GetAll();
             }
@@ -120,7 +121,7 @@ namespace Toggl.Foundation.Tests.Sync.States
                 api.Workspaces.Received().GetAll();
                 api.Clients.Received().GetAll();
                 api.Projects.Received().GetAll();
-                api.TimeEntries.Received().GetAll();
+                api.TimeEntries.Received().GetAll(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>());
                 api.Tasks.Received().GetAll();
                 api.Tags.Received().GetAll();
             }
@@ -138,7 +139,8 @@ namespace Toggl.Foundation.Tests.Sync.States
                 api.Workspaces.GetAll().Returns(Observable.Create<List<IWorkspace>>(o => { workspaceCall = true; return () => { }; }));
                 api.Clients.GetAll().Returns(Observable.Create<List<IClient>>(o => { clientCall = true; return () => { }; }));
                 api.Projects.GetAll().Returns(Observable.Create<List<IProject>>(o => { projectCall = true; return () => { }; }));
-                api.TimeEntries.GetAll().Returns(Observable.Create<List<ITimeEntry>>(o => { timeEntriesCall = true; return () => { }; }));
+                api.TimeEntries.GetAll(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Create<List<ITimeEntry>>(o => { timeEntriesCall = true; return () => { }; }));
                 api.Tasks.GetAll().Returns(Observable.Create<List<ITask>>(o => { taskCall = true; return () => { }; }));
                 api.Tags.GetAll().Returns(Observable.Create<List<ITag>>(o => { tagCall = true; return () => { }; }));
 
@@ -158,27 +160,35 @@ namespace Toggl.Foundation.Tests.Sync.States
                 api.Workspaces.GetAll().Returns(Observable.Return<List<IWorkspace>>(null));
                 api.Clients.GetAll().Returns(Observable.Return<List<IClient>>(null));
                 api.Projects.GetAll().Returns(Observable.Return<List<IProject>>(null));
-                api.TimeEntries.GetAll().Returns(Observable.Return<List<ITimeEntry>>(null));
+                api.TimeEntries.GetAll(Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Return<List<ITimeEntry>>(null));
                 api.Tasks.GetAll().Returns(Observable.Return<List<ITask>>(null));
                 api.Tags.GetAll().Returns(Observable.Return<List<ITag>>(null));
 
-                var transition = (Transition<FetchObservables>)state.Start().SingleAsync().Wait();
+                var transition = (Transition<IFetchObservables>)state.Start().SingleAsync().Wait();
 
                 var observables = transition.Parameter;
-                observables.Workspaces.SingleAsync().Wait().Should().BeNull();
-                observables.Clients.SingleAsync().Wait().Should().BeNull();
-                observables.Projects.SingleAsync().Wait().Should().BeNull();
-                observables.TimeEntries.SingleAsync().Wait().Should().BeNull();
-                observables.Tasks.SingleAsync().Wait().Should().BeNull();
-                observables.Tags.SingleAsync().Wait().Should().BeNull();
+                observables.GetList<IWorkspace>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<IClient>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<IProject>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<ITimeEntry>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<ITask>().SingleAsync().Wait().Should().BeNull();
+                observables.GetList<ITag>().SingleAsync().Wait().Should().BeNull();
             }
 
             [Fact, LogIfTooSlow]
-            public void ReturnsSinceParametersFromDatabase()
+            public async Task FetchesTwoMonthsOfTimeEntriesData()
             {
-                var transition = (Transition<FetchObservables>)state.Start().SingleAsync().Wait();
+                var sinceParameters = Substitute.For<ISinceParameterRepository>();
+                sinceParameters.Get<IDatabaseTimeEntry>().Returns(now.AddMonths(-8));
 
-                transition.Parameter.SinceParameters.ShouldBeEquivalentTo(database.SinceParameters.Get(), options => options.IncludingProperties());
+                await state.Start().SingleAsync();
+
+                var max = TimeSpan.FromDays(62);
+                var min = TimeSpan.FromDays(59);
+
+                await api.TimeEntries.Received().GetAll(
+                    Arg.Is<DateTimeOffset>(start => min <= now - start && now - start <= max), Arg.Is(now));
             }
         }
     }

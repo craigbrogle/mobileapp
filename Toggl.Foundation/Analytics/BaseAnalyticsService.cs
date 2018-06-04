@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Toggl.Foundation.Shortcuts;
 
 namespace Toggl.Foundation.Analytics
 {
@@ -43,12 +42,20 @@ namespace Toggl.Foundation.Analytics
         private const string startEntrySelectTagEventName = "StartEntrySelectTag";
         private const string suggestionSourceParameter = "Source";
 
+
         private const string appWasRatedEventName = "AppWasRated";
         private const string ratingViewWasShownEventName = "RatingViewWasShown";
         private const string userFinishedRatingViewFirstStepEventName = "UserFinishedRatingViewFirstStep";
         private const string userFinishedRatingViewFirstStepIsPositiveParameterName = "IsPositive";
         private const string userFinishedRatingViewSecondStepEventName = "UserFinishedRatingViewSecondStep";
         private const string userFinishedRatingViewSecondStepOutcomeParameterName = "Outcome";
+
+        private const string reportsSuccessEventName = "ReportsSuccess";
+        private const string reportsFailureEventName = "ReportsFailure";
+        private const string reportsSourceParameter = "Source";
+        private const string reportsTotalDaysParameter = "TotalDays";
+        private const string reportsProjectsNotSyncedCountParameter = "ProjectsNotSynced";
+        private const string reportsLoadingTimeParameter = "LoadingTime";
 
         public void TrackOnboardingSkipEvent(string pageName)
         {
@@ -177,6 +184,31 @@ namespace Toggl.Foundation.Analytics
                 userFinishedRatingViewSecondStepOutcomeParameterName,
                 outcome.ToString()
             );
+        }
+
+        public void TrackReportsSuccess(ReportsSource source, int totalDays, int projectsNotSyncedCount, double loadingTime)
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                [reportsSourceParameter] = source.ToString(),
+                [reportsTotalDaysParameter] = totalDays.ToString(),
+                [reportsProjectsNotSyncedCountParameter] = projectsNotSyncedCount.ToString(),
+                [reportsLoadingTimeParameter] = loadingTime.ToString()
+            };
+
+            NativeTrackEvent(reportsSuccessEventName, parameters);
+        }
+
+        public void TrackReportsFailure(ReportsSource source, int totalDays, double loadingTime)
+        {
+            var parameters = new Dictionary<string, string>
+            {
+                [reportsSourceParameter] = source.ToString(),
+                [reportsTotalDaysParameter] = totalDays.ToString(),
+                [reportsLoadingTimeParameter] = loadingTime.ToString()
+            };
+
+            NativeTrackEvent(reportsSuccessEventName, parameters);
         }
 
         private void track(string eventName)

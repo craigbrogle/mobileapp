@@ -17,7 +17,7 @@ namespace Toggl.PrimeRadiant.Settings
         private const string lastAccessDateKey = "LastAccessDate";
         private const string completedOnboardingKey = "CompletedOnboarding";
 
-        private const string preferManualMode = "PreferManualMode";
+        private const string preferManualModeKey = "PreferManualMode";
 
         private const string startButtonWasTappedBeforeKey = "StartButtonWasTappedBefore";
         private const string hasTappedTimeEntryKey = "HasTappedTimeEntry";
@@ -39,6 +39,7 @@ namespace Toggl.PrimeRadiant.Settings
         private readonly ISubject<bool> hasEditedTimeEntrySubject;
         private readonly ISubject<bool> stopButtonWasTappedSubject;
         private readonly ISubject<bool> hasSelectedProjectSubject;
+        private readonly ISubject<bool> isManualModeEnabledSubject;
 
         public SettingsStorage(Version version, IKeyValueStorage keyValueStorage)
         {
@@ -48,10 +49,11 @@ namespace Toggl.PrimeRadiant.Settings
             this.keyValueStorage = keyValueStorage;
 
             (isNewUserSubject, IsNewUser) = prepareSubjectAndObservable(isNewUserKey);
-            (stopButtonWasTappedSubject, StopButtonWasTappedBefore) = prepareSubjectAndObservable(stopButtonWasTappedBeforeKey);
+            (isManualModeEnabledSubject, IsManualModeEnabledObservable) = prepareSubjectAndObservable(preferManualModeKey);
             (hasTappedTimeEntrySubject, HasTappedTimeEntry) = prepareSubjectAndObservable(hasTappedTimeEntryKey);
             (hasEditedTimeEntrySubject, HasEditedTimeEntry) = prepareSubjectAndObservable(hasEditedTimeEntryKey);
             (hasSelectedProjectSubject, HasSelectedProject) = prepareSubjectAndObservable(hasSelectedProjectKey);
+            (stopButtonWasTappedSubject, StopButtonWasTappedBefore) = prepareSubjectAndObservable(stopButtonWasTappedBeforeKey);
             (userSignedUpUsingTheAppSubject, UserSignedUpUsingTheApp) = prepareSubjectAndObservable(userSignedUpUsingTheAppKey);
             (startButtonWasTappedSubject, StartButtonWasTappedBefore) = prepareSubjectAndObservable(startButtonWasTappedBeforeKey);
             (projectOrTagWasAddedSubject, ProjectOrTagWasAddedBefore) = prepareSubjectAndObservable(projectOrTagWasAddedBeforeKey);
@@ -206,21 +208,27 @@ namespace Toggl.PrimeRadiant.Settings
 
         #region IUserPreferences
 
-        public bool IsManualModeEnabled() => keyValueStorage.GetBool(preferManualMode);
+        public IObservable<bool> IsManualModeEnabledObservable { get; }
+
+        public bool IsManualModeEnabled
+            => keyValueStorage.GetBool(preferManualModeKey);
 
         public void EnableManualMode()
         {
-            keyValueStorage.SetBool(preferManualMode, true);
+            keyValueStorage.SetBool(preferManualModeKey, true);
+            isManualModeEnabledSubject.OnNext(true);
         }
 
         public void EnableTimerMode()
         {
-            keyValueStorage.SetBool(preferManualMode, false);
+            keyValueStorage.SetBool(preferManualModeKey, false);
+            isManualModeEnabledSubject.OnNext(false);
         }
 
         void IUserPreferences.Reset()
         {
             EnableTimerMode();
+            isManualModeEnabledSubject.OnNext(false);
         }
 
         #endregion

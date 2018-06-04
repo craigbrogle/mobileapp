@@ -65,7 +65,6 @@ namespace Toggl.Foundation.Models
 
         private Preferences(IPreferences entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false)
         {
-            Id = entity.Id;
             TimeOfDayFormat = entity.TimeOfDayFormat;
             DateFormat = entity.DateFormat;
             DurationFormat = entity.DurationFormat;
@@ -118,8 +117,6 @@ namespace Toggl.Foundation.Models
             Name = entity.Name;
             IsPrivate = entity.IsPrivate;
             Active = entity.Active;
-            At = entity.At;
-            ServerDeletedAt = entity.ServerDeletedAt;
             Color = entity.Color;
             Billable = entity.Billable;
             Template = entity.Template;
@@ -128,6 +125,8 @@ namespace Toggl.Foundation.Models
             Rate = entity.Rate;
             Currency = entity.Currency;
             ActualHours = entity.ActualHours;
+            At = entity.At;
+            ServerDeletedAt = entity.ServerDeletedAt;
             SyncStatus = syncStatus;
             LastSyncErrorMessage = lastSyncErrorMessage;
             IsDeleted = isDeleted;
@@ -172,7 +171,7 @@ namespace Toggl.Foundation.Models
             WorkspaceId = entity.WorkspaceId;
             Name = entity.Name;
             At = entity.At;
-            DeletedAt = entity.DeletedAt;
+            ServerDeletedAt = entity.ServerDeletedAt;
             SyncStatus = syncStatus;
             LastSyncErrorMessage = lastSyncErrorMessage;
             IsDeleted = isDeleted;
@@ -222,8 +221,8 @@ namespace Toggl.Foundation.Models
             UserId = entity.UserId;
             EstimatedSeconds = entity.EstimatedSeconds;
             Active = entity.Active;
-            At = entity.At;
             TrackedSeconds = entity.TrackedSeconds;
+            At = entity.At;
             SyncStatus = syncStatus;
             LastSyncErrorMessage = lastSyncErrorMessage;
             IsDeleted = isDeleted;
@@ -277,9 +276,9 @@ namespace Toggl.Foundation.Models
             Duration = entity.Duration;
             Description = entity.Description;
             TagIds = entity.TagIds;
+            UserId = entity.UserId;
             At = entity.At;
             ServerDeletedAt = entity.ServerDeletedAt;
-            UserId = entity.UserId;
             SyncStatus = syncStatus;
             LastSyncErrorMessage = lastSyncErrorMessage;
             IsDeleted = isDeleted;
@@ -371,7 +370,6 @@ namespace Toggl.Foundation.Models
             Name = entity.Name;
             Admin = entity.Admin;
             SuspendedAt = entity.SuspendedAt;
-            ServerDeletedAt = entity.ServerDeletedAt;
             DefaultHourlyRate = entity.DefaultHourlyRate;
             DefaultCurrency = entity.DefaultCurrency;
             OnlyAdminsMayCreateProjects = entity.OnlyAdminsMayCreateProjects;
@@ -380,8 +378,9 @@ namespace Toggl.Foundation.Models
             ProjectsBillableByDefault = entity.ProjectsBillableByDefault;
             Rounding = entity.Rounding;
             RoundingMinutes = entity.RoundingMinutes;
-            At = entity.At;
             LogoUrl = entity.LogoUrl;
+            At = entity.At;
+            ServerDeletedAt = entity.ServerDeletedAt;
             SyncStatus = syncStatus;
             LastSyncErrorMessage = lastSyncErrorMessage;
             IsDeleted = isDeleted;

@@ -40,5 +40,8 @@ namespace Toggl.Foundation.Analytics
         void TrackRatingViewWasShown();
         void TrackUserFinishedRatingViewFirstStep(bool isPositive);
         void TrackUserFinishedRatingViewSecondStep(RatingViewSecondStepOutcome outcome);
+
+        void TrackReportsSuccess(ReportsSource source, int totalDays, int projectsNotSyncedCount, double loadingTime);
+        void TrackReportsFailure(ReportsSource source, int totalDays, double loadingTime);
     }
 }

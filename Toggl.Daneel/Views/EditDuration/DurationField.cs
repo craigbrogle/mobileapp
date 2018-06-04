@@ -13,6 +13,8 @@ namespace Toggl.Daneel.Views.EditDuration
     [Register(nameof(DurationField))]
     public sealed class DurationField : UITextField
     {
+        public event EventHandler LostFocus;
+
         private TimeSpan originalDuration;
 
         private bool isEditing;
@@ -78,6 +80,13 @@ namespace Toggl.Daneel.Views.EditDuration
             durationInputDelegate.NumberKeyPressed -= numberKeyPressed;
             durationInputDelegate.StartEditing -= startEditing;
             durationInputDelegate.FinishEditing -= finishEditing;
+        }
+
+        public override bool ResignFirstResponder()
+        {
+            LostFocus.Raise(this);
+
+            return base.ResignFirstResponder();
         }
 
         private void backspacePressed(object sender, EventArgs e)

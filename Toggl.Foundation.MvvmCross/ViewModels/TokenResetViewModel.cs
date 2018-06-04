@@ -82,7 +82,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await base.Initialize();
 
             needsSync = await dataSource.HasUnsyncedData();
-            var user = await dataSource.User.Current;
+            var user = await dataSource.User.Current.FirstAsync();
             Email = user.Email;
         }
 

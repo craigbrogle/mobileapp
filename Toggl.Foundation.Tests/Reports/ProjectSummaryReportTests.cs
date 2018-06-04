@@ -17,12 +17,13 @@ namespace Toggl.Foundation.Tests.Reports
                 var segments = durations.Get.Select(duration => duration.Get)
                     .Select((index, duration) => getSegmentFromDurationAndIndex(index, duration))
                     .ToArray();
+                var projectsNotSyncedCount = 0;
                 var totalTrackedSeconds = segments.Select(s => s.TrackedTime.TotalSeconds).Sum();
                 var billableSeconds = segments.Select(s => s.BillableSeconds).Sum();
                 float expectedBillablePercentage =
                     (float)(totalTrackedSeconds > 0 ? (100.0f / totalTrackedSeconds) * billableSeconds : 0);
 
-                var report = new ProjectSummaryReport(segments);
+                var report = new ProjectSummaryReport(segments, projectsNotSyncedCount);
 
                 report.BillablePercentage.Should().Be(expectedBillablePercentage);
             }
@@ -34,9 +35,10 @@ namespace Toggl.Foundation.Tests.Reports
                 var segments = actualDurations
                     .Select((index, duration) => getSegmentFromDurationAndIndex(index, duration))
                     .ToArray();
+                var projectsNotSyncedCount = 0;
                 var expectedDuration = (float)segments.Select(s => s.TrackedTime.TotalSeconds).Sum();
 
-                var report = new ProjectSummaryReport(segments);
+                var report = new ProjectSummaryReport(segments, projectsNotSyncedCount);
 
                 report.TotalSeconds.Should().Be(expectedDuration);
             }
@@ -44,7 +46,8 @@ namespace Toggl.Foundation.Tests.Reports
             [Fact, LogIfTooSlow]
             public void ReturnsZerosForEmptyListOfProjects()
             {
-                var report = new ProjectSummaryReport(new ChartSegment[0]);
+                var projectsNotSyncedCount = 0;
+                var report = new ProjectSummaryReport(new ChartSegment[0], projectsNotSyncedCount);
 
                 report.TotalSeconds.Should().Be(0);
                 report.BillablePercentage.Should().Be(0);

@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockTimeEntry : IDatabaseTimeEntry
+    public sealed class MockTimeEntry : IThreadSafeTimeEntry
     {
-        private IDatabaseTimeEntry entity;
+        private IThreadSafeTimeEntry entity;
 
         public MockTimeEntry() { }
 
-        public MockTimeEntry(IDatabaseTimeEntry entity)
+        public MockTimeEntry(IThreadSafeTimeEntry entity)
         {
             Id = entity.Id;
             WorkspaceId = entity.WorkspaceId;
@@ -27,15 +28,15 @@ namespace Toggl.Foundation.Tests.Mocks
             UserId = entity.UserId;
         }
 
-        public IDatabaseTask Task { get; set; }
+        IDatabaseTask IDatabaseTimeEntry.Task => Task;
 
-        public IDatabaseUser User { get; set; }
+        IDatabaseUser IDatabaseTimeEntry.User => User;
 
-        public IDatabaseProject Project { get; set; }
+        IDatabaseProject IDatabaseTimeEntry.Project => Project;
 
-        public IDatabaseWorkspace Workspace { get; set; }
+        IDatabaseWorkspace IDatabaseTimeEntry.Workspace => Workspace;
 
-        public IEnumerable<IDatabaseTag> Tags { get; set; }
+        IEnumerable<IDatabaseTag> IDatabaseTimeEntry.Tags => Tags;
 
         public long WorkspaceId { get; set; }
 
@@ -66,5 +67,15 @@ namespace Toggl.Foundation.Tests.Mocks
         public string LastSyncErrorMessage { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public IThreadSafeTask Task { get; }
+
+        public IThreadSafeUser User { get; }
+
+        public IThreadSafeProject Project { get; }
+
+        public IThreadSafeWorkspace Workspace { get; }
+
+        public IEnumerable<IThreadSafeTag> Tags { get; }
     }
 }

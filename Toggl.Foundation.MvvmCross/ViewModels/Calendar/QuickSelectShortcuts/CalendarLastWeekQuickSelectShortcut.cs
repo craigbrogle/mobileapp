@@ -1,4 +1,5 @@
-﻿using Toggl.Foundation.MvvmCross.Parameters;
+﻿using Toggl.Foundation.Analytics;
+using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
@@ -21,7 +22,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar.QuickSelectShortcuts
             var difference = (now.DayOfWeek - beginningOfWeek.ToDayOfWeekEnum() + 7) % 7;
             var start = now.AddDays(-(difference + 7));
             var end = start.AddDays(6);
-            return DateRangeParameter.WithDates(start, end);
+            return DateRangeParameter
+                .WithDates(start, end)
+                .WithSource(ReportsSource.ShortcutLastWeek);
         }
     }
 }

@@ -1,27 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Tests.Interactors.AutocompleteSuggestions
 {
     public abstract class BaseAutocompleteSuggestionsInteractorTest
     {
-        protected IEnumerable<IDatabaseClient> Clients { get; }
+        protected IEnumerable<IThreadSafeClient> Clients { get; }
 
-        protected IEnumerable<IDatabaseTask> Tasks { get; }
+        protected IEnumerable<IThreadSafeTask> Tasks { get; }
 
-        protected IEnumerable<IDatabaseProject> Projects { get; }
+        protected IEnumerable<IThreadSafeProject> Projects { get; }
 
-        protected IEnumerable<IDatabaseTag> Tags { get; }
+        protected IEnumerable<IThreadSafeTag> Tags { get; }
 
-        protected IEnumerable<IDatabaseTimeEntry> TimeEntries { get; }
+        protected IEnumerable<IThreadSafeTimeEntry> TimeEntries { get; }
 
         protected BaseAutocompleteSuggestionsInteractorTest()
         {
             Clients = Enumerable.Range(10, 10).Select(id =>
             {
-                var client = Substitute.For<IDatabaseClient>();
+                var client = Substitute.For<IThreadSafeClient>();
                 client.Id.Returns(id);
                 client.Name.Returns(id.ToString());
                 return client;
@@ -29,7 +29,7 @@ namespace Toggl.Foundation.Tests.Interactors.AutocompleteSuggestions
 
             Tasks = Enumerable.Range(20, 10).Select(id =>
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(id);
                 task.Name.Returns(id.ToString());
                 return task;
@@ -38,7 +38,7 @@ namespace Toggl.Foundation.Tests.Interactors.AutocompleteSuggestions
             Projects = Enumerable.Range(30, 10).Select(id =>
             {
                 var tasks = id % 2 == 0 ? Tasks.Where(t => (t.Id == id - 10 || t.Id == id - 11)).ToList() : null;
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(id);
                 project.Name.Returns(id.ToString());
                 project.Color.Returns("#1e1e1e");
@@ -59,7 +59,7 @@ namespace Toggl.Foundation.Tests.Interactors.AutocompleteSuggestions
 
             Tags = Enumerable.Range(50, 10).Select(id =>
             {
-                var tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 tag.Id.Returns(id);
                 tag.Name.Returns(id.ToString());
                 return tag;
@@ -67,7 +67,7 @@ namespace Toggl.Foundation.Tests.Interactors.AutocompleteSuggestions
 
             TimeEntries = Enumerable.Range(40, 10).Select(id =>
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(id);
                 timeEntry.Description.Returns(id.ToString());
 

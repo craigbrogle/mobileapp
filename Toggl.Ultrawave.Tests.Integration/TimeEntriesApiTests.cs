@@ -74,6 +74,58 @@ namespace Toggl.Ultrawave.Tests.Integration
                 => te => te.Id == model.Id && te.Description == model.Description;
         }
 
+        public sealed class TheGetAllBetweenStartAndEndDatesMethod : AuthenticatedGetEndpointBaseTests<List<ITimeEntry>>
+        {
+            private static readonly DateTimeOffset start = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(75));
+            private static readonly DateTimeOffset end = start.AddDays(60);
+
+            protected override IObservable<List<ITimeEntry>> CallEndpointWith(ITogglApi togglApi)
+                => togglApi.TimeEntries.GetAll(start, end);
+
+            [Fact]
+            public async Task DoesNotReturnTimeEntriesWhichStartBeforeTheStartParameter()
+            {
+                var (api, user) = await SetupTestUser();
+                var timeEntry = createTimeEntry(user, start.AddDays(-1));
+                await api.TimeEntries.Create(timeEntry);
+
+                var list = await api.TimeEntries.GetAll(start, end);
+
+                list.Should().BeEmpty();
+            }
+
+            [Fact]
+            public async Task DoesNotReturnTimeEntriesWhichStartAfterTheEndParameter()
+            {
+                var (api, user) = await SetupTestUser();
+                var timeEntry = createTimeEntry(user, end.AddDays(1));
+                await api.TimeEntries.Create(timeEntry);
+
+                var list = await api.TimeEntries.GetAll(start, end);
+
+                list.Should().BeEmpty();
+            }
+
+            [Fact]
+            public async Task ReturnsOnlyTheTimeEntriesWhichAreBetweenTheStartAndEndDates()
+            {
+                var (api, user) = await SetupTestUser();
+                var timeEntryA = createTimeEntry(user, start.AddDays(-1));
+                var timeEntryB = createTimeEntry(user, start.AddDays(1));
+                var timeEntryC = createTimeEntry(user, end.AddDays(1));
+                await api.TimeEntries.Create(timeEntryA);
+                await api.TimeEntries.Create(timeEntryB);
+                await api.TimeEntries.Create(timeEntryC);
+
+                var list = await api.TimeEntries.GetAll(start, end);
+
+                list.Should().HaveCount(1);
+                var item = list[0];
+                item.Start.ToUnixTimeSeconds().Should().BeGreaterOrEqualTo(start.ToUnixTimeSeconds());
+                item.Start.ToUnixTimeSeconds().Should().BeLessThan(end.ToUnixTimeSeconds());
+            }
+        }
+
         public sealed class TheCreateMethod : AuthenticatedPostEndpointBaseTests<ITimeEntry>
         {
             [Fact, LogTestInfo]
@@ -441,16 +493,17 @@ namespace Toggl.Ultrawave.Tests.Integration
                 => togglApi.TimeEntries.Delete(timeEntry);
         }
 
-        private static TimeEntry createTimeEntry(IUser user) => new TimeEntry
-        {
-            WorkspaceId = user.DefaultWorkspaceId,
-            Billable = false,
-            Start = new DateTimeOffset(DateTime.Now - TimeSpan.FromMinutes(5)),
-            Duration = (long)TimeSpan.FromMinutes(5).TotalSeconds,
-            Description = Guid.NewGuid().ToString(),
-            TagIds = new List<long>(),
-            UserId = user.Id,
-            CreatedWith = "Ultraware Integration Tests"
-        };
+        private static TimeEntry createTimeEntry(IUser user, DateTimeOffset? start = null)
+            => new TimeEntry
+            {
+                WorkspaceId = user.DefaultWorkspaceId,
+                Billable = false,
+                Start = start ?? new DateTimeOffset(DateTime.Now - TimeSpan.FromMinutes(5)),
+                Duration = (long)TimeSpan.FromMinutes(5).TotalSeconds,
+                Description = Guid.NewGuid().ToString(),
+                TagIds = new List<long>(),
+                UserId = user.Id,
+                CreatedWith = "Ultraware Integration Tests"
+            };
     }
 }

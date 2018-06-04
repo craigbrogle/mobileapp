@@ -1,4 +1,5 @@
 ﻿using System;
+using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using static Toggl.Multivac.WorkspaceFeatureId;
@@ -9,8 +10,8 @@ namespace Toggl.Foundation.Interactors
     {
         private readonly long workspaceId;
 
-        public AreCustomColorsEnabledForWorkspaceInteractor(ITogglDatabase database, long workspaceId)
-            : base(database)
+        public AreCustomColorsEnabledForWorkspaceInteractor(ITogglDataSource dataSource, long workspaceId)
+            : base(dataSource)
         {
             this.workspaceId = workspaceId;
         }

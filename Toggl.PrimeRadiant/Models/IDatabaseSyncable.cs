@@ -1,6 +1,8 @@
-﻿namespace Toggl.PrimeRadiant
+﻿using Toggl.PrimeRadiant.Models;
+
+namespace Toggl.PrimeRadiant
 {
-    public interface IDatabaseSyncable
+    public interface IDatabaseSyncable : IDatabaseModel
     {
         SyncStatus SyncStatus { get; }
 

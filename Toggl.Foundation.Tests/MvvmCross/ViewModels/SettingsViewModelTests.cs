@@ -8,6 +8,7 @@ using FsCheck;
 using FsCheck.Xunit;
 using NSubstitute;
 using Toggl.Foundation.DTOs;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels.Settings;
@@ -15,8 +16,6 @@ using Toggl.Foundation.Services;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
-using Toggl.PrimeRadiant.Settings;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
@@ -286,7 +285,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<string>()).Returns(false);
+                    Arg.Any<string>()).Returns(Observable.Return(false));
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
 
@@ -303,7 +302,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<string>()).Returns(true);
+                    Arg.Any<string>()).Returns(Observable.Return(true));
 
                 await ViewModel.LogoutCommand.ExecuteAsync();
 
@@ -333,8 +332,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private const long workspaceId = 10;
             private const long defaultWorkspaceId = 11;
             private const string workspaceName = "My custom workspace";
-            private readonly IDatabaseWorkspace workspace = Substitute.For<IDatabaseWorkspace>();
-            private readonly IDatabaseWorkspace defaultWorkspace = Substitute.For<IDatabaseWorkspace>();
+            private readonly IThreadSafeWorkspace workspace = Substitute.For<IThreadSafeWorkspace>();
+            private readonly IThreadSafeWorkspace defaultWorkspace = Substitute.For<IThreadSafeWorkspace>();
 
             public ThePickWorkspaceCommand()
             {
@@ -426,7 +425,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ChangesManualModeToTimerMode()
             {
-                UserPreferences.IsManualModeEnabled().Returns(true);
+                UserPreferences.IsManualModeEnabled.Returns(true);
 
                 await ViewModel.Initialize();
                 ViewModel.ToggleManualModeCommand.Execute();
@@ -438,7 +437,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ChangesTimerModeToManualMode()
             {
-                UserPreferences.IsManualModeEnabled().Returns(true);
+                UserPreferences.IsManualModeEnabled.Returns(true);
 
                 await ViewModel.Initialize();
                 ViewModel.ToggleManualModeCommand.Execute();
@@ -605,9 +604,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.Version.Should().Be(UserAgent.Version);
             }
 
-            private IDatabasePreferences createPreferences()
+            private IThreadSafePreferences createPreferences()
             {
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DateFormat.Returns(DateFormat.FromLocalizedDateFormat("MM.DD.YYYY"));
                 preferences.DurationFormat.Returns(DurationFormat.Classic);
                 preferences.TimeOfDayFormat.Returns(TimeFormat.TwelveHoursFormat);
@@ -621,7 +620,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task NavigatesToSelectDateFormatViewModelPassingCurrentDateFormat()
             {
                 var dateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DateFormat.Returns(dateFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(preferences));
                 await ViewModel.Initialize();
@@ -638,7 +637,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
                 var newDateFormat = DateFormat.FromLocalizedDateFormat("DD.MM.YYYY");
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DateFormat.Returns(oldDateFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(preferences));
                 NavigationService
@@ -659,9 +658,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
                 var newDateFormat = DateFormat.FromLocalizedDateFormat("DD.MM.YYYY");
-                var oldPreferences = Substitute.For<IDatabasePreferences>();
+                var oldPreferences = Substitute.For<IThreadSafePreferences>();
                 oldPreferences.DateFormat.Returns(oldDateFormat);
-                var newPreferences = Substitute.For<IDatabasePreferences>();
+                var newPreferences = Substitute.For<IThreadSafePreferences>();
                 newPreferences.DateFormat.Returns(newDateFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(oldPreferences));
                 NavigationService
@@ -683,7 +682,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
                 var newDateFormat = DateFormat.FromLocalizedDateFormat("DD.MM.YYYY");
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DateFormat.Returns(oldDateFormat);
                 DataSource.Preferences.Get().Returns(Observable.Return(preferences));
                 NavigationService
@@ -732,7 +731,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData(false)]
             public async Task InitiatesPushSync(bool originalValue)
             {
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 var observable = Observable.Return(preferences);
                 DataSource.Preferences.Update(Arg.Any<EditPreferencesDTO>()).Returns(observable);
                 await ViewModel.Initialize();
@@ -750,7 +749,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task NavigatesToSelectDurationFormatViewModelPassingCurrentDurationFormat()
             {
                 var durationFormat = DurationFormat.Improved;
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DurationFormat.Returns(durationFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(preferences));
                 await ViewModel.Initialize();
@@ -767,7 +766,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDurationFormat = DurationFormat.Decimal;
                 var newDurationFormat = DurationFormat.Improved;
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DurationFormat.Returns(oldDurationFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(preferences));
                 NavigationService
@@ -788,7 +787,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDurationFormat = DurationFormat.Decimal;
                 var newDurationFormat = DurationFormat.Improved;
-                var preferences = Substitute.For<IDatabasePreferences>();
+                var preferences = Substitute.For<IThreadSafePreferences>();
                 preferences.DurationFormat.Returns(oldDurationFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(preferences));
                 NavigationService
@@ -808,9 +807,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDurationFormat = DurationFormat.Decimal;
                 var newDurationFormat = DurationFormat.Improved;
-                var oldPreferences = Substitute.For<IDatabasePreferences>();
+                var oldPreferences = Substitute.For<IThreadSafePreferences>();
                 oldPreferences.DurationFormat.Returns(oldDurationFormat);
-                var newPreferences = Substitute.For<IDatabasePreferences>();
+                var newPreferences = Substitute.For<IThreadSafePreferences>();
                 newPreferences.DurationFormat.Returns(newDurationFormat);
                 DataSource.Preferences.Current.Returns(Observable.Return(oldPreferences));
                 NavigationService
@@ -834,7 +833,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task NavigatesToSelectBeginningOfWeekViewModelPassingCurrentBeginningOfWeek()
             {
                 var beginningOfWeek = BeginningOfWeek.Friday;
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(beginningOfWeek);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 await ViewModel.Initialize();
@@ -852,7 +851,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var oldBeginningOfWeek = BeginningOfWeek.Tuesday;
                 var newBeginningOfWeek = BeginningOfWeek.Sunday;
 
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(oldBeginningOfWeek);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 NavigationService
@@ -873,7 +872,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldBeginningOfWeek = BeginningOfWeek.Tuesday;
                 var newBeginningOfWeek = BeginningOfWeek.Sunday;
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(oldBeginningOfWeek);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 NavigationService
@@ -894,9 +893,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var oldBeginningOfWeek = BeginningOfWeek.Tuesday;
                 var newBeginningOfWeek = BeginningOfWeek.Sunday;
 
-                var oldUser = Substitute.For<IDatabaseUser>();
+                var oldUser = Substitute.For<IThreadSafeUser>();
                 oldUser.BeginningOfWeek.Returns(oldBeginningOfWeek);
-                var newUser = Substitute.For<IDatabaseUser>();
+                var newUser = Substitute.For<IThreadSafeUser>();
                 newUser.BeginningOfWeek.Returns(newBeginningOfWeek);
                 DataSource.User.Current.Returns(Observable.Return(oldUser));
                 NavigationService

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FluentAssertions;
+using Toggl.Foundation.Tests.Extensions;
 using FsCheck;
 using FsCheck.Xunit;
 using Toggl.Foundation.Sync;

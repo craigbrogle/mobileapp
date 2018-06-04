@@ -15,6 +15,7 @@ using Toggl.PrimeRadiant.Models;
 using Xunit;
 using TimeEntry = Toggl.Foundation.Models.TimeEntry;
 using ITimeEntryPrototype = Toggl.Foundation.Models.ITimeEntryPrototype;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -40,8 +41,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Theory, LogIfTooSlow]
             [ClassData(typeof(ThreeParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
-                bool useDataSource, 
-                bool useContainer, 
+                bool useDataSource,
+                bool useContainer,
                 bool useInteractorFactory)
             {
                 var container = useContainer ? Container : null;
@@ -136,7 +137,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             public TheStartTimeEntryCommand()
             {
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.Id.Returns(10);
                 DataSource.User.Current.Returns(Observable.Return(user));
 
@@ -157,7 +158,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ExecutesTheContinueTimeEntryInteractor()
             {
                 var suggestion = createSuggestion();
-                var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                 InteractorFactory.StartSuggestion(Arg.Any<Suggestion>()).Returns(mockedInteractor);
 
                 await ViewModel.StartTimeEntryCommand.ExecuteAsync(suggestion);
@@ -169,10 +170,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void CannotBeExecutedTwiceInARow()
             {
                 var suggestion = createSuggestion();
-                var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                 InteractorFactory.StartSuggestion(Arg.Any<Suggestion>()).Returns(mockedInteractor);
                 mockedInteractor.Execute()
-                    .Returns(Observable.Never<IDatabaseTimeEntry>());
+                    .Returns(Observable.Never<IThreadSafeTimeEntry>());
 
                 ViewModel.StartTimeEntryCommand.ExecuteAsync(suggestion);
                 ViewModel.StartTimeEntryCommand.ExecuteAsync(suggestion);
@@ -184,8 +185,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task CanBeExecutedForTheSecondTimeIfStartingTheFirstOneFinishesSuccessfully()
             {
                 var suggestion = createSuggestion();
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
-                var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
+                var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                 InteractorFactory.StartSuggestion(Arg.Any<Suggestion>()).Returns(mockedInteractor);
                 mockedInteractor.Execute()
                     .Returns(Observable.Return(timeEntry));
@@ -198,7 +199,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private Suggestion createSuggestion()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Duration.Returns((long)TimeSpan.FromMinutes(30).TotalSeconds);
                 timeEntry.Description.Returns("Testing");
                 timeEntry.WorkspaceId.Returns(10);

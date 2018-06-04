@@ -14,6 +14,8 @@ using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Shortcuts;
 using UIKit;
+using Toggl.Daneel.Extensions;
+
 
 namespace Toggl.Daneel
 {
@@ -49,12 +51,13 @@ namespace Toggl.Daneel
             #endif
             #if USE_ANALYTICS
             Microsoft.AppCenter.AppCenter.Start(
-                "{TOGGL_APP_CENTER_ID_IOS}", 
+                "{TOGGL_APP_CENTER_ID_IOS}",
                 typeof(Microsoft.AppCenter.Crashes.Crashes),
                 typeof(Microsoft.AppCenter.Analytics.Analytics));
             Firebase.Core.App.Configure();
             Google.SignIn.SignIn.SharedInstance.ClientID =
                 Firebase.Core.App.DefaultInstance.Options.ClientId;
+            Facebook.CoreKit.ApplicationDelegate.SharedInstance.FinishedLaunching(application, launchOptions);
             #endif
 
             return true;
@@ -64,7 +67,16 @@ namespace Toggl.Daneel
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
         {
             var openUrlOptions = new UIApplicationOpenUrlOptions(options);
-            return Google.SignIn.SignIn.SharedInstance.HandleUrl(url, openUrlOptions.SourceApplication, openUrlOptions.Annotation);
+            var googleResponse = Google.SignIn.SignIn.SharedInstance.HandleUrl(url, openUrlOptions.SourceApplication, openUrlOptions.Annotation);
+
+            var facebookResponse = Facebook.CoreKit.ApplicationDelegate.SharedInstance.OpenUrl(app, url, options);
+
+            return googleResponse || facebookResponse;
+        }
+
+        public override void OnActivated(UIApplication application)
+        {
+            Facebook.CoreKit.AppEvents.ActivateApp();
         }
         #endif
 
@@ -130,11 +142,12 @@ namespace Toggl.Daneel
             UINavigationBar.Appearance.BackIndicatorTransitionMaskImage = image;
 
             //Title and background
+            var barBackgroundColor = Color.NavigationBar.BackgroundColor.ToNativeColor();
             UINavigationBar.Appearance.ShadowImage = new UIImage();
-            UINavigationBar.Appearance.BarTintColor = UIColor.Clear;
-            UINavigationBar.Appearance.BackgroundColor = UIColor.Clear;
+            UINavigationBar.Appearance.BarTintColor = barBackgroundColor;
+            UINavigationBar.Appearance.BackgroundColor = barBackgroundColor;
             UINavigationBar.Appearance.TintColor = Color.NavigationBar.BackButton.ToNativeColor();
-            UINavigationBar.Appearance.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+            UINavigationBar.Appearance.SetBackgroundImage(ImageExtension.ImageWithColor(barBackgroundColor), UIBarMetrics.Default);
             UINavigationBar.Appearance.TitleTextAttributes = new UIStringAttributes
             {
                 Font = UIFont.SystemFontOfSize(14, UIFontWeight.Medium),

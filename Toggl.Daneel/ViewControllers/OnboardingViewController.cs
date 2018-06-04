@@ -118,6 +118,7 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewWillAppear(animated);
             NavigationController.NavigationBar.UserInteractionEnabled = false;
+            NavigationController.NavigationBarHidden = true;
         }
 
         public override bool PrefersStatusBarHidden()

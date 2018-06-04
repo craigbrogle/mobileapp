@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Toggl.Multivac;
-using Toggl.PrimeRadiant;
+using Toggl.Foundation.DataSources;
 using static Toggl.Multivac.WorkspaceFeatureId;
 
 namespace Toggl.Foundation.Interactors
@@ -10,14 +9,14 @@ namespace Toggl.Foundation.Interactors
     {
         private readonly long projectId;
 
-        public IsBillableAvailableForProjectInteractor(ITogglDatabase database, long projectId)
-            : base (database)
+        public IsBillableAvailableForProjectInteractor(ITogglDataSource dataSource, long projectId)
+            : base (dataSource)
         {
             this.projectId = projectId;
         }
 
-        public override IObservable<bool> Execute() 
-            => Database.Projects.GetById(projectId)
+        public override IObservable<bool> Execute()
+            => DataSource.Projects.GetById(projectId)
                 .SelectMany(project => CheckIfFeatureIsEnabled(project.WorkspaceId, Pro));
     }
 }

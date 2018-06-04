@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NSubstitute;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Tests.Mocks;
 using Xunit;
 using Toggl.PrimeRadiant;
@@ -27,9 +29,13 @@ namespace Toggl.Foundation.Tests.Interactors
                     new MockClient { Id = 5, SyncStatus = SyncStatus.SyncFailed }
                 };
 
-                Database.Clients
+                DataSource.Clients
                     .GetAll(Arg.Any<Func<IDatabaseClient, bool>>())
-                    .Returns(callInfo => Observable.Return(clients.Where(callInfo.Arg<Func<IDatabaseClient, bool>>())));
+                    .Returns(callInfo =>
+                    {
+                        var filteredClients = clients.Where(callInfo.Arg<Func<IDatabaseClient, bool>>());
+                        return Observable.Return(filteredClients.Cast<IThreadSafeClient>());
+                    });
 
                 MockProject[] projects = {
                     new MockProject { Id = 0, SyncStatus = SyncStatus.SyncFailed },
@@ -37,16 +43,24 @@ namespace Toggl.Foundation.Tests.Interactors
                     new MockProject { Id = 2, SyncStatus = SyncStatus.SyncFailed },
                 };
 
-                Database.Projects
+                DataSource.Projects
                     .GetAll(Arg.Any<Func<IDatabaseProject, bool>>())
-                    .Returns(callInfo => Observable.Return(projects.Where(callInfo.Arg<Func<IDatabaseProject, bool>>())));
+                    .Returns(callInfo =>
+                    {
+                        var filteredProjects = projects.Where(callInfo.Arg<Func<IDatabaseProject, bool>>());
+                        return Observable.Return(filteredProjects.Cast<IThreadSafeProject>());
+                    });
 
                 MockTag[] tags = {
                 };
 
-                Database.Tags
+                DataSource.Tags
                     .GetAll(Arg.Any<Func<IDatabaseTag, bool>>())
-                    .Returns(callInfo => Observable.Return(tags.Where(callInfo.Arg<Func<IDatabaseTag, bool>>())));
+                    .Returns(callInfo =>
+                    {
+                        var fiteredTags = tags.Where(callInfo.Arg<Func<IDatabaseTag, bool>>());
+                        return Observable.Return(fiteredTags.Cast<IThreadSafeTag>());
+                    });
 
                 int syncFailedCount = clients.Count(p => p.SyncStatus == SyncStatus.SyncFailed) +
                                       projects.Count(p => p.SyncStatus == SyncStatus.SyncFailed) +

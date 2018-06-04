@@ -4,6 +4,7 @@ using FsCheck.Xunit;
 using NSubstitute;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
             protected const long TaskId = 13;
             protected const string TaskName = "Test Toggl apps";
 
-            protected TextFieldInfo CreateDefaultTextFieldInfo() => 
+            protected TextFieldInfo CreateDefaultTextFieldInfo() =>
                 TextFieldInfo.Empty(WorkspaceId)
                     .WithTextAndCursor(Description, Description.Length)
                     .WithProjectAndTaskInfo(WorkspaceId, ProjectId, ProjectName, ProjectColor, TaskId, TaskName);
@@ -230,7 +231,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
             [Fact, LogIfTooSlow]
             public void DoesNotChangeAnyPropertyIfThereIsNoTagQueryInTheDescription()
-            { 
+            {
                 var textFieldInfo = CreateDefaultTextFieldInfo();
 
                 var newTextFieldInfo =
@@ -307,7 +308,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
 
         private static TagSuggestion createTagSuggestion(int id)
         {
-            var tag = Substitute.For<IDatabaseTag>();
+            var tag = Substitute.For<IThreadSafeTag>();
             tag.Id.Returns(id);
             tag.Name.Returns($"Tag{id}");
             return new TagSuggestion(tag);

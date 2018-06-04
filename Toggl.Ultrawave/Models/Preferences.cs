@@ -8,11 +8,6 @@ namespace Toggl.Ultrawave.Models
 {
     internal sealed partial class Preferences : IPreferences
     {
-        private const long fakeId = 0;
-
-        [JsonIgnore]
-        public long Id => fakeId;
-
         [JsonProperty("timeofday_format")]
         [JsonConverter(typeof(TimeFormatConverter))]
         public TimeFormat TimeOfDayFormat { get; set; }

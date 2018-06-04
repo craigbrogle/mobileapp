@@ -1,12 +1,13 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockClient : IDatabaseClient
+    public sealed class MockClient : IThreadSafeClient
     {
-        public IDatabaseWorkspace Workspace { get; set; }
+        IDatabaseWorkspace IDatabaseClient.Workspace => Workspace;
 
         public long WorkspaceId { get; set; }
 
@@ -23,5 +24,7 @@ namespace Toggl.Foundation.Tests.Mocks
         public string LastSyncErrorMessage { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public IThreadSafeWorkspace Workspace { get; set; }
     }
 }

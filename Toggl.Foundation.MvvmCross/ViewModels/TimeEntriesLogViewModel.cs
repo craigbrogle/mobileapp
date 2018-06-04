@@ -9,12 +9,13 @@ using MvvmCross.Core.ViewModels;
 using PropertyChanged;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.DataSources.Interfaces;
 using Toggl.Foundation.Interactors;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Settings;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -86,15 +87,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await fetchSectionedTimeEntries();
 
             var deleteDisposable =
-                dataSource.TimeEntries.TimeEntryDeleted
+                dataSource.TimeEntries.Deleted
                     .Subscribe(safeRemoveTimeEntry);
 
             var updateDisposable =
-                dataSource.TimeEntries.TimeEntryUpdated
+                dataSource.TimeEntries.Updated
                     .Subscribe(onTimeEntryUpdated);
 
             var createDisposable =
-                dataSource.TimeEntries.TimeEntryCreated
+                dataSource.TimeEntries.Created
                     .Where(isNotRunning)
                     .Subscribe(safeInsertTimeEntry);
 
@@ -115,8 +116,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task fetchSectionedTimeEntries()
         {
-            var timeEntries = await dataSource.TimeEntries.GetAll();
-            if (timeEntries == null)
+            var timeEntries = await interactorFactory.GetAllNonDeletedTimeEntries().Execute();
+            if (timeEntries == null) 
             {
                 TimeEntries.Clear();
                 return;
@@ -132,24 +133,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             TimeEntries.ReplaceWith(groupedEntries);
         }
 
-        private void onTimeEntryUpdated((long Id, IDatabaseTimeEntry Entity) tuple)
+        private void onTimeEntryUpdated(EntityUpdate<IThreadSafeTimeEntry> update)
         {
-            var timeEntry = tuple.Entity;
+            var timeEntry = update.Entity;
             var shouldBeAdded = timeEntry != null && !timeEntry.IsRunning() && !timeEntry.IsDeleted;
 
-            var oldCollectionIndex = TimeEntries.IndexOf(c => c.Any(vm => vm.Id == tuple.Id));
+            var oldCollectionIndex = TimeEntries.IndexOf(c => c.Any(vm => vm.Id == update.Id));
             var collectionIndex = TimeEntries.IndexOf(vm => vm.Date == timeEntry.Start.LocalDateTime.Date);
             var wasMovedIntoDifferentCollection = oldCollectionIndex >= 0 && oldCollectionIndex != collectionIndex;
 
             var shouldBeRemoved = shouldBeAdded == false || wasMovedIntoDifferentCollection;
             if (shouldBeRemoved)
             {
-                safeRemoveTimeEntry(tuple.Id);
+                safeRemoveTimeEntry(update.Id);
             }
 
             if (shouldBeAdded)
             {
-                var timeEntryIndex = collectionIndex < 0 ? -1 : TimeEntries[collectionIndex].IndexOf(vm => vm.Id == tuple.Id);
+                var timeEntryIndex = collectionIndex < 0 ? -1 : TimeEntries[collectionIndex].IndexOf(vm => vm.Id == update.Id);
                 var timeEntryExistsInTheCollection = timeEntryIndex >= 0;
                 if (timeEntryExistsInTheCollection)
                 {
@@ -162,7 +163,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        private void safeInsertTimeEntry(IDatabaseTimeEntry timeEntry)
+        private void safeInsertTimeEntry(IThreadSafeTimeEntry timeEntry)
         {
             IsWelcome = false;
 
@@ -181,13 +182,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             RaisePropertyChanged(nameof(IsEmpty));
         }
 
-        private void insertTimeEntryInGroup(IDatabaseTimeEntry timeEntry, int collectionIndex)
+        private void insertTimeEntryInGroup(IThreadSafeTimeEntry timeEntry, int collectionIndex)
         {
             var timeEntryViewModel = new TimeEntryViewModel(timeEntry, durationFormat);
             TimeEntries.InsertInChildCollection(collectionIndex, timeEntryViewModel);
         }
 
-        private void insertNewTimeEntryGroup(IDatabaseTimeEntry timeEntry, DateTime indexDate)
+        private void insertNewTimeEntryGroup(IThreadSafeTimeEntry timeEntry, DateTime indexDate)
         {
             var timeEntryToAdd = new TimeEntryViewModel(timeEntry, durationFormat);
             var newCollection = new TimeEntryViewModelCollection(indexDate, new[] { timeEntryToAdd }, durationFormat);
@@ -211,7 +212,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             ChangePresentation(new ReloadLogHint());
         }
 
-        private void onPreferencesChanged(IDatabasePreferences preferences)
+        private void onPreferencesChanged(IThreadSafePreferences preferences)
         {
             durationFormat = preferences.DurationFormat;
 
@@ -226,7 +227,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        private bool isNotRunning(IDatabaseTimeEntry timeEntry) => !timeEntry.IsRunning();
+        private bool isNotRunning(IThreadSafeTimeEntry timeEntry) => !timeEntry.IsRunning();
 
         private Task edit(TimeEntryViewModel timeEntryViewModel)
         {
@@ -237,7 +238,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task delete(TimeEntryViewModel timeEntryViewModel)
         {
-            await dataSource.TimeEntries.Delete(timeEntryViewModel.Id);
+            await interactorFactory.DeleteTimeEntry(timeEntryViewModel.Id).Execute();
 
             analyticsService.TrackDeletingTimeEntry();
             dataSource.SyncManager.PushSync();

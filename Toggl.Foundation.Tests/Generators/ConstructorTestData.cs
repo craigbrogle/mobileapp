@@ -15,16 +15,11 @@ namespace Toggl.Foundation.Tests.Generators
 
         protected ConstructorTestData(int parameterCount)
         {
-            var iterationCount = (int)Math.Pow(2, parameterCount) - 1;
-
-            data = Enumerable
-                .Range(0, iterationCount)
-                .Select(outerIndex =>
-                    Enumerable
-                        .Range(0, parameterCount)
-                        .Select(innerIndex => (object)((outerIndex & (1 << innerIndex)) != 0))
-                        .ToArray()
-                ).ToList();
+            data = Enumerable.Range(0, parameterCount)
+                    .Select(i => Enumerable.Range(0, parameterCount)
+                        .Select(j => (object)(i != j))
+                        .ToArray())
+                    .ToList();
         }
 
         public IEnumerator<object[]> GetEnumerator() => data.GetEnumerator();
@@ -87,61 +82,29 @@ namespace Toggl.Foundation.Tests.Generators
         public TwelveParameterConstructorTestData() : base(12) { }
     }
 
+    public sealed class FourteenParameterConstructorTestData : ConstructorTestData
+    {
+        public FourteenParameterConstructorTestData() : base(14) { }
+    }
+
     public sealed class ConstructorTestDataTests
     {
+        private sealed class ConstructorTestDataTest : ConstructorTestData
+        {
+            public ConstructorTestDataTest(int n) : base(n)
+            {
+            }
+        }
+
         public sealed class TheGeneratedSequence
         {
-            [Theory, LogIfTooSlow]
-            [InlineData(typeof(TwoParameterConstructorTestData))]
-            [InlineData(typeof(ThreeParameterConstructorTestData))]
-            [InlineData(typeof(FourParameterConstructorTestData))]
-            [InlineData(typeof(FiveParameterConstructorTestData))]
-            public void NeverReturnsASequenceWhereAllElementsAreTrue(Type contructorTestDataType)
-            {
-                var testData = Activator.CreateInstance(contructorTestDataType) as ConstructorTestData;
-                testData.Any(x => x.All(y => (bool)y)).Should().BeFalse();
-            }
-
             [Property]
-            public void ReturnsAllPossiblePermutationsForTwoParameters(bool first, bool second)
+            public void ReturnsSequenceWithExactlyOneFalseItem(byte n)
             {
-                if (first && second) return;
+                if (n == 0) return;
 
-                var array = new List<object> { first, second };
-                var testData = new TwoParameterConstructorTestData();
-                testData.Any(x => x.SequenceEqual(array)).Should().BeTrue();
-            }
-
-            [Property]
-            public void ReturnsAllPossiblePermutationsForThreeParameters(bool first, bool second, bool third)
-            {
-                if (first && second && third) return;
-
-                var array = new List<object> { first, second, third };
-                var testData = new ThreeParameterConstructorTestData();
-                testData.Any(x => x.SequenceEqual(array)).Should().BeTrue();
-            }
-
-            [Property]
-            public void ReturnsAllPossiblePermutationsForFourParameters(
-                bool first, bool second, bool third, bool fourth)
-            {
-                if (first && second && third && fourth) return;
-
-                var array = new List<object> { first, second, third, fourth };
-                var testData = new FourParameterConstructorTestData();
-                testData.Any(x => x.SequenceEqual(array)).Should().BeTrue();
-            }
-
-            [Property]
-            public void ReturnsAllPossiblePermutationsForFiveParameters(
-                bool first, bool second, bool third, bool fourth, bool fifth)
-            {
-                if (first && second && third && fourth && fifth) return;
-
-                var array = new List<object> { first, second, third, fourth, fifth };
-                var testData = new FiveParameterConstructorTestData();
-                testData.Any(x => x.SequenceEqual(array)).Should().BeTrue();
+                var testData = new ConstructorTestDataTest(n);
+                testData.All(sequence => sequence.Count(x => (bool)x == false) == 1).Should().BeTrue();
             }
         }
     }

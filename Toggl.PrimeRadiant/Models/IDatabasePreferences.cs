@@ -2,7 +2,7 @@
 
 namespace Toggl.PrimeRadiant.Models
 {
-    public interface IDatabasePreferences : IPreferences, IDatabaseSyncable
+    public interface IDatabasePreferences : IPreferences, IDatabaseSyncable, IIdentifiable
     {
     }
 }

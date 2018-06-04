@@ -6,6 +6,11 @@ namespace Toggl.PrimeRadiant.Realm
 {
     internal partial class RealmPreferences : RealmObject, IDatabasePreferences
     {
+        public const long fakeId = 0;
+
+        [Ignored]
+        public long Id => fakeId;
+
         [Ignored]
         public TimeFormat TimeOfDayFormat
         {

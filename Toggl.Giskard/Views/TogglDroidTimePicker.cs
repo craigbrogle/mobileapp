@@ -1,116 +1,102 @@
 ﻿using System;
 using System.Linq;
 using Android.Content;
+using Android.OS;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using Java.Lang;
 using MvvmCross.Platform.Droid.Platform;
 using Toggl.Giskard.Extensions;
+using Toggl.Giskard.Helper;
 using Toggl.Multivac;
+using Toggl.Multivac.Extensions;
+using JavaBool = Java.Lang.Boolean;
 
 namespace Toggl.Giskard.Views
 {
-    [Register("toggl.giskard.views.togglDroidDatePicker")]
-    public class TogglDroidDatePicker
-        : DatePicker
-        , DatePicker.IOnDateChangedListener
+    [Register("toggl.giskard.views.TogglDroidTimePicker")]
+    public class TogglDroidTimePicker
+        : TimePicker
+        , TimePicker.IOnTimeChangedListener
     {
         private bool isInitialized;
 
-        private readonly long DefaultMinimum = 
-            new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            .ToUnixTimeMilliseconds();
-        
-        private readonly long DefaultMaximum =
-            new DateTimeOffset(2100, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            .ToUnixTimeMilliseconds();
-
-        public TogglDroidDatePicker(Context context)
+        public TogglDroidTimePicker(Context context)
             : base(context)
         {
         }
 
-        public TogglDroidDatePicker(Context context, IAttributeSet attrs)
+        public TogglDroidTimePicker(Context context, IAttributeSet attrs)
             : base(context, attrs)
         {
         }
 
-        protected TogglDroidDatePicker(IntPtr javaReference, JniHandleOwnership transfer)
+        protected TogglDroidTimePicker(IntPtr javaReference, JniHandleOwnership transfer)
             : base(javaReference, transfer)
         {
         }
 
-        public event EventHandler BoundariesChanged;
-        public event EventHandler ValueChanged;
-
-		protected override void OnFinishInflate()
-		{
-            base.OnFinishInflate();
-
-            var headerId = Resources.GetIdentifier("date_picker_header", "id", "android");
-            var header = FindViewById(headerId);
-            header.Visibility = ViewStates.Gone;
-		}
-
-        private DateTimeOffsetRange boundaries;
-        public DateTimeOffsetRange Boundaries
+        private DateTimeOffset originalValue;
+        public DateTimeOffset Value
         {
-            get => boundaries;
+            get => originalValue;
             set
             {
-                if (boundaries == value)
-                    return;
-
-                boundaries = value;
-
-                /* 
-                 * Workaround for a DatePicker bug in which
-                 * there's an early return if the year is the same
-                 * and the dates are different, which is bad logic.
-                 * https://stackoverflow.com/a/19722636/93770
-                 * 
-                 * Also, because of the bug in DatePicker widget, make 
-                 * sure this order is not reversed. MaxDate must be
-                 * set before MinDate.
-                 */
-
-                MaxDate = DefaultMaximum;
-                MaxDate = ((DateTimeOffset)boundaries.Maximum.Date).ToUnixTimeMilliseconds();
-
-                MinDate = DefaultMinimum;
-                MinDate = ((DateTimeOffset)boundaries.Minimum.Date).ToUnixTimeMilliseconds();
-
-                BoundariesChanged?.Invoke(this, null);
-            }
-        }
-
-        public DateTime Value
-        {
-            get
-            {
-                return MvxJavaDateUtils.DateTimeFromJava(Year, Month, DayOfMonth);
-            }
-            set
-            {
-                var javaYear = value.Year;
-                var javaMonth = value.Month - 1;
-                var javaDay = value.Day;
-
                 if (!isInitialized)
                 {
-                    Init(javaYear, javaMonth, javaDay, this);
+                    SetOnTimeChangedListener(this);
                     isInitialized = true;
                 }
-                else if (Year != javaYear || Month != javaMonth || DayOfMonth != javaDay)
+
+                if (originalValue == value)
+                    return;
+
+                originalValue = value;
+
+                var localTime = value.ToLocalTime();
+
+                if (MarshmallowApis.AreAvailable)
                 {
-                    UpdateDate(javaYear, javaMonth, javaDay);
+                    if (Hour != localTime.Hour)
+                        Hour = localTime.Hour;
+
+                    if (Minute != localTime.Minute)
+                        Minute = localTime.Minute;
+                }
+                else
+                {
+                    #pragma warning disable 0618
+
+                    if ((int)CurrentHour != localTime.Hour)
+                        CurrentHour = (Integer)localTime.Hour;
+
+                    if ((int)CurrentMinute != localTime.Minute)
+                        CurrentMinute = (Integer)localTime.Minute;
+                    
+                    #pragma warning restore 0618
                 }
             }
         }
 
-        public void OnDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth)
+        public event EventHandler ValueChanged;
+
+        public void Update24HourMode(bool is24HourMode)
         {
+            SetIs24HourView(new JavaBool(is24HourMode));
+        }
+
+        public void OnTimeChanged(TimePicker view, int hourOfDay, int minute)
+        {
+            var localTime = originalValue.ToLocalTime();
+
+            var changedDateTimeOffset = new DateTimeOffset(
+                localTime.Year, localTime.Month, localTime.Day,
+                hourOfDay, minute, localTime.Second, localTime.Offset);
+
+            originalValue = changedDateTimeOffset;
+
             ValueChanged?.Invoke(this, null);
         }
     }

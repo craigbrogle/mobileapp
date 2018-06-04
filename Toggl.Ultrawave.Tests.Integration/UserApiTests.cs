@@ -382,7 +382,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task ChangesDefaultWorkspace()
             {
                 var (togglClient, user) = await SetupTestUser();
-                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
+                var secondWorkspace = await togglClient.Workspaces.Create(Guid.NewGuid().ToString());
 
                 var userWithUpdates = new Ultrawave.Models.User(user);
                 userWithUpdates.DefaultWorkspaceId = secondWorkspace.Id;

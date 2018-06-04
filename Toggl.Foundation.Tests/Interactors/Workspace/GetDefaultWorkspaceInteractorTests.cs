@@ -20,7 +20,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 const long workspaceId = 11;
                 var feature = new MockWorkspaceFeature { Enabled = hasFeature, FeatureId = WorkspaceFeatureId.Pro };
                 var featureCollection = new MockWorkspaceFeatureCollection { Features = new[] { feature } };
-                Database.WorkspaceFeatures
+                DataSource.WorkspaceFeatures
                     .GetById(workspaceId)
                        .Returns(Observable.Return(featureCollection));
 

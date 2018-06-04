@@ -1,43 +1,44 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Toggl.Multivac.Models;
+using Toggl.Foundation.Extensions;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 
-namespace Toggl.Foundation.Sync.States
+namespace Toggl.Foundation.Sync.States.Push
 {
-    internal sealed class PushOneEntityState<TModel>
-        where TModel : class, IBaseModel, IDatabaseSyncable
+    internal sealed class PushOneEntityState<T>
+        where T : class, IDatabaseSyncable, IThreadSafeModel
     {
-        public StateResult<TModel> CreateEntity { get; } = new StateResult<TModel>();
-        public StateResult<TModel> DeleteEntity { get; } = new StateResult<TModel>();
-        public StateResult<TModel> UpdateEntity { get; } = new StateResult<TModel>();
-        public StateResult<TModel> DeleteEntityLocally { get; } = new StateResult<TModel>();
+        public StateResult<T> CreateEntity { get; } = new StateResult<T>();
 
-        public IObservable<ITransition> Start(TModel entityToPush)
+        public StateResult<T> DeleteEntity { get; } = new StateResult<T>();
+
+        public StateResult<T> UpdateEntity { get; } = new StateResult<T>();
+        
+        public StateResult<T> DeleteEntityLocally { get; } = new StateResult<T>();
+
+        public IObservable<ITransition> Start(T entityToPush)
             => createObservable(entityToPush)
                 .Select(entity =>
                     entity.IsDeleted
-                        ? wasNotPublished(entity)
+                        ? entity.IsLocalOnly()
                             ? deleteLocally(entity)
                             : delete(entity)
-                        : wasNotPublished(entity)
+                        : entity.IsLocalOnly()
                             ? create(entity)
                             : update(entity));
 
-        private IObservable<TModel> createObservable(TModel entity)
+        private IObservable<T> createObservable(T entity)
             => entity == null
-                ? Observable.Throw<TModel>(new ArgumentNullException(nameof(entity)))
+                ? Observable.Throw<T>(new ArgumentNullException(nameof(entity)))
                 : Observable.Return(entity);
 
-        private bool wasNotPublished(TModel entity)
-            => entity.Id < 0;
+        private ITransition delete(T entity) => DeleteEntity.Transition(entity);
 
-        private ITransition delete(TModel entity) => DeleteEntity.Transition(entity);
+        private ITransition create(T entity) => CreateEntity.Transition(entity);
 
-        private ITransition create(TModel entity) => CreateEntity.Transition(entity);
+        private ITransition update(T entity) => UpdateEntity.Transition(entity);
 
-        private ITransition update(TModel entity) => UpdateEntity.Transition(entity);
-
-        private ITransition deleteLocally(TModel entity) => DeleteEntityLocally.Transition(entity);
+        private ITransition deleteLocally(T entity) => DeleteEntityLocally.Transition(entity);
     }
 }

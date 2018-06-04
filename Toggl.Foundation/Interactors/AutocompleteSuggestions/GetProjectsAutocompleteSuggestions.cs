@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reactive.Linq;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Interactors.AutocompleteSuggestions
 {
@@ -28,18 +28,18 @@ namespace Toggl.Foundation.Interactors.AutocompleteSuggestions
         public IObservable<IEnumerable<AutocompleteSuggestion>> Execute()
             => getProjectsForSuggestions().Select(ProjectSuggestion.FromProjects);
 
-        private IObservable<IEnumerable<IDatabaseProject>> getProjectsForSuggestions()
+        private IObservable<IEnumerable<IThreadSafeProject>> getProjectsForSuggestions()
             => wordsToQuery.Count == 0
                 ? getAllProjects()
                 : getAllProjectsFiltered();
 
-        private IObservable<IEnumerable<IDatabaseProject>> getAllProjects()
+        private IObservable<IEnumerable<IThreadSafeProject>> getAllProjects()
             => dataSource.GetAll(project => project.Active);
 
-        private IObservable<IEnumerable<IDatabaseProject>> getAllProjectsFiltered()
+        private IObservable<IEnumerable<IThreadSafeProject>> getAllProjectsFiltered()
             => wordsToQuery.Aggregate(getAllProjects(), (obs, word) => obs.Select(filterProjectsByWord(word)));
 
-        private Func<IEnumerable<IDatabaseProject>, IEnumerable<IDatabaseProject>> filterProjectsByWord(string word)
+        private Func<IEnumerable<IThreadSafeProject>, IEnumerable<IThreadSafeProject>> filterProjectsByWord(string word)
             => projects =>
                 projects.Where(
                     p => p.Name.ContainsIgnoringCase(word)

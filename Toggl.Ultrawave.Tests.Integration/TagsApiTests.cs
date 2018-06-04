@@ -38,7 +38,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task ReturnsTagsForAllWorkspaces()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var otherWorkspace = await WorkspaceHelper.CreateFor(user);
+                var otherWorkspace = await togglApi.Workspaces.Create(Guid.NewGuid().ToString());
 
                 await pushTags(togglApi, tags1, user.DefaultWorkspaceId);
                 await pushTags(togglApi, tags2, otherWorkspace.Id);
@@ -67,7 +67,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 }
             }
         }
-        
+
 
         public sealed class TheGetAllSinceMethod : AuthenticatedGetSinceEndpointBaseTests<ITag>
         {
@@ -86,7 +86,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             protected override Expression<Func<ITag, bool>> ModelWithSameAttributesAs(ITag model)
                 => t => isTheSameAs(model, t);
         }
-    
+
         public sealed class TheCreateMethod : AuthenticatedPostEndpointBaseTests<ITag>
         {
             protected override IObservable<ITag> CallEndpointWith(ITogglApi togglApi)

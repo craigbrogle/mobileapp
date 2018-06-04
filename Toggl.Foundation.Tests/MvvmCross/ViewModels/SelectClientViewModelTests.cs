@@ -7,6 +7,7 @@ using FluentAssertions;
 using FsCheck;
 using FsCheck.Xunit;
 using NSubstitute;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
@@ -25,10 +26,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override SelectClientViewModel CreateViewModel()
                => new SelectClientViewModel(DataSource, NavigationService);
 
-            protected List<IDatabaseClient> GenerateClientList() =>
+            protected List<IThreadSafeClient> GenerateClientList() =>
                 Enumerable.Range(1, 10).Select(i =>
                 {
-                    var client = Substitute.For<IDatabaseClient>();
+                    var client = Substitute.For<IThreadSafeClient>();
                     client.Id.Returns(i);
                     client.Name.Returns(i.ToString());
                     return client;
@@ -217,11 +218,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             public TheSuggestCreationProperty()
             {
-                var client = Substitute.For<IDatabaseClient>();
+                var client = Substitute.For<IThreadSafeClient>();
                 client.Name.Returns(name);
                 DataSource.Clients
                     .GetAllInWorkspace(Arg.Any<long>())
-                    .Returns(Observable.Return(new List<IDatabaseClient> { client }));
+                    .Returns(Observable.Return(new List<IThreadSafeClient> { client }));
                 ViewModel.Prepare(Parameters);
             }
 

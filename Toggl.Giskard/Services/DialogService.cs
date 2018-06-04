@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Android.Support.V7.App;
 using MvvmCross.Platform;
 using MvvmCross.Platform.Core;
@@ -11,40 +13,54 @@ namespace Toggl.Giskard.Services
 {
     public sealed class DialogService : IDialogService
     {
-        public Task<bool> Confirm(string title, string message, string confirmButtonText, string dismissButtonText)
+        public IObservable<bool> Confirm(string title, string message, string confirmButtonText, string dismissButtonText)
         {
             var activity = Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity;
-            var tcs = new TaskCompletionSource<bool>();
 
-            MvxSingleton<IMvxMainThreadDispatcher>.Instance.RequestMainThreadAction(() =>
+            return Observable.Create<bool>(observer =>
             {
-                var builder = new AlertDialog.Builder(activity, Resource.Style.TogglDialog)
-                    .SetMessage(message)
-                    .SetPositiveButton(confirmButtonText, (s, e) => tcs.SetResult(true));
-
-                if (!string.IsNullOrWhiteSpace(title))
+                MvxSingleton<IMvxMainThreadDispatcher>.Instance.RequestMainThreadAction(() =>
                 {
-                    builder = builder.SetTitle(title);
-                }
+                    var builder = new AlertDialog.Builder(activity, Resource.Style.TogglDialog)
+                        .SetMessage(message)
+                        .SetPositiveButton(confirmButtonText, (s, e) =>
+                        {
+                            observer.OnNext(true);
+                            observer.OnCompleted();
+                        });
 
-                if (!string.IsNullOrEmpty(dismissButtonText))
-                {
-                    builder = builder.SetNegativeButton(dismissButtonText, (s, e) => tcs.SetResult(false));
-                }
+                    if (!string.IsNullOrWhiteSpace(title))
+                    {
+                        builder = builder.SetTitle(title);
+                    }
 
-                var dialog = builder.Create();
-                dialog.CancelEvent += (s, e) => tcs.SetResult(false);
-                          
-                dialog.Show();
+                    if (!string.IsNullOrEmpty(dismissButtonText))
+                    {
+                        builder = builder.SetNegativeButton(dismissButtonText, (s, e) =>
+                        {
+                            observer.OnNext(false);
+                            observer.OnCompleted();
+                        });
+                    }
+
+                    var dialog = builder.Create();
+                    dialog.CancelEvent += (s, e) =>
+                    {
+                        observer.OnNext(false);
+                        observer.OnCompleted();
+                    };
+
+                    dialog.Show();
+                });
+
+                return Disposable.Empty;
             });
-
-            return tcs.Task;
         }
 
-        public Task Alert(string title, string message, string buttonTitle)
-            => Confirm(title, message, buttonTitle, null);
+        public IObservable<Unit> Alert(string title, string message, string buttonTitle)
+            => Confirm(title, message, buttonTitle, null).Select(_ => Unit.Default);
 
-        public Task<bool> ConfirmDestructiveAction(ActionType type)
+        public IObservable<bool> ConfirmDestructiveAction(ActionType type)
         {
             switch (type)
             {

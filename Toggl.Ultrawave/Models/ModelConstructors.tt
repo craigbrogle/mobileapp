@@ -5,7 +5,6 @@
 #>using Toggl.Multivac;
 using Toggl.Multivac.Models;
 
-
 namespace Toggl.Ultrawave.Models
 {
 <#
@@ -13,13 +12,19 @@ namespace Toggl.Ultrawave.Models
     var solutionDirectory = Path.Combine(filePath, "../../Toggl.Multivac/Models/" );
     var modelsToGenerate = Directory.GetFiles(solutionDirectory, "*.cs");
     var isFirst = true;
-
     foreach(var modelFile in modelsToGenerate)
     {
         var interfaceName = Path.GetFileName(modelFile).Replace(".cs", "");
-        if (interfaceName == "IBaseModel") continue;
+        if (interfaceName == "IIdentifiable"
+            || interfaceName == "IDeletable"
+            || interfaceName == "ILastChangedDatable")
+            continue;
 
         var className = interfaceName.Substring(1, interfaceName.Length - 1);
+
+        var implementsIDeletable = File.ReadAllLines(modelFile).Any(l => l.Contains("IDeletable"));
+
+        var implementsILastChangedDatabale = File.ReadAllLines(modelFile).Any(l => l.Contains("ILastChangedDatable"));
 
         if (!isFirst)
             WriteLine("");
@@ -33,8 +38,8 @@ namespace Toggl.Ultrawave.Models
 
         foreach(var line in File.ReadAllLines(modelFile))
         {
-            var extendsIBaseModel = line.Contains(": IBaseModel");
-            if (extendsIBaseModel)
+            var extendsIIdentifiable = line.Contains(": IIdentifiable");
+            if (extendsIIdentifiable)
             {
                 WriteLine("            Id = entity.Id;");
                 continue;
@@ -48,6 +53,16 @@ namespace Toggl.Ultrawave.Models
             var propName = trimmedLine.Substring(indexOfPropName, trimmedLine.Length - 9 - indexOfPropName);
 
             WriteLine($"            {propName} = entity.{propName};");
+        }
+
+        if (implementsILastChangedDatabale)
+        {
+            WriteLine("            At = entity.At;");
+        }
+
+        if (implementsIDeletable)
+        {
+            WriteLine("            ServerDeletedAt = entity.ServerDeletedAt;");
         }
 
         WriteLine("        }");

@@ -9,8 +9,8 @@ using NSubstitute;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Exceptions;
-using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Foundation.Tests.Mocks;
 using Toggl.Multivac.Models;
@@ -40,27 +40,27 @@ namespace Toggl.Foundation.Tests.DataSources
 
             protected TestScheduler TestScheduler { get; } = new TestScheduler();
 
-            protected DateTimeOffset ValidTime { get; } = DateTimeOffset.UtcNow;
+            protected static DateTimeOffset Now { get; } = new DateTimeOffset(2018, 05, 14, 18, 00, 00, TimeSpan.Zero);
 
-            protected IDatabaseTimeEntry DatabaseTimeEntry { get; } =
-                TimeEntry.Builder
+            protected IThreadSafeTimeEntry TimeEntry { get; } =
+                Models.TimeEntry.Builder
                     .Create(CurrentRunningId)
                     .SetUserId(UserId)
                     .SetDescription("")
                     .SetWorkspaceId(WorkspaceId)
                     .SetSyncStatus(SyncStatus.InSync)
-                    .SetAt(DateTimeOffset.UtcNow.AddDays(-1))
-                    .SetStart(DateTimeOffset.UtcNow.AddHours(-2))
+                    .SetAt(Now.AddDays(-1))
+                    .SetStart(Now.AddHours(-2))
                     .Build();
 
             protected IRepository<IDatabaseTimeEntry> Repository { get; } = Substitute.For<IRepository<IDatabaseTimeEntry>>();
 
             protected TimeEntryDataSourceTest()
             {
-                TimeEntriesSource = new TimeEntriesDataSource(IdProvider, Repository, TimeService);
+                TimeEntriesSource = new TimeEntriesDataSource(Repository, TimeService);
 
                 IdProvider.GetNextIdentifier().Returns(-1);
-                Repository.GetById(Arg.Is(DatabaseTimeEntry.Id)).Returns(Observable.Return(DatabaseTimeEntry));
+                Repository.GetById(Arg.Is(TimeEntry.Id)).Returns(Observable.Return(TimeEntry));
 
                 Repository.Create(Arg.Any<IDatabaseTimeEntry>())
                           .Returns(info => Observable.Return(info.Arg<IDatabaseTimeEntry>()));
@@ -73,21 +73,37 @@ namespace Toggl.Foundation.Tests.DataSources
         public sealed class TheConstructor : TimeEntryDataSourceTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(ThreeParameterConstructorTestData))]
+            [ClassData(typeof(TwoParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
-                bool useIdProvider,
                 bool useRepository,
                 bool useTimeService)
             {
-                var idProvider = useIdProvider ? IdProvider : null;
                 var repository = useRepository ? Repository : null;
                 var timeService = useTimeService ? TimeService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new TimeEntriesDataSource(idProvider, repository, timeService);
+                    () => new TimeEntriesDataSource(repository, timeService);
 
                 tryingToConstructWithEmptyParameters
                     .ShouldThrow<ArgumentNullException>();
+            }
+        }
+
+        public sealed class TheCreateMethod : TimeEntryDataSourceTest
+        {
+            [Fact]
+            public async ThreadingTask CallsRepositoryWithConflictResolvers()
+            {
+                var timeEntry = new MockTimeEntry();
+                Repository.BatchUpdate(null, null, null)
+                    .ReturnsForAnyArgs(Observable.Return(new[] { new CreateResult<IDatabaseTimeEntry>(timeEntry) }));
+
+                await TimeEntriesSource.Create(timeEntry);
+
+                Repository.Received().BatchUpdate(
+                    Arg.Any<IEnumerable<(long, IDatabaseTimeEntry)>>(),
+                    Arg.Is<Func<IDatabaseTimeEntry, IDatabaseTimeEntry, ConflictResolutionMode>>(conflictResolution => conflictResolution != null),
+                    Arg.Is<IRivalsResolver<IDatabaseTimeEntry>>(resolver => resolver != null));
             }
         }
 
@@ -101,19 +117,21 @@ namespace Toggl.Foundation.Tests.DataSources
                     .Select(i =>
                     {
                         var isDeleted = i % 2 == 0;
-                        var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                        var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                         timeEntry.Id.Returns(i);
                         timeEntry.IsDeleted.Returns(isDeleted);
                         return timeEntry;
                     });
-                Repository
+                DataSource
+                    .TimeEntries
                     .GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>())
                     .Returns(callInfo =>
                         Observable
                              .Return(result)
-                             .Select(x => x.Where(callInfo.Arg<Func<IDatabaseTimeEntry, bool>>())));
+                             .Select(x => x.Where(callInfo.Arg<Func<IThreadSafeTimeEntry, bool>>())));
 
-                var timeEntries = await TimeEntriesSource.GetAll(x => x.Id > 10);
+                var timeEntries = await InteractorFactory.GetAllNonDeletedTimeEntries().Execute()
+                    .Select(tes => tes.Where(x => x.Id > 10));
 
                 timeEntries.Should().HaveCount(5);
             }
@@ -123,13 +141,13 @@ namespace Toggl.Foundation.Tests.DataSources
         {
             public TheStopMethod()
             {
-                long duration = (long)(DateTimeOffset.UtcNow - DatabaseTimeEntry.Start).TotalSeconds;
+                long duration = (long)(Now - TimeEntry.Start).TotalSeconds;
                 var timeEntries = new List<IDatabaseTimeEntry>
                 {
-                    DatabaseTimeEntry,
-                    DatabaseTimeEntry.With(duration),
-                    DatabaseTimeEntry.With(duration),
-                    DatabaseTimeEntry.With(duration)
+                    TimeEntry,
+                    TimeEntry.With(duration),
+                    TimeEntry.With(duration),
+                    TimeEntry.With(duration)
                 };
 
                 Repository
@@ -143,14 +161,14 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact, LogIfTooSlow]
             public async ThreadingTask UpdatesTheTimeEntrySettingItsDuration()
             {
-                await TimeEntriesSource.Stop(ValidTime); 
-                await Repository.Received().Update(Arg.Any<long>(), Arg.Is<IDatabaseTimeEntry>(te => te.Duration == (long)(ValidTime - te.Start).TotalSeconds));
+                await TimeEntriesSource.Stop(Now); 
+                await Repository.Received().Update(Arg.Any<long>(), Arg.Is<IDatabaseTimeEntry>(te => te.Duration == (long)(Now - te.Start).TotalSeconds));
             }
 
             [Fact, LogIfTooSlow]
             public async ThreadingTask UpdatesTheTimeEntryMakingItSyncNeeded()
             {
-                await TimeEntriesSource.Stop(ValidTime);
+                await TimeEntriesSource.Stop(Now);
 
                 await Repository.Received().Update(Arg.Any<long>(), Arg.Is<IDatabaseTimeEntry>(te => te.SyncStatus == SyncStatus.SyncNeeded));
             }
@@ -162,7 +180,7 @@ namespace Toggl.Foundation.Tests.DataSources
                 TimeEntriesSource.CurrentlyRunningTimeEntry.Subscribe(observer);
                 Repository.Update(Arg.Any<long>(), Arg.Any<IDatabaseTimeEntry>()).Returns(callInfo => Observable.Return(callInfo.Arg<IDatabaseTimeEntry>()));
 
-                await TimeEntriesSource.Stop(ValidTime);
+                await TimeEntriesSource.Stop(Now);
 
                 observer.Messages.Single().Value.Value.Should().BeNull();
             }
@@ -170,12 +188,12 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact, LogIfTooSlow]
             public void ThrowsIfThereAreNoRunningTimeEntries()
             {
-                long duration = (long)(DateTimeOffset.UtcNow - DatabaseTimeEntry.Start).TotalSeconds;
+                long duration = (long)(Now - TimeEntry.Start).TotalSeconds;
                 var timeEntries = new List<IDatabaseTimeEntry>
                 {
-                    DatabaseTimeEntry.With(duration),
-                    DatabaseTimeEntry.With(duration),
-                    DatabaseTimeEntry.With(duration)
+                    TimeEntry.With(duration),
+                    TimeEntry.With(duration),
+                    TimeEntry.With(duration)
                 };
 
                 Repository
@@ -186,7 +204,7 @@ namespace Toggl.Foundation.Tests.DataSources
                              .Select(x => x.Where(callInfo.Arg<Func<IDatabaseTimeEntry, bool>>())));
 
                 var observer = TestScheduler.CreateObserver<ITimeEntry>();
-                var observable = TimeEntriesSource.Stop(ValidTime);
+                var observable = TimeEntriesSource.Stop(Now);
                 observable.Subscribe(observer);
 
                 observer.Messages.Single().Value.Exception.Should().BeOfType<NoRunningTimeEntryException>();
@@ -195,41 +213,41 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact, LogIfTooSlow]
             public async ThreadingTask EmitsANewEventOnTheTimeEntryUpdatedObservable()
             {
-                var observer = TestScheduler.CreateObserver<(long Id, IDatabaseTimeEntry Entity)>();
-                TimeEntriesSource.TimeEntryUpdated.Subscribe(observer);
+                var observer = TestScheduler.CreateObserver<EntityUpdate<IThreadSafeTimeEntry>>();
+                TimeEntriesSource.Updated.Subscribe(observer);
 
-                await TimeEntriesSource.Stop(ValidTime);
+                await TimeEntriesSource.Stop(Now);
 
                 var tuple = observer.Messages.Single().Value.Value;
                 tuple.Id.Should().Be(CurrentRunningId);
-                tuple.Entity.Duration.Should().Be((long)(ValidTime - tuple.Entity.Start).TotalSeconds);
+                tuple.Entity.Duration.Should().Be((long)(Now - tuple.Entity.Start).TotalSeconds);
             }
-        } 
-        public sealed class TheDeleteMethod : TimeEntryDataSourceTest
+        }
+
+        public sealed class TheSoftDeleteMethod : TimeEntryDataSourceTest
         {
             [Fact, LogIfTooSlow]
             public async ThreadingTask SetsTheDeletedFlag()
             {
-                await TimeEntriesSource.Delete(DatabaseTimeEntry.Id).LastOrDefaultAsync();
+                await TimeEntriesSource.SoftDelete(TimeEntry).LastOrDefaultAsync();
 
-                await Repository.Received().Update(Arg.Is(DatabaseTimeEntry.Id), Arg.Is<IDatabaseTimeEntry>(te => te.IsDeleted == true));
+                await Repository.Received().Update(Arg.Is(TimeEntry.Id), Arg.Is<IDatabaseTimeEntry>(te => te.IsDeleted == true));
             }
 
             [Fact, LogIfTooSlow]
             public async ThreadingTask SetsTheSyncNeededStatus()
             {
-                await TimeEntriesSource.Delete(DatabaseTimeEntry.Id).LastOrDefaultAsync();
+                await TimeEntriesSource.SoftDelete(TimeEntry).LastOrDefaultAsync();
 
-                await Repository.Received().Update(Arg.Is(DatabaseTimeEntry.Id), Arg.Is<IDatabaseTimeEntry>(te => te.SyncStatus == SyncStatus.SyncNeeded));
+                await Repository.Received().Update(Arg.Is(TimeEntry.Id), Arg.Is<IDatabaseTimeEntry>(te => te.SyncStatus == SyncStatus.SyncNeeded));
             }
 
             [Fact, LogIfTooSlow]
             public async ThreadingTask UpdatesTheCorrectTimeEntry()
             {
-                await TimeEntriesSource.Delete(DatabaseTimeEntry.Id).LastOrDefaultAsync();
+                await TimeEntriesSource.SoftDelete(TimeEntry).LastOrDefaultAsync();
 
-                await Repository.Received().GetById(Arg.Is(DatabaseTimeEntry.Id));
-                await Repository.Received().Update(Arg.Is(DatabaseTimeEntry.Id), Arg.Is<IDatabaseTimeEntry>(te => te.Id == DatabaseTimeEntry.Id));
+                await Repository.Received().Update(Arg.Is(TimeEntry.Id), Arg.Is<IDatabaseTimeEntry>(te => te.Id == TimeEntry.Id));
             }
 
             [Fact, LogIfTooSlow]
@@ -237,7 +255,7 @@ namespace Toggl.Foundation.Tests.DataSources
             {
                 var observer = Substitute.For<IObserver<Unit>>();
 
-                TimeEntriesSource.Delete(DatabaseTimeEntry.Id).Subscribe(observer);
+                TimeEntriesSource.SoftDelete(TimeEntry).Subscribe(observer);
 
                 observer.Received(1).OnNext(Arg.Any<Unit>());
                 observer.Received(1).OnCompleted();
@@ -246,13 +264,13 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact, LogIfTooSlow]
             public void PropagatesErrorIfUpdateFails()
             {
-                var timeEntry = TimeEntry.Builder.Create(12)
-                      .SetStart(DateTimeOffset.UtcNow)
+                var timeEntry = Models.TimeEntry.Builder.Create(12)
+                      .SetStart(Now)
                       .SetSyncStatus(SyncStatus.InSync)
                       .SetDescription("")
                       .SetUserId(11)
                       .SetWorkspaceId(10)
-                      .SetAt(DateTimeOffset.UtcNow)
+                      .SetAt(Now)
                       .Build();
 
                 var timeEntryObservable = Observable.Return(timeEntry);
@@ -261,7 +279,7 @@ namespace Toggl.Foundation.Tests.DataSources
                 Repository.Update(Arg.Any<long>(), Arg.Any<IDatabaseTimeEntry>()).Returns(errorObservable);
                 var observer = Substitute.For<IObserver<Unit>>();
 
-                TimeEntriesSource.Delete(timeEntry.Id).Subscribe(observer);
+                TimeEntriesSource.SoftDelete(timeEntry).Subscribe(observer);
 
                 observer.Received().OnError(Arg.Any<EntityNotFoundException>());
             }
@@ -269,11 +287,13 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact, LogIfTooSlow]
             public void PropagatesErrorIfTimeEntryIsNotInRepository()
             {
+                var otherTimeEntry = Substitute.For<IThreadSafeTimeEntry>();
+                otherTimeEntry.Id.Returns(12);
                 var observer = Substitute.For<IObserver<Unit>>();
-                Repository.GetById(Arg.Any<long>())
+                Repository.Update(Arg.Any<long>(), Arg.Any<IThreadSafeTimeEntry>())
                           .Returns(Observable.Throw<IDatabaseTimeEntry>(new EntityNotFoundException(new Exception())));
 
-                TimeEntriesSource.Delete(12).Subscribe(observer);
+                TimeEntriesSource.SoftDelete(otherTimeEntry).Subscribe(observer);
 
                 observer.Received().OnError(Arg.Any<EntityNotFoundException>());
             }
@@ -282,8 +302,8 @@ namespace Toggl.Foundation.Tests.DataSources
             public async ThreadingTask RemovesCurrentlyRunningTimeEntryWhenItIsDeleted()
             {
                 DataSource.TimeEntries.Returns(TimeEntriesSource);
-                var runningTimeEntriesHistory = new List<IDatabaseTimeEntry>();
-                var user = Substitute.For<IDatabaseUser>();
+                var runningTimeEntriesHistory = new List<IThreadSafeTimeEntry>();
+                var user = Substitute.For<IThreadSafeUser>();
                 user.Id.Returns(10);
                 DataSource.User.Current.Returns(Observable.Return(user));
                 TimeEntriesSource.CurrentlyRunningTimeEntry
@@ -291,16 +311,16 @@ namespace Toggl.Foundation.Tests.DataSources
                 var prototype = new MockTimeEntryPrototype
                 {
                     WorkspaceId = WorkspaceId,
-                    StartTime = ValidTime,
+                    StartTime = Now,
                     Description = "Some description",
                     IsBillable = true,
                     ProjectId = ProjectId
                 };
                 prepareBatchUpdate();
-                var timeEntry = await InteractorFactory.CreateTimeEntry(prototype).Execute();
-                Repository.GetById(Arg.Is(timeEntry.Id)).Returns(Observable.Return(timeEntry));
+                var timeEntry = Models.TimeEntry.From(await InteractorFactory.CreateTimeEntry(prototype).Execute());
+                Repository.Update(Arg.Is(timeEntry.Id), Arg.Is(timeEntry)).Returns(Observable.Return(timeEntry));
 
-                TimeEntriesSource.Delete(timeEntry.Id).Wait();
+                TimeEntriesSource.SoftDelete(timeEntry).Wait();
 
                 runningTimeEntriesHistory.Should().HaveCount(3);
                 runningTimeEntriesHistory[0].Should().Be(null); // originally there is no running time entry (in the repository)
@@ -322,11 +342,11 @@ namespace Toggl.Foundation.Tests.DataSources
         {
             private EditTimeEntryDto prepareTest()
             {
-                var observable = Observable.Return(DatabaseTimeEntry);
-                Repository.GetById(Arg.Is(DatabaseTimeEntry.Id)).Returns(observable);
+                var observable = Observable.Return(TimeEntry);
+                Repository.GetById(Arg.Is(TimeEntry.Id)).Returns(observable);
                 return new EditTimeEntryDto
                 {
-                    Id = DatabaseTimeEntry.Id,
+                    Id = TimeEntry.Id,
                     Description = "New description",
                     StartTime = DateTimeOffset.UtcNow,
                     ProjectId = 13,
@@ -337,10 +357,10 @@ namespace Toggl.Foundation.Tests.DataSources
             }
 
             private bool ensurePropertiesDidNotChange(IDatabaseTimeEntry timeEntry)
-                => timeEntry.Id == DatabaseTimeEntry.Id
-                && timeEntry.UserId == DatabaseTimeEntry.UserId
-                && timeEntry.IsDeleted == DatabaseTimeEntry.IsDeleted
-                && timeEntry.ServerDeletedAt == DatabaseTimeEntry.ServerDeletedAt;
+                => timeEntry.Id == TimeEntry.Id
+                && timeEntry.UserId == TimeEntry.UserId
+                && timeEntry.IsDeleted == TimeEntry.IsDeleted
+                && timeEntry.ServerDeletedAt == TimeEntry.ServerDeletedAt;
 
             [Fact, LogIfTooSlow]
             public async ThreadingTask UpdatesTheDescriptionProperty()
@@ -370,7 +390,7 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 await TimeEntriesSource.Update(dto);
 
-                await Repository.Received().Update(Arg.Is(dto.Id), Arg.Is<IDatabaseTimeEntry>(te => te.At > DatabaseTimeEntry.At));
+                await Repository.Received().Update(Arg.Is(dto.Id), Arg.Is<IDatabaseTimeEntry>(te => te.At > TimeEntry.At));
             }
 
             [Fact, LogIfTooSlow]
@@ -428,33 +448,35 @@ namespace Toggl.Foundation.Tests.DataSources
             [Fact, LogIfTooSlow]
             public async ThreadingTask NotifiesAboutTheUpdate()
             {
-                var observable = Observable.Return(DatabaseTimeEntry);
-                Repository.GetById(Arg.Is(DatabaseTimeEntry.Id)).Returns(observable);
-                var dto = new EditTimeEntryDto { Id = DatabaseTimeEntry.Id, Description = "New description", StartTime = DateTimeOffset.UtcNow, WorkspaceId = 71 };
-                var observer = Substitute.For<IObserver<(long, IDatabaseTimeEntry)>>();
-                TimeEntriesSource.TimeEntryUpdated.Subscribe(observer);
+                var observable = Observable.Return(TimeEntry);
+                Repository.GetById(Arg.Is(TimeEntry.Id)).Returns(observable);
+                var dto = new EditTimeEntryDto { Id = TimeEntry.Id, Description = "New description", StartTime = DateTimeOffset.UtcNow, WorkspaceId = 71 };
+                var observer = Substitute.For<IObserver<EntityUpdate<IThreadSafeTimeEntry>>>();
+                TimeEntriesSource.Updated.Subscribe(observer);
 
                 await TimeEntriesSource.Update(dto);
 
-                observer.Received().OnNext(Arg.Is<(long Id, IDatabaseTimeEntry)>(te => te.Id == dto.Id));
+                observer.Received().OnNext(Arg.Is<EntityUpdate<IThreadSafeTimeEntry>>(
+                    update => update.Id == dto.Id && update.Entity.Id == dto.Id));
             }
 
             [Fact, LogIfTooSlow]
             public async ThreadingTask UsesTheUpdatedEntityFromTheRepositoryAndNotTheArgumentToUpdateTheCurrentlyRunningTimeEntry()
             {
-                var observable = Observable.Return(DatabaseTimeEntry);
-                Repository.GetById(Arg.Is(DatabaseTimeEntry.Id)).Returns(observable);
+                var observable = Observable.Return(TimeEntry);
+                Repository.GetById(Arg.Is(TimeEntry.Id)).Returns(observable);
                 var updatedTimeEntry = Substitute.For<IDatabaseTimeEntry>();
                 updatedTimeEntry.Id.Returns(123);
-                Repository.Update(DatabaseTimeEntry.Id, Arg.Any<IDatabaseTimeEntry>()).Returns(Observable.Return(updatedTimeEntry));
-                var dto = new EditTimeEntryDto { Id = DatabaseTimeEntry.Id, Description = "New description", StartTime = DateTimeOffset.UtcNow, WorkspaceId = 71 };
-                var observer = Substitute.For<IObserver<(long, IDatabaseTimeEntry)>>();
-                TimeEntriesSource.TimeEntryUpdated.Subscribe(observer);
+                Repository.Update(TimeEntry.Id, Arg.Any<IDatabaseTimeEntry>()).Returns(Observable.Return(updatedTimeEntry));
+                var dto = new EditTimeEntryDto { Id = TimeEntry.Id, Description = "New description", StartTime = DateTimeOffset.UtcNow, WorkspaceId = 71 };
+                var observer = Substitute.For<IObserver<EntityUpdate<IThreadSafeTimeEntry>>>();
+                TimeEntriesSource.Updated.Subscribe(observer);
 
                 await TimeEntriesSource.Update(dto);
+                var calls = observer.ReceivedCalls();
 
-                observer.Received().OnNext(Arg.Is<(long, IDatabaseTimeEntry Entity)>(te =>
-                    te.Entity.Id == updatedTimeEntry.Id));
+                observer.Received().OnNext(Arg.Is<EntityUpdate<IThreadSafeTimeEntry>>(
+                    update => update.Id == updatedTimeEntry.Id && update.Entity.Id == updatedTimeEntry.Id));
             }
         }
     }

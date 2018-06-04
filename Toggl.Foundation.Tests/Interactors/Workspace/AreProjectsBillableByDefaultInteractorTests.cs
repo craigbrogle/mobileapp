@@ -21,10 +21,10 @@ namespace Toggl.Foundation.Tests.Interactors
                 var workspace = new MockWorkspace { ProjectsBillableByDefault = billableByDefault };
                 var feature = new MockWorkspaceFeature { Enabled = true, FeatureId = WorkspaceFeatureId.Pro };
                 var featureCollection = new MockWorkspaceFeatureCollection { Features = new[] { feature } };
-                Database.WorkspaceFeatures
+                DataSource.WorkspaceFeatures
                     .GetById(workspaceId)
                     .Returns(Observable.Return(featureCollection));
-                Database.Workspaces
+                DataSource.Workspaces
                     .GetById(workspaceId)
                        .Returns(Observable.Return(workspace));
 
@@ -43,10 +43,10 @@ namespace Toggl.Foundation.Tests.Interactors
                 var workspace = new MockWorkspace { ProjectsBillableByDefault = billableByDefault };
                 var feature = new MockWorkspaceFeature { Enabled = false, FeatureId = WorkspaceFeatureId.Pro };
                 var featureCollection = new MockWorkspaceFeatureCollection { Features = new[] { feature } };
-                Database.WorkspaceFeatures
+                DataSource.WorkspaceFeatures
                     .GetById(workspaceId)
                     .Returns(Observable.Return(featureCollection));
-                Database.Workspaces
+                DataSource.Workspaces
                     .GetById(workspaceId)
                        .Returns(Observable.Return(workspace));
 

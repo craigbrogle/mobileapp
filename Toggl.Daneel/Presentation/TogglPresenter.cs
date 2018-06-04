@@ -144,7 +144,7 @@ namespace Toggl.Daneel.Presentation
             var topViewController = navigationController == null
                 ? null
                 : getPresentedViewController(navigationController.TopViewController) as MvxViewController;
-            
+
             //Don't show the same view twice
             if (topViewController?.ViewModel?.GetType() == request.ViewModelType)
                 return;
@@ -185,12 +185,6 @@ namespace Toggl.Daneel.Presentation
 
                     mainViewController?.Reload();
 
-                    return;
-                }
-                case CardVisibilityHint cardHint:
-                {
-                    if (MasterNavigationController?.TopViewController is MainViewController mainViewController)
-                        mainViewController.OnTimeEntryCardVisibilityChanged(cardHint.Visible);
                     return;
                 }
 

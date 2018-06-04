@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Extensions;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
@@ -31,9 +32,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Theory, LogIfTooSlow]
             [ClassData(typeof(FourParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
-                bool useDataSource, 
+                bool useDataSource,
                 bool useInteractorFactory,
-                bool useNavigationService, 
+                bool useNavigationService,
                 bool useDialogService)
             {
                 var dataSource = useDataSource ? DataSource : null;
@@ -102,7 +103,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedProjectIdWhenSelectingAProject()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(13);
                 var selectedProject = new ProjectSuggestion(project);
 
@@ -117,7 +118,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsNoTaskIdWhenSelectingAProject()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(13);
                 var selectedProject = new ProjectSuggestion(project);
 
@@ -132,7 +133,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedProjectIdWhenSelectingATask()
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(13);
                 task.ProjectId.Returns(10);
                 var selectedTask = new TaskSuggestion(task);
@@ -148,7 +149,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedTaskIdWhenSelectingATask()
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(13);
                 task.ProjectId.Returns(10);
                 var selectedTask = new TaskSuggestion(task);
@@ -193,7 +194,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<string>()
-                ).Returns(true);
+                ).Returns(Observable.Return(true));
 
                 long workspaceId = 420;
                 ViewModel.SelectProjectCommand
@@ -211,7 +212,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var oldWorkspaceId = 10;
                 var newWorkspaceId = 11;
                 ViewModel.Prepare(SelectProjectParameter.WithIds(null, null, oldWorkspaceId));
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.WorkspaceId.Returns(newWorkspaceId);
 
                 ViewModel.SelectProjectCommand.Execute(new ProjectSuggestion(project));
@@ -229,7 +230,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var workspaceId = 10;
                 ViewModel.Prepare(SelectProjectParameter.WithIds(null, null, workspaceId));
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.WorkspaceId.Returns(workspaceId);
 
                 ViewModel.SelectProjectCommand.Execute(new ProjectSuggestion(project));
@@ -245,7 +246,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsWorkspaceIdOfTheProjectIfProjectWasSelected()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.WorkspaceId.Returns(13);
                 var projectSuggestion = new ProjectSuggestion(project);
                 prepareDialogService();
@@ -269,7 +270,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsWorkspaceIdOfTheTaskIfTaskWasSelected()
             {
-                var task = Substitute.For<IDatabaseTask>();
+                var task = Substitute.For<IThreadSafeTask>();
                 task.Id.Returns(13);
                 var taskSuggestion = new TaskSuggestion(task);
                 prepareDialogService();
@@ -284,7 +285,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                        Resources.DifferentWorkspaceAlertTitle,
                        Resources.DifferentWorkspaceAlertMessage,
                        Resources.Ok,
-                       Resources.Cancel).Returns(true);
+                       Resources.Cancel).Returns(Observable.Return(true));
 
             private async Task ensureReturnsWorkspaceIdOfSuggestion(AutocompleteSuggestion suggestion)
             {
@@ -318,7 +319,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             public TheSuggestCreationProperty()
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Name.Returns(name);
                 var suggestion = new ProjectSuggestion(project);
 
@@ -399,7 +400,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 if (returnedId == null) return;
 
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(returnedId.Value);
                 DataSource.Projects.GetById(returnedId.Value).Returns(Observable.Return(project));
             }
@@ -415,10 +416,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private ProjectSuggestion getProjectSuggestion(int projectId, int workspaceId)
             {
-                var workspace = Substitute.For<IDatabaseWorkspace>();
+                var workspace = Substitute.For<IThreadSafeWorkspace>();
                 workspace.Name.Returns($"Workspace{workspaceId}");
                 workspace.Id.Returns(workspaceId);
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Name.Returns($"Project{projectId}");
                 project.Workspace.Returns(workspace);
                 project.Active.Returns(true);
@@ -605,7 +606,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var projects = Enumerable.Range(0, 30)
                     .Select(i =>
                     {
-                        var project = Substitute.For<IDatabaseProject>();
+                        var project = Substitute.For<IThreadSafeProject>();
                         project.Id.Returns(i);
                         project.Workspace.Name.Returns("Ws");
                         return new ProjectSuggestion(project);
@@ -622,9 +623,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             const long workspaceId = 1;
 
-            private IDatabaseProject createArbitraryProject(int id)
+            private IThreadSafeProject createArbitraryProject(int id)
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(id);
                 project.WorkspaceId.Returns(workspaceId);
                 project.Name.Returns(Guid.NewGuid().ToString());
@@ -677,7 +678,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ReturnsTrueIfHasNoProjects()
             {
                 var projectsSource = Substitute.For<IProjectsSource>();
-                projectsSource.GetAll().Returns(Observable.Return(new List<IDatabaseProject>()));
+                projectsSource.GetAll().Returns(Observable.Return(new List<IThreadSafeProject>()));
 
                 DataSource.Projects.Returns(projectsSource);
 
@@ -691,7 +692,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void ReturnsFalseBeforeLoadingProjectsFromDatabase()
             {
                 var projectsSource = Substitute.For<IProjectsSource>();
-                projectsSource.GetAll().Returns(Observable.Return(new List<IDatabaseProject>()));
+                projectsSource.GetAll().Returns(Observable.Return(new List<IThreadSafeProject>()));
 
                 DataSource.Projects.Returns(projectsSource);
 

@@ -1,7 +1,7 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Models
 {
@@ -15,29 +15,29 @@ namespace Toggl.Foundation.Models
 
         public string Name { get; }
 
-        public SyncFailureItem(IDatabaseSyncable databaseModel)
+        public SyncFailureItem(IDatabaseSyncable model)
         {
-            Ensure.Argument.IsNotNull(databaseModel, nameof(databaseModel));
+            Ensure.Argument.IsNotNull(model, nameof(model));
 
-            SyncStatus = databaseModel.SyncStatus;
-            SyncErrorMessage = databaseModel.LastSyncErrorMessage;
+            SyncStatus = model.SyncStatus;
+            SyncErrorMessage = model.LastSyncErrorMessage;
 
-            switch (databaseModel)
+            switch (model)
             {
-                case IDatabaseTag tag:
+                case IThreadSafeTag tag:
                     Type = ItemType.Tag;
                     Name = tag.Name;
                     break;
-                case IDatabaseClient client:
+                case IThreadSafeClient client:
                     Type = ItemType.Client;
                     Name = client.Name;
                     break;
-                case IDatabaseProject project:
+                case IThreadSafeProject project:
                     Type = ItemType.Project;
                     Name = project.Name;
                     break;
                 default:
-                    throw new ArgumentException($"Unexpected type: {databaseModel.GetType()}");
+                    throw new ArgumentException($"Unexpected type: {model.GetType()}");
             }
         }
     }

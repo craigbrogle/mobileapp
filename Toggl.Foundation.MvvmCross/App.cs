@@ -1,7 +1,6 @@
 ﻿using System.Reactive.Linq;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
@@ -14,19 +13,11 @@ namespace Toggl.Foundation.MvvmCross
     {
         public override void Initialize()
         {
-
-        }
-
-        public void Initialize(ILoginManager loginManager, IMvxNavigationService navigationService, IAccessRestrictionStorage accessRestrictionStorage)
-        {
-            Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
-            Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
-            Ensure.Argument.IsNotNull(accessRestrictionStorage, nameof(accessRestrictionStorage));
-
-            RegisterAppStart(new AppStart<TFirstViewModelWhenNotLoggedIn>(loginManager, navigationService, accessRestrictionStorage));
+            RegisterCustomAppStart<AppStart<TFirstViewModelWhenNotLoggedIn>>();
         }
     }
 
+    [Preserve(AllMembers = true)]
     public sealed class AppStart<TFirstViewModelWhenNotLoggedIn> : IMvxAppStart
         where TFirstViewModelWhenNotLoggedIn : MvxViewModel
     {
@@ -61,7 +52,7 @@ namespace Toggl.Foundation.MvvmCross
                 return;
             }
 
-            var user = await dataSource.User.Current;
+            var user = await dataSource.User.Current.FirstAsync();
             if (accessRestrictionStorage.IsUnauthorized(user.ApiToken))
             {
                 await navigationService.Navigate<TokenResetViewModel>();

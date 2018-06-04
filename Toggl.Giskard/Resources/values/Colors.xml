@@ -33,4 +33,6 @@
     <color name="onboardingStatusBarColor">#53a0fd</color>
     <color name="halfTransparentWhite">#B3FFFFFF</color>
     <color name="popupBlueBackground">#328FFF</color>
+    <color name="lightGray48Opacity">#7AFAFBFC</color>
+    <color name="textEditBackgroundTint">#E2E2E2</color>
 </resources>

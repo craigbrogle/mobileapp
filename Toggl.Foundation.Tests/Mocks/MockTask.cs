@@ -1,16 +1,17 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockTask : IDatabaseTask
+    public sealed class MockTask : IThreadSafeTask
     {
-        public IDatabaseUser User { get; set; }
+        IDatabaseUser IDatabaseTask.User => User;
 
-        public IDatabaseProject Project { get; set; }
+        IDatabaseProject IDatabaseTask.Project => Project;
 
-        public IDatabaseWorkspace Workspace { get; set; }
+        IDatabaseWorkspace IDatabaseTask.Workspace => Workspace;
 
         public string Name { get; set; }
 
@@ -35,5 +36,11 @@ namespace Toggl.Foundation.Tests.Mocks
         public string LastSyncErrorMessage { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public IThreadSafeUser User { get; set; }
+
+        public IThreadSafeProject Project { get; set; }
+
+        public IThreadSafeWorkspace Workspace { get; set; }
     }
 }

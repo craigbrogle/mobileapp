@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Toggl.Multivac.Models
+﻿namespace Toggl.Multivac.Models
 {
-    public interface IUser : IBaseModel
+    public interface IUser : IIdentifiable, ILastChangedDatable
     {
         string ApiToken { get; }
 
@@ -17,7 +15,5 @@ namespace Toggl.Multivac.Models
         string Language { get; }
 
         string ImageUrl { get; }
-
-        DateTimeOffset At { get; }
     }
 }

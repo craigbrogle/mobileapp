@@ -1,9 +1,9 @@
-﻿using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
+﻿using Toggl.Foundation.Models.Interfaces;
+using Toggl.Multivac;
 
 namespace Toggl.Foundation.Tests.Mocks
 {
-    public sealed class MockWorkspaceFeature : IDatabaseWorkspaceFeature
+    public sealed class MockWorkspaceFeature : IThreadSafeWorkspaceFeature
     {
         public WorkspaceFeatureId FeatureId { get; set; }
 

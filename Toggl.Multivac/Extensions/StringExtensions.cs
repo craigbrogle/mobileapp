@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Toggl.Multivac.Extensions
@@ -56,5 +57,8 @@ namespace Toggl.Multivac.Extensions
 
         public static int LengthInGraphemes(this string self)
             => new StringInfo(self).LengthInTextElements;
+
+        public static int CountOccurrences(this string text, char token)
+            => text.Count(c => c == token);
     }
 }

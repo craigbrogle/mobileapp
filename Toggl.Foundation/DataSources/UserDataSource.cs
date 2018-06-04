@@ -1,50 +1,50 @@
 ﻿using System;
-using System.Reactive;
 using System.Reactive.Linq;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Sync.ConflictResolution;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.DataSources
 {
-    public sealed class UserDataSource : IUserSource
+    public sealed class UserDataSource
+        : SingletonDataSource<IThreadSafeUser, IDatabaseUser>, IUserSource
     {
-        private readonly ISingleObjectStorage<IDatabaseUser> storage;
         private readonly ITimeService timeService;
 
         public UserDataSource(ISingleObjectStorage<IDatabaseUser> storage, ITimeService timeService)
+            : base(storage, null)
         {
-            Ensure.Argument.IsNotNull(storage, nameof(storage));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
 
-            this.storage = storage;
             this.timeService = timeService;
         }
 
-        public IObservable<IDatabaseUser> Current
-            => storage.Single().Select(User.From);
-
         public IObservable<IDatabaseUser> UpdateWorkspace(long workspaceId)
-            => storage
-                .Single()
+            => Get()
                 .Select(user => user.With(workspaceId))
-                .SelectMany(storage.Update);
+                .SelectMany(Update);
 
         public IObservable<IDatabaseUser> Update(EditUserDTO dto)
-            => storage
-                .Single()
+            => Get()
                 .Select(user => updatedUser(user, dto))
-                .SelectMany(storage.Update)
-                .Select(User.From);
+                .SelectMany(Update);
 
-        public IDatabaseUser updatedUser(IDatabaseUser existing, EditUserDTO dto)
+        public IThreadSafeUser updatedUser(IThreadSafeUser existing, EditUserDTO dto)
             => User.Builder
                    .FromExisting(existing)
                    .SetBeginningOfWeek(dto.BeginningOfWeek)
                    .SetSyncStatus(SyncStatus.SyncNeeded)
                    .SetAt(timeService.CurrentDateTime)
                    .Build();
+
+        protected override IThreadSafeUser Convert(IDatabaseUser entity)
+            => User.From(entity);
+
+        protected override ConflictResolutionMode ResolveConflicts(IDatabaseUser first, IDatabaseUser second)
+            => Resolver.ForUser.Resolve(first, second);
     }
 }

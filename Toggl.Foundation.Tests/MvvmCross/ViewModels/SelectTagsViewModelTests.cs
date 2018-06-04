@@ -11,6 +11,7 @@ using NSubstitute;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Extensions;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
@@ -49,9 +50,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Select(i => CreateTagSubstitute(i, i.ToString()))
                     .Select(tag => new TagSuggestion(tag));
 
-            protected IDatabaseTag CreateTagSubstitute(long id, string name)
+            protected IThreadSafeTag CreateTagSubstitute(long id, string name)
             {
-                var tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 tag.Id.Returns(id);
                 tag.Name.Returns(name);
                 return tag;
@@ -148,9 +149,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     );
             }
 
-            private IDatabaseTag createDatabaseTagSubstitute(long id)
+            private IThreadSafeTag createDatabaseTagSubstitute(long id)
             {
-                var tag = Substitute.For<IDatabaseTag>();
+                var tag = Substitute.For<IThreadSafeTag>();
                 tag.Id.Returns(id);
                 tag.Name.Returns($"Tag{id}");
                 return tag;
@@ -183,7 +184,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var tags = Enumerable.Range(0, 10)
                                      .Select(i =>
                                      {
-                                         var tag = Substitute.For<IDatabaseTag>();
+                                         var tag = Substitute.For<IThreadSafeTag>();
                                          tag.Name.Returns(Guid.NewGuid().ToString());
                                          tag.Id.Returns(i);
                                          tag.WorkspaceId.Returns(workspaceIdSelector(i));
@@ -243,9 +244,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ReturnsFalseIfTagIsCreated()
             {
                 var tagsSource = Substitute.For<ITagsSource>();
-                tagsSource.GetAll().Returns(Observable.Return(new List<IDatabaseTag>()));
+                tagsSource.GetAll().Returns(Observable.Return(new List<IThreadSafeTag>()));
 
-                var newTag = Substitute.For<IDatabaseTag>();
+                var newTag = Substitute.For<IThreadSafeTag>();
                 newTag.Id.Returns(12345);
 
                 tagsSource
@@ -265,17 +266,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheTagsProperty : SelectTagsViewModelTest
         {
-            private IEnumerable<TagSuggestion> getTagSuggestions(int count, IDatabaseWorkspace workspace)
+            private IEnumerable<TagSuggestion> getTagSuggestions(int count, IThreadSafeWorkspace workspace)
             {
                 for (int i = 0; i < count; i++)
                 {
-                    /* Do not inline 'workspace.Id' into another .Return() call 
+                    /* Do not inline 'workspace.Id' into another .Return() call
                      * because it's a proxy that won't work later on!
                      * This must be cached before usage.
                      */
-                    var workspaceId = workspace.Id; 
+                    var workspaceId = workspace.Id;
 
-                    var tag = Substitute.For<IDatabaseTag>();
+                    var tag = Substitute.For<IThreadSafeTag>();
                     tag.Id.Returns(i);
                     tag.WorkspaceId.Returns(workspaceId);
                     tag.Workspace.Returns(workspace);
@@ -285,9 +286,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 }
             }
 
-            private IDatabaseWorkspace createWorkspace(long id, string name)
+            private IThreadSafeWorkspace createWorkspace(long id, string name)
             {
-                var workspace = Substitute.For<IDatabaseWorkspace>();
+                var workspace = Substitute.For<IThreadSafeWorkspace>();
                 workspace.Id.Returns(id);
                 workspace.Name.Returns(name);
                 return workspace;
@@ -394,7 +395,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             public TheSelectTagCommand()
             {
-                var databaseTag = Substitute.For<IDatabaseTag>();
+                var databaseTag = Substitute.For<IThreadSafeTag>();
                 databaseTag.Name.Returns("Tag0");
                 databaseTag.Id.Returns(0);
                 tagSuggestion = new TagSuggestion(databaseTag);
@@ -470,14 +471,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.Prepare((new long[0], workspaceId));
                 await ViewModel.Initialize();
 
-                var createdTag = Substitute.For<IDatabaseTag>();
+                var createdTag = Substitute.For<IThreadSafeTag>();
                 createdTag.Id.Returns(tagId);
                 createdTag.WorkspaceId.Returns(workspaceId);
                 DataSource
                     .Tags
                     .Create(Arg.Any<string>(), Arg.Any<long>())
                     .Returns(Observable.Return(createdTag));
-                
+
                 var observable = Observable
                     .Return(new AutocompleteSuggestion[] { new TagSuggestion(createdTag) });
                 InteractorFactory

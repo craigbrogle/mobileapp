@@ -5,6 +5,7 @@ using FluentAssertions;
 using NSubstitute;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Login;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
@@ -120,7 +121,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             {
                 var oldApiToken = Guid.NewGuid().ToString();
                 var newApiToken = Guid.NewGuid().ToString();
-                var user = Substitute.For<IDatabaseUser>();
+                var user = Substitute.For<IThreadSafeUser>();
                 var dataSource = Substitute.For<ITogglDataSource>();
                 var userSource = Substitute.For<IUserSource>();
                 user.ApiToken.Returns(newApiToken);

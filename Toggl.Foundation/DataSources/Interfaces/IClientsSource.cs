@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Toggl.Foundation.DataSources.Interfaces;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.DataSources
 {
-    public interface IClientsSource
+    public interface IClientsSource : IDataSource<IThreadSafeClient, IDatabaseClient>
     {
-        IObservable<IDatabaseClient> GetById(long id);
+        IObservable<IThreadSafeClient> Create(string name, long workspaceId);
 
-        IObservable<IDatabaseClient> Create(string name, long workspaceId);
-
-        IObservable<IEnumerable<IDatabaseClient>> GetAllInWorkspace(long workspaceId);
+        IObservable<IEnumerable<IThreadSafeClient>> GetAllInWorkspace(long workspaceId);
     }
 }

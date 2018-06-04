@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Toggl.Multivac.Models;
+﻿using Toggl.Multivac.Models;
 
 namespace Toggl.Ultrawave.ApiClients
 {
     public interface IWorkspaceFeaturesApi
+        : IPullingApiClient<IWorkspaceFeatureCollection>
     {
-        IObservable<List<IWorkspaceFeatureCollection>> GetAll();
     }
 }

@@ -7,7 +7,8 @@
     android:orientation="vertical"
     android:focusableInTouchMode="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:importantForAutofill="noExcludeDescendants">
     <RelativeLayout
         android:id="@+id/EditTimeEntryDescriptionContainer"
         android:elevation="2dp"
@@ -121,95 +122,100 @@
                         android:layout_alignStart="@id/EditErrorTextTitle" />
                 </RelativeLayout>
             </LinearLayout>
-            <ImageView
-                android:id="@+id/EditProjectIcon"
-                android:scaleType="center"
-                android:src="@drawable/project"
-                android:layout_width="56dp"
-                android:layout_height="48dp"
-                android:layout_below="@id/EditErrorContainer" />
-            <TextView
-                android:id="@+id/EditAddProjectLabel"
-                local:MvxBind="Click SelectProjectCommand; Visibility InvertedVisibility(Project)"
-                android:textSize="15sp"
-                android:text="@string/AddProjectTask"
-                android:gravity="center_vertical"
-                android:textColor="@color/placeholderText"
+            <LinearLayout
+                android:id="@+id/EditTimeEntryProjectContainer"
+                local:MvxBind="Click SelectProjectCommand"
+                android:background="?attr/selectableItemBackground"
                 android:layout_height="48dp"
                 android:layout_width="match_parent"
-                android:layout_below="@id/EditErrorContainer"
-                android:layout_toRightOf="@id/EditTimeEntryColumnAnchor" />
-            <TextView
-                android:id="@+id/EditProject"
-                local:MvxBind="Text Project; TextColor RGBA(ProjectColor); Visibility Visibility(Project); Click SelectProjectCommand"
-                tools:text="Superday"
-                android:textSize="15sp"
-                android:gravity="center_vertical"
-                android:fontFamily="sans-serif-medium"
-                android:layout_height="48dp"
-                android:layout_width="wrap_content"
-                android:layout_alignTop="@id/EditProjectIcon"
-                android:layout_toRightOf="@id/EditProjectIcon" />
-            <TextView
-                android:id="@+id/EditTask"
-                local:MvxBind="Text Client; Visibility Visibility(Project)"
-                android:textSize="15sp"
-                tools:text="Close stuff here task"
-                android:gravity="center_vertical"
-                android:textColor="@color/defaultEditText"
-                android:layout_height="48dp"
-                android:layout_marginLeft="4dp"
-                android:layout_width="wrap_content"
-                android:layout_toRightOf="@id/EditProject"
-                android:layout_alignTop="@id/EditProjectIcon" />
-            <View
-                android:background="@color/separator"
-                android:layout_height="0.5dp"
-                android:layout_marginLeft="56dp"
-                android:layout_width="match_parent"
-                android:layout_below="@id/EditAddProjectLabel" />
-            <ImageView
-                android:id="@+id/EditTagsIcon"
+                android:layout_below="@id/EditErrorContainer">
+                <ImageView
+                    android:id="@+id/EditProjectIcon"
+                    android:scaleType="center"
+                    android:src="@drawable/project"
+                    android:layout_width="56dp"
+                    android:layout_height="48dp" />
+                <TextView
+                    android:id="@+id/EditAddProjectLabel"
+                    local:MvxBind="Visibility InvertedVisibility(Project)"
+                    android:textSize="15sp"
+                    android:gravity="center_vertical"
+                    android:text="@string/AddProjectTask"
+                    android:textColor="@color/placeholderText"
+                    android:layout_height="48dp"
+                    android:layout_width="match_parent"
+                    android:layout_below="@id/EditErrorContainer"
+                    android:layout_toRightOf="@id/EditTimeEntryColumnAnchor" />
+                <TextView
+                    android:id="@+id/EditProject"
+                    local:MvxBind="Text Project; TextColor RGBA(ProjectColor); Visibility Visibility(Project)"
+                    tools:text="Superday"
+                    android:textSize="15sp"
+                    android:gravity="center_vertical"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_height="48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_alignTop="@id/EditProjectIcon"
+                    android:layout_toRightOf="@id/EditProjectIcon" />
+                <TextView
+                    android:id="@+id/EditTask"
+                    local:MvxBind="Text Client; Visibility Visibility(Project)"
+                    android:textSize="15sp"
+                    tools:text="Close stuff here task"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/defaultEditText"
+                    android:layout_height="48dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_toRightOf="@id/EditProject"
+                    android:layout_alignTop="@id/EditProjectIcon" />
+                <View
+                    android:background="@color/separator"
+                    android:layout_height="0.5dp"
+                    android:layout_marginLeft="56dp"
+                    android:layout_width="match_parent"
+                    android:layout_below="@id/EditAddProjectLabel" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/EditTimeEntryTagsContainer"
                 local:MvxBind="Click SelectTagsCommand"
-                android:scaleType="center"
-                android:src="@drawable/tag"
-                android:layout_width="56dp"
-                android:layout_height="48dp"
-                android:layout_below="@id/EditProjectIcon" />
-            <TextView
-                android:id="@+id/EditAddTagsLabel"
-                local:MvxBind="Click SelectTagsCommand; Visibility Visibility(!HasTags)"
-                android:textSize="15sp"
-                android:text="@string/AddTags"
-                android:gravity="center_vertical"
-                android:textColor="@color/placeholderText"
+                android:background="?attr/selectableItemBackground"
                 android:layout_height="48dp"
                 android:layout_width="match_parent"
-                android:layout_alignTop="@id/EditTagsIcon"
-                android:layout_toRightOf="@id/EditTagsIcon" />
-            <View
-                local:MvxBind="Click SelectTagsCommand"
-                android:clickable="true"
-                android:background="@android:color/transparent"
-                android:layout_height="48dp"
-                android:layout_width="wrap_content"
-                android:layout_alignTop="@id/EditTagsIcon"
-                android:layout_toRightOf="@id/EditTagsIcon" />
-            <toggl.giskard.views.TagsListRecyclerView
-                android:id="@+id/EditTags"
-                local:MvxBind="ItemClick SelectTagsCommand; ItemsSource Tags; Visibility(HasTags)"
-                android:clickable="true"
-                local:MvxTemplateSelector="@string/TagsListTemplateSelector"
-                android:layout_height="48dp"
-                android:layout_width="wrap_content"
-                android:layout_alignTop="@id/EditTagsIcon"
-                android:layout_toRightOf="@id/EditTagsIcon" />
-            <View
-                android:background="@color/separator"
-                android:layout_height="0.5dp"
-                android:layout_marginLeft="56dp"
-                android:layout_width="match_parent"
-                android:layout_below="@id/EditTags" />
+                android:layout_below="@id/EditTimeEntryProjectContainer">
+                <ImageView
+                    android:id="@+id/EditTagsIcon"
+                    android:scaleType="center"
+                    android:src="@drawable/tag"
+                    android:layout_width="56dp"
+                    android:layout_height="48dp" />
+                <TextView
+                    android:id="@+id/EditAddTagsLabel"
+                    local:MvxBind="Visibility Visibility(!HasTags)"
+                    android:textSize="15sp"
+                    android:text="@string/AddTags"
+                    android:gravity="center_vertical"
+                    android:textColor="@color/placeholderText"
+                    android:layout_height="48dp"
+                    android:layout_width="match_parent"
+                    android:layout_alignTop="@id/EditTagsIcon"
+                    android:layout_toRightOf="@id/EditTagsIcon" />
+                <toggl.giskard.views.TagsListRecyclerView
+                    android:id="@+id/EditTags"
+                    local:MvxBind="ItemsSource Tags; Visibility(HasTags)"
+                    android:clickable="true"
+                    local:MvxTemplateSelector="@string/TagsListTemplateSelector"
+                    android:layout_height="48dp"
+                    android:layout_width="wrap_content"
+                    android:layout_alignTop="@id/EditTagsIcon"
+                    android:layout_toRightOf="@id/EditTagsIcon" />
+                <View
+                    android:background="@color/separator"
+                    android:layout_height="0.5dp"
+                    android:layout_marginLeft="56dp"
+                    android:layout_width="match_parent"
+                    android:layout_below="@id/EditTags" />
+            </LinearLayout>
             <LinearLayout
                 android:id="@+id/EditBillableRow"
                 local:MvxBind="Click ToggleBillableCommand; Visibility Visibility(IsBillableAvailable)"
@@ -217,7 +223,7 @@
                 android:background="?attr/selectableItemBackground"
                 android:layout_height="48dp"
                 android:layout_width="match_parent"
-                android:layout_below="@id/EditTagsIcon">
+                android:layout_below="@id/EditTimeEntryTagsContainer">
                 <ImageView
                     android:id="@+id/EditBillableIcon"
                     android:scaleType="center"
@@ -279,11 +285,11 @@
                     tools:text="06.05."
                     android:textSize="15sp"
                     android:textColor="@color/editViewDate"
-                    android:layout_toRightOf="@id/EditStartValueLabel"
-                    android:layout_alignTop="@id/EditStartValueLabel"
                     android:layout_marginLeft="8dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/EditStartValueLabel"
+                    android:layout_toRightOf="@id/EditStartValueLabel" />
                 <TextView
                     android:id="@+id/EditStartTimeLabel"
                     android:textSize="12sp"
@@ -321,16 +327,16 @@
                     tools:text="06.05."
                     android:textSize="15sp"
                     android:textColor="@color/editViewDate"
-                    android:layout_toRightOf="@id/EditEndValueLabel"
-                    android:layout_alignTop="@id/EditEndValueLabel"
                     android:layout_marginLeft="8dp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_alignTop="@id/EditEndValueLabel"
+                    android:layout_toRightOf="@id/EditEndValueLabel" />
                 <TextView
                     android:id="@+id/EditEndValueSetLabel"
                     local:MvxBind="Visibility Visibility(IsTimeEntryRunning)"
-                    android:text="@string/Stop"
                     android:textSize="15sp"
+                    android:text="@string/Stop"
                     android:textColor="@color/buttonBlue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -367,10 +373,10 @@
                 android:id="@+id/EditDuration"
                 local:MvxBind="Click SelectTimeCommand, CommandParameter='Duration'"
                 android:orientation="vertical"
+                android:background="?attr/selectableItemBackground"
                 android:layout_height="72dp"
                 android:layout_width="match_parent"
-                android:layout_below="@id/EditTimesBottomBorder"
-                android:layout_toRightOf="@id/EditTimeEntryColumnAnchor">
+                android:layout_below="@id/EditTimesBottomBorder">
                 <TextView
                     local:MvxBind="Text Duration"
                     tools:text="0:11:25"
@@ -379,6 +385,7 @@
                     android:background="@android:color/transparent"
                     android:layout_height="20dp"
                     android:layout_marginTop="16dp"
+                    android:layout_marginLeft="56dp"
                     android:layout_width="match_parent" />
                 <TextView
                     android:id="@+id/EditTimeEntryDurationLabel"
@@ -386,6 +393,7 @@
                     android:text="@string/Duration"
                     android:textColor="@color/defaultText"
                     android:layout_marginTop="4dp"
+                    android:layout_marginLeft="56dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
@@ -396,32 +404,35 @@
                 android:layout_marginLeft="56dp"
                 android:layout_width="match_parent"
                 android:layout_below="@id/EditDuration" />
-            <ImageView
-                android:id="@+id/EditTimeEntryDeleteIcon"
+            <LinearLayout
+                android:id="@+id/EditTimeEntryDeleteContainer"
                 local:MvxBind="Click DeleteCommand"
-                android:scaleType="center"
-                android:src="@drawable/delete"
-                android:layout_width="56dp"
-                android:layout_height="48dp"
-                android:layout_below="@id/EditDurationBottomBorder" />
-            <TextView
-                android:id="@+id/EditTimeEntryDeleteLabel"
-                local:MvxBind="Click DeleteCommand"
-                android:textSize="15sp"
-                android:gravity="center_vertical"
-                android:text="@string/DeleteEntry"
-                android:textColor="@color/errorText"
                 android:background="?attr/selectableItemBackground"
                 android:layout_height="48dp"
                 android:layout_width="match_parent"
-                android:layout_alignTop="@id/EditTimeEntryDeleteIcon"
-                android:layout_toRightOf="@id/EditTimeEntryDeleteIcon" />
-            <View
-                android:background="@color/separator"
-                android:layout_height="0.5dp"
-                android:layout_marginLeft="56dp"
-                android:layout_width="match_parent"
-                android:layout_below="@id/EditTimeEntryDeleteLabel" />
+                android:layout_below="@id/EditDurationBottomBorder">
+                <ImageView
+                    android:id="@+id/EditTimeEntryDeleteIcon"
+                    android:scaleType="center"
+                    android:src="@drawable/delete"
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/EditTimeEntryDeleteLabel"
+                    android:textSize="15sp"
+                    android:gravity="center_vertical"
+                    android:text="@string/DeleteEntry"
+                    android:textColor="@color/errorText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_toRightOf="@id/EditTimeEntryDeleteIcon" />
+                <View
+                    android:background="@color/separator"
+                    android:layout_height="0.5dp"
+                    android:layout_marginLeft="56dp"
+                    android:layout_width="match_parent"
+                    android:layout_below="@id/EditTimeEntryDeleteLabel" />
+            </LinearLayout>
         </RelativeLayout>
     </android.support.v4.widget.NestedScrollView>
 </RelativeLayout>

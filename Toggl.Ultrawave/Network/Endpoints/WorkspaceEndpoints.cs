@@ -13,6 +13,8 @@ namespace Toggl.Ultrawave.Network
 
         public Endpoint Get => Endpoint.Get(baseUrl, "me/workspaces");
 
+        public Endpoint Post => Endpoint.Post(baseUrl, "workspaces");
+
         public Endpoint GetById(long id) => Endpoint.Get(baseUrl, $"workspaces/{id}");
     }
 }

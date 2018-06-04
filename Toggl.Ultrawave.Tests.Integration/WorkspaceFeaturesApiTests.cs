@@ -37,7 +37,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task ReturnsAllWorkspaceFeaturesForMultipleWorkspaces()
             {
                 var (togglClient, user) = await SetupTestUser();
-                var anotherWorkspace = await WorkspaceHelper.CreateFor(user);
+                var anotherWorkspace = await togglClient.Workspaces.Create(Guid.NewGuid().ToString());
 
                 var workspaceFeatureCollection = await CallEndpointWith(togglClient);
 

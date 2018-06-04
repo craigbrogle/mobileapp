@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using UIKit;
-using static Toggl.Multivac.Extensions.FunctionalExtensions;
 
 namespace Toggl.Daneel.Services
 {
@@ -16,74 +16,97 @@ namespace Toggl.Daneel.Services
         public DialogService(ITopViewControllerProvider topViewControllerProvider)
         {
             Ensure.Argument.IsNotNull(topViewControllerProvider, nameof(topViewControllerProvider));
-            
+
             this.topViewControllerProvider = topViewControllerProvider;
         }
 
-        public Task<bool> Confirm(
+        public IObservable<bool> Confirm(
             string title,
             string message,
             string confirmButtonText,
             string dismissButtonText)
         {
-            var tcs = new TaskCompletionSource<bool>();
+            return Observable.Create<bool>(observer =>
+            {
+                var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
+                var confirm = UIAlertAction.Create(confirmButtonText, UIAlertActionStyle.Default, _ =>
+                {
+                    observer.OnNext(true);
+                    observer.OnCompleted();
+                });
 
-            var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
-            var confirm = UIAlertAction.Create(confirmButtonText, UIAlertActionStyle.Default, _ => tcs.SetResult(true));
-            var dismiss = UIAlertAction.Create(dismissButtonText, UIAlertActionStyle.Cancel, _ => tcs.SetResult(false));
+                var dismiss = UIAlertAction.Create(dismissButtonText, UIAlertActionStyle.Cancel, _ =>
+                {
+                    observer.OnNext(false);
+                    observer.OnCompleted();
+                });
 
-            alert.AddAction(confirm);
-            alert.AddAction(dismiss);
-            alert.PreferredAction = confirm;
+                alert.AddAction(confirm);
+                alert.AddAction(dismiss);
+                alert.PreferredAction = confirm;
 
-            topViewControllerProvider
-                .TopViewController
-                .PresentViewController(alert, true, null);
+                topViewControllerProvider
+                    .TopViewController
+                    .PresentViewController(alert, true, null);
 
-            return tcs.Task;
+                return Disposable.Empty;
+            });
         }
 
-        public Task<bool> ConfirmDestructiveAction(ActionType type)
+        public IObservable<bool> ConfirmDestructiveAction(ActionType type)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            var actionSheet = UIAlertController.Create(
-                title: null,
-                message: null,
-                preferredStyle: UIAlertControllerStyle.ActionSheet
-            );
+            return Observable.Create<bool>(observer =>
+            {
+                var actionSheet = UIAlertController.Create(
+                    title: null,
+                    message: null,
+                    preferredStyle: UIAlertControllerStyle.ActionSheet
+                );
 
-            var (confirmText, cancelText) = selectTextByType(type);
+                var (confirmText, cancelText) = selectTextByType(type);
 
-            var cancelAction = UIAlertAction.Create(cancelText, UIAlertActionStyle.Cancel, _ => tcs.SetResult(false));
-            actionSheet.AddAction(cancelAction);
+                var cancelAction = UIAlertAction.Create(cancelText, UIAlertActionStyle.Cancel, _ =>
+                {
+                    observer.OnNext(false);
+                    observer.OnCompleted();
+                });
 
-            actionSheet.AddAction(
-                UIAlertAction.Create(
-                    confirmText,
-                    UIAlertActionStyle.Destructive,
-                    _ => tcs.SetResult(true)));
+                var confirmAction = UIAlertAction.Create(confirmText, UIAlertActionStyle.Destructive, _ =>
+                {
+                    observer.OnNext(true);
+                    observer.OnCompleted();
+                });
 
-            topViewControllerProvider
-                .TopViewController
-                .PresentViewController(actionSheet, true, null);
+                actionSheet.AddAction(cancelAction);
+                actionSheet.AddAction(confirmAction);
 
-            return tcs.Task;
+                topViewControllerProvider
+                    .TopViewController
+                    .PresentViewController(actionSheet, true, null);
+
+                return Disposable.Empty;
+            });
         }
 
-        public Task Alert(string title, string message, string buttonTitle)
+        public IObservable<Unit> Alert(string title, string message, string buttonTitle)
         {
-            var tcs = new TaskCompletionSource<object>();
+            return Observable.Create<Unit>(observer =>
+            {
+                var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
+                var alertAction = UIAlertAction.Create(buttonTitle, UIAlertActionStyle.Default, _ =>
+                {
+                    observer.OnNext(Unit.Default);
+                    observer.OnCompleted();
+                });
 
-            var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
-            var alertAction = UIAlertAction.Create(buttonTitle, UIAlertActionStyle.Default, _ => tcs.SetResult(null));
+                alert.AddAction(alertAction);
 
-            alert.AddAction(alertAction);
+                topViewControllerProvider
+                    .TopViewController
+                    .PresentViewController(alert, true, null);
 
-            topViewControllerProvider
-                .TopViewController
-                .PresentViewController(alert, true, null);
-
-            return tcs.Task;
+                return Disposable.Empty;
+            });
         }
 
         private (string, string) selectTextByType(ActionType type)

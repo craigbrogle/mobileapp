@@ -13,9 +13,10 @@ using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Models.Interfaces;
 using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -38,7 +39,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private IDisposable confirmDisposable;
         private IDisposable preferencesDisposable;
 
-        private IDatabaseTimeEntry originalTimeEntry;
+        private IThreadSafeTimeEntry originalTimeEntry;
 
         private long? projectId;
         private long? taskId;
@@ -279,7 +280,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             try
             {
-                await dataSource.TimeEntries.Delete(Id);
+                await interactorFactory.DeleteTimeEntry(Id).Execute();
 
                 analyticsService.TrackDeletingTimeEntry();
                 dataSource.SyncManager.PushSync();
@@ -503,7 +504,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(onTags);
         }
 
-        private void onTags(IEnumerable<IDatabaseTag> tags)
+        private void onTags(IEnumerable<IThreadSafeTag> tags)
         {
             if (tags == null)
                 return;
@@ -542,7 +543,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             return $"{tag.UnicodeSafeSubstring(0, maxTagLength)}...";
         }
 
-        private void onPreferencesChanged(IDatabasePreferences preferences)
+        private void onPreferencesChanged(IThreadSafePreferences preferences)
         {
             durationFormat = preferences.DurationFormat;
             DateFormat = preferences.DateFormat;

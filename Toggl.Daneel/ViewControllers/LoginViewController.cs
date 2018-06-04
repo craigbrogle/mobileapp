@@ -118,6 +118,8 @@ namespace Toggl.Daneel.ViewControllers
 
         private void prepareViews()
         {
+            NavigationController.NavigationBarHidden = true;
+
             LoginButton.SetTitleColor(
                 Color.Login.DisabledButtonColor.ToNativeColor(),
                 UIControlState.Disabled

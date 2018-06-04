@@ -24,8 +24,10 @@ namespace Toggl.Giskard.Fragments
     using System.Collections.Generic;
     using System.Reactive;
     using System.Reactive.Linq;
+    using System.Threading;
     using MvvmCross.Binding.BindingContext;
     using Toggl.Giskard.Helper;
+    using Toggl.Giskard.Views;
     using static SelectTimeFragment.EditorMode;
     using static SelectTimeViewModel;
     using static SelectTimeViewModel.TemporalInconsistency;
@@ -48,6 +50,10 @@ namespace Toggl.Giskard.Fragments
 
         private IDisposable onModeChangedDisposable;
         private IDisposable onTemporalInconsistencyDisposable;
+        private IDisposable onPreferencesChangedDisposable;
+
+        private TogglDroidTimePicker startTimePicker;
+        private TogglDroidTimePicker stopTimePicker;
 
         private LinearLayout controlButtons;
         private TabLayout tabLayout;
@@ -99,16 +105,40 @@ namespace Toggl.Giskard.Fragments
                 tabLayout.GetTabAt(DurationTab).SetCustomView(durationPageView);
 
                 pager.SetCurrentItem(ViewModel.StartingTabIndex, false);
+
+                startTimePicker = view.FindViewById<TogglDroidTimePicker>(Resource.Id.SelectStartTimeClockView);
+                stopTimePicker = view.FindViewById<TogglDroidTimePicker>(Resource.Id.SelectStopTimeClockView);
+
+                ViewModel.Is24HoursModeObservable
+                         .ObserveOn(SynchronizationContext.Current)
+                         .Subscribe(on24HourModeChanged);
             });
+
+            setupDialogWindowPosition();
 
             return view;
         }
 
+        private void setupDialogWindowPosition()
+        {
+            var window = Dialog.Window;
+            var layoutParams = window.Attributes;
+            layoutParams.Gravity = GravityFlags.Top;
+            window.Attributes = layoutParams;
+        }
+        
+        private void on24HourModeChanged(bool is24HoursMode)
+        {
+            startTimePicker?.Update24HourMode(is24HoursMode);
+            stopTimePicker?.Update24HourMode(is24HoursMode);
+        }
+
         private Dictionary<TemporalInconsistency, int> inconsistencyMessages = new Dictionary<TemporalInconsistency, int>
         {
+            [StartTimeAfterCurrentTime] = Resource.String.StartTimeAfterCurrentTimeWarning,
             [StartTimeAfterStopTime] = Resource.String.StartTimeAfterStopTimeWarning,
             [StopTimeBeforeStartTime] = Resource.String.StopTimeBeforeStartTimeWarning,
-            [DurationTooLong] = Resource.String.DurationTooLong
+            [DurationTooLong] = Resource.String.DurationTooLong,
         };
 
         private void onTemporalInconsistency(TemporalInconsistency temporalInconsistency)

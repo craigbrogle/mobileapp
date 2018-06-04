@@ -17,7 +17,6 @@ namespace Toggl.Daneel.ViewControllers.Settings
         {
             base.ViewDidLoad();
 
-            TopConstraint.AdaptForIos10(NavigationController.NavigationBar);
             Title = Resources.About;
 
             var bindingSet = this.CreateBindingSet<AboutViewController, AboutViewModel>();

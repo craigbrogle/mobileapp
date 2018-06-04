@@ -14,7 +14,7 @@ namespace Toggl.Ultrawave.ApiClients
         private readonly UserAgent userAgent;
         private readonly TimeEntryEndpoints endPoints;
 
-        public TimeEntriesApi(Endpoints endPoints, IApiClient apiClient, IJsonSerializer serializer, 
+        public TimeEntriesApi(Endpoints endPoints, IApiClient apiClient, IJsonSerializer serializer,
             Credentials credentials, UserAgent userAgent)
             : base(apiClient, serializer, credentials, endPoints.LoggedIn)
         {
@@ -24,6 +24,15 @@ namespace Toggl.Ultrawave.ApiClients
 
         public IObservable<List<ITimeEntry>> GetAll()
             => CreateListObservable<TimeEntry, ITimeEntry>(endPoints.Get, AuthHeader);
+
+        public IObservable<List<ITimeEntry>> GetAll(DateTimeOffset start, DateTimeOffset end)
+        {
+            if (start > end)
+                throw new InvalidOperationException($"Start date ({start}) must be earlier than the end date ({end}).");
+
+            return CreateListObservable<TimeEntry, ITimeEntry>(endPoints.GetBetween(start, end), AuthHeader)
+                .Select(timeEntries => timeEntries ?? new List<ITimeEntry>());
+        }
 
         public IObservable<List<ITimeEntry>> GetAllSince(DateTimeOffset threshold)
             => CreateListObservable<TimeEntry, ITimeEntry>(endPoints.GetSince(threshold), AuthHeader);

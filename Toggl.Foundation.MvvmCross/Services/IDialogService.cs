@@ -1,18 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Reactive;
 
 namespace Toggl.Foundation.MvvmCross.Services
 {
     public interface IDialogService
     {
-        Task<bool> Confirm(
+        IObservable<bool> Confirm(
             string title,
             string message,
             string confirmButtonText,
             string dismissButtonText);
 
-        Task Alert(string title, string message, string buttonTitle);
+        IObservable<Unit> Alert(string title, string message, string buttonTitle);
 
-        Task<bool> ConfirmDestructiveAction(ActionType type);
+        IObservable<bool> ConfirmDestructiveAction(ActionType type);
     }
 
     public enum ActionType

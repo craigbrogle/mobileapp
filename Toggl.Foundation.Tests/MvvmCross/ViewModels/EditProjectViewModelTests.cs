@@ -7,10 +7,10 @@ using FluentAssertions;
 using MvvmCross.Platform.UI;
 using NSubstitute;
 using Toggl.Foundation.DTOs;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
-using Toggl.Multivac;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
 using ProjectPredicate = System.Func<Toggl.PrimeRadiant.Models.IDatabaseProject, bool>;
@@ -23,7 +23,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             protected const long WorkspaceId = 10;
             protected const string WorkspaceName = "Some workspace name";
-            protected IDatabaseWorkspace Workspace { get; } = Substitute.For<IDatabaseWorkspace>();
+            protected IThreadSafeWorkspace Workspace { get; } = Substitute.For<IThreadSafeWorkspace>();
 
             protected EditProjectViewModelTest()
             {
@@ -43,12 +43,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             protected void SetupDataSource(bool isFromSameWorkspace)
             {
-                var project = Substitute.For<IDatabaseProject>();
+                var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(projectId);
                 project.Name.Returns(ProjectName);
                 project.WorkspaceId.Returns(isFromSameWorkspace ? WorkspaceId : otherWorkspaceId);
 
-                var defaultWorkspace = Substitute.For<IDatabaseWorkspace>();
+                var defaultWorkspace = Substitute.For<IThreadSafeWorkspace>();
                 defaultWorkspace.Id.Returns(WorkspaceId);
                 defaultWorkspace.Name.Returns(Guid.NewGuid().ToString());
 
@@ -65,17 +65,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 DataSource.Projects
                           .GetAll(Arg.Any<ProjectPredicate>())
                           .Returns(callInfo => Observable.Return(new[] { project })
-                                                         .Select(projects => projects.Where(callInfo.Arg<ProjectPredicate>())));
+                                                         .Select(projects => projects.Where<IThreadSafeProject>(callInfo.Arg<ProjectPredicate>())));
             }
 
             private void setupChangingWorkspaceScenario()
             {
-                List<IDatabaseWorkspace> workspaces = new List<IDatabaseWorkspace>();
-                List<IDatabaseProject> projects = new List<IDatabaseProject>();
+                List<IThreadSafeWorkspace> workspaces = new List<IThreadSafeWorkspace>();
+                List<IThreadSafeProject> projects = new List<IThreadSafeProject>();
 
                 for (long workspaceId = 0; workspaceId < 2; workspaceId++)
                 {
-                    var workspace = Substitute.For<IDatabaseWorkspace>();
+                    var workspace = Substitute.For<IThreadSafeWorkspace>();
                     workspace.Id.Returns(workspaceId);
                     workspace.Name.Returns(Guid.NewGuid().ToString());
                     workspaces.Add(workspace);
@@ -87,14 +87,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     for (long projectId = 0; projectId < 3; projectId++)
                     {
-                        var project = Substitute.For<IDatabaseProject>();
+                        var project = Substitute.For<IThreadSafeProject>();
                         project.Id.Returns(10 * workspaceId + projectId);
                         project.Name.Returns($"Project-{workspaceId}-{projectId}");
                         project.WorkspaceId.Returns(workspaceId);
                         projects.Add(project);
                     }
 
-                    var sameNameProject = Substitute.For<IDatabaseProject>();
+                    var sameNameProject = Substitute.For<IThreadSafeProject>();
                     sameNameProject.Id.Returns(10 + workspaceId);
                     sameNameProject.Name.Returns("Project");
                     sameNameProject.WorkspaceId.Returns(workspaceId);
@@ -116,7 +116,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 DataSource.Projects
                           .GetAll(Arg.Any<ProjectPredicate>())
                           .Returns(callInfo => Observable.Return(projects)
-                                                         .Select(p => p.Where(callInfo.Arg<ProjectPredicate>())));
+                                                         .Select(p => p.Where<IThreadSafeProject>(callInfo.Arg<ProjectPredicate>())));
 
             }
 
@@ -387,7 +387,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private const long proWorkspaceId = 11;
             private const long projectId = 12;
 
-            private readonly IDatabaseProject project = Substitute.For<IDatabaseProject>();
+            private readonly IThreadSafeProject project = Substitute.For<IThreadSafeProject>();
 
             public TheDoneCommand()
             {
@@ -490,9 +490,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 private void prepare()
                 {
-                    var defaultWorkspace = Substitute.For<IDatabaseWorkspace>();
+                    var defaultWorkspace = Substitute.For<IThreadSafeWorkspace>();
                     defaultWorkspace.Id.Returns(defaultWorkspaceId);
-                    var selectedWorkspace = Substitute.For<IDatabaseWorkspace>();
+                    var selectedWorkspace = Substitute.For<IThreadSafeWorkspace>();
                     selectedWorkspace.Id.Returns(selectedWorkspaceId);
                     InteractorFactory
                         .GetDefaultWorkspace()
@@ -531,7 +531,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                             Arg.Is(Resources.WorkspaceChangedAlertMessage),
                             Arg.Is(Resources.Ok),
                             Arg.Is(Resources.Cancel))
-                        .Returns(Task.FromResult(false));
+                        .Returns(Observable.Return(false));
 
                     await ViewModel.DoneCommand.ExecuteAsync();
 
@@ -549,7 +549,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                             Arg.Is(Resources.WorkspaceChangedAlertMessage),
                             Arg.Is(Resources.Ok),
                             Arg.Is(Resources.Cancel))
-                        .Returns(Task.FromResult(true));
+                        .Returns(Observable.Return(true));
 
                     await ViewModel.DoneCommand.ExecuteAsync();
 
@@ -568,7 +568,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                             Arg.Is(Resources.WorkspaceChangedAlertMessage),
                             Arg.Is(Resources.Ok),
                             Arg.Is(Resources.Cancel))
-                        .Returns(Task.FromResult(true));
+                        .Returns(Observable.Return(true));
 
                     await ViewModel.DoneCommand.ExecuteAsync();
 
@@ -611,8 +611,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private const long workspaceId = 10;
             private const long defaultWorkspaceId = 11;
             private const string workspaceName = "My custom workspace";
-            private readonly IDatabaseWorkspace workspace = Substitute.For<IDatabaseWorkspace>();
-            private readonly IDatabaseWorkspace defaultWorkspace = Substitute.For<IDatabaseWorkspace>();
+            private readonly IThreadSafeWorkspace workspace = Substitute.For<IThreadSafeWorkspace>();
+            private readonly IThreadSafeWorkspace defaultWorkspace = Substitute.For<IThreadSafeWorkspace>();
 
             public ThePickWorkspaceCommand()
             {
@@ -741,7 +741,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 const string expectedName = "Some client";
                 long? expectedId = 10;
-                var client = Substitute.For<IDatabaseClient>();
+                var client = Substitute.For<IThreadSafeClient>();
                 client.Id.Returns(expectedId.Value);
                 client.Name.Returns(expectedName);
                 NavigationService
@@ -765,7 +765,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 const string expectedName = "Some client";
                 long? expectedId = 10;
-                var client = Substitute.For<IDatabaseClient>();
+                var client = Substitute.For<IThreadSafeClient>();
                 client.Id.Returns(expectedId.Value);
                 client.Name.Returns(expectedName);
                 NavigationService

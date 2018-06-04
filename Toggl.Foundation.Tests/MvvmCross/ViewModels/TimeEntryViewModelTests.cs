@@ -3,9 +3,9 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FluentAssertions;
 using NSubstitute;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
 using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
@@ -14,9 +14,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class TimeEntryViewModelTest : BaseMvvmCrossTests
         {
-            protected IDatabaseProject Project = Substitute.For<IDatabaseProject>();
+            protected IThreadSafeProject Project = Substitute.For<IThreadSafeProject>();
             protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
-            protected IDatabaseTimeEntry MockTimeEntry = Substitute.For<IDatabaseTimeEntry>();
+            protected IThreadSafeTimeEntry MockTimeEntry = Substitute.For<IThreadSafeTimeEntry>();
 
             protected Subject<DateTimeOffset> TickSubject = new Subject<DateTimeOffset>();
 

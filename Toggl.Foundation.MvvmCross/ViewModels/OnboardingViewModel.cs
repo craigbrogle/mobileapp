@@ -129,7 +129,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task skip()
         {
             analyticsService.TrackOnboardingSkipEvent(pageNames[CurrentPage]);
-
             await navigationService.Navigate<LoginViewModel>();
         }
 

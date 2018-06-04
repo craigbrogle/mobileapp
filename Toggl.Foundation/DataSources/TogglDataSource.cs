@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using Toggl.Foundation.Autocomplete;
+using Toggl.Foundation.DataSources.Interfaces;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Reports;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Shortcuts;
@@ -10,6 +11,7 @@ using Toggl.Foundation.Sync;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Models;
 using Toggl.Ultrawave;
 
 namespace Toggl.Foundation.DataSources
@@ -59,7 +61,9 @@ namespace Toggl.Foundation.DataSources
             Clients = new ClientsDataSource(database.IdProvider, database.Clients, timeService);
             Preferences = new PreferencesDataSource(database.Preferences);
             Projects = new ProjectsDataSource(database.IdProvider, database.Projects, timeService);
-            TimeEntries = new TimeEntriesDataSource(database.IdProvider, database.TimeEntries, timeService);
+            TimeEntries = new TimeEntriesDataSource(database.TimeEntries, timeService);
+            Workspaces = new WorkspacesDataSource(database.Workspaces);
+            WorkspaceFeatures = new WorkspaceFeaturesDataSource(database.WorkspaceFeatures);
 
             SyncManager = createSyncManager(this);
 
@@ -76,6 +80,8 @@ namespace Toggl.Foundation.DataSources
         public IPreferencesSource Preferences { get; }
         public IProjectsSource Projects { get; }
         public ITimeEntriesSource TimeEntries { get; }
+        public IDataSource<IThreadSafeWorkspace, IDatabaseWorkspace> Workspaces { get; }
+        public IDataSource<IThreadSafeWorkspaceFeatureCollection, IDatabaseWorkspaceFeatureCollection> WorkspaceFeatures { get; }
 
         public ISyncManager SyncManager { get; }
 

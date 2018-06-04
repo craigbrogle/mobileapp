@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Reactive;
-using Toggl.Foundation.Autocomplete;
+using Toggl.Foundation.DataSources.Interfaces;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Reports;
 using Toggl.Foundation.Sync;
+using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.DataSources
 {
@@ -15,6 +17,8 @@ namespace Toggl.Foundation.DataSources
         IClientsSource Clients { get; }
         IProjectsSource Projects { get; }
         ITimeEntriesSource TimeEntries { get; }
+        IDataSource<IThreadSafeWorkspace, IDatabaseWorkspace> Workspaces { get; }
+        IDataSource<IThreadSafeWorkspaceFeatureCollection, IDatabaseWorkspaceFeatureCollection> WorkspaceFeatures { get; }
 
         ISyncManager SyncManager { get; }
 

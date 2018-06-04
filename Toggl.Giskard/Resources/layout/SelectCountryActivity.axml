@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@android:color/white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:elevation="2dp"
+        android:orientation="horizontal"
+        android:background="@android:color/white"
+        android:minHeight="?android:attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            local:MvxBind="Click CloseCommand"
+            android:padding="16dp"
+            android:clickable="true"
+            android:src="@drawable/arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_width="56dp"
+            android:layout_height="56dp" />
+        <EditText
+            local:MvxBind="Text Text"
+            android:textSize="19sp"
+            android:letterSpacing="-0.01"
+            android:lineSpacingExtra="5sp"
+            android:background="@android:color/white"
+            android:textColor="@color/defaultEditText"
+            android:textColorHint="@color/placeholderText"
+            android:hint="@string/SelectCountryOfResidence"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+    <toggl.giskard.views.SelectCountryRecyclerView
+        local:MvxBind="ItemsSource Suggestions; ItemClick SelectCountryCommand"
+        android:scrollbars="vertical"
+        local:MvxTemplateSelector="@string/SelectCountryTemplateSelector"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize" />
+</android.support.design.widget.CoordinatorLayout>

@@ -1,4 +1,4 @@
-﻿using Toggl.PrimeRadiant.Models;
+﻿using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Autocomplete.Suggestions
 {
@@ -14,7 +14,7 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
 
         public string ProjectColor { get; }
 
-        public TaskSuggestion(IDatabaseTask task)
+        public TaskSuggestion(IThreadSafeTask task)
         {
             TaskId = task.Id;
             Name = task.Name;
@@ -29,7 +29,7 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
             unchecked
             {
                 return (TaskId.GetHashCode() * 397) ^
-                       (ProjectId.GetHashCode() * 397) ^ 
+                       (ProjectId.GetHashCode() * 397) ^
                         Name.GetHashCode();
             }
         }

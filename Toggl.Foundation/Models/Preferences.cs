@@ -8,7 +8,9 @@ namespace Toggl.Foundation.Models
 {
     internal sealed partial class Preferences
     {
-        private const long fakeId = 0;
+        public const long fakeId = 0;
+
+        public long Id => fakeId;
 
         public static Preferences DefaultPreferences { get; } =
             Builder.Create()
@@ -55,7 +57,7 @@ namespace Toggl.Foundation.Models
                 return new Preferences(this);
             }
 
-            public Builder SetFrom(EditPreferencesDTO dto) 
+            public Builder SetFrom(EditPreferencesDTO dto)
             {
                 if (dto.DateFormat.HasValue)
                     DateFormat = dto.DateFormat.Value;
@@ -117,7 +119,6 @@ namespace Toggl.Foundation.Models
 
         private Preferences(Builder builder)
         {
-            Id = fakeId;
             DateFormat = builder.DateFormat;
             TimeOfDayFormat = builder.TimeOfDayFormat;
             DurationFormat = builder.DurationFormat;

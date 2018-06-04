@@ -1,16 +1,12 @@
 ﻿using System;
+using Toggl.Foundation.DataSources.Interfaces;
 using Toggl.Foundation.DTOs;
-using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.DataSources
 {
-    public interface IPreferencesSource : IRepository<IDatabasePreferences>
+    public interface IPreferencesSource : ISingletonDataSource<IThreadSafePreferences>
     {
-        IObservable<IDatabasePreferences> Current { get; }
-
-        IObservable<IDatabasePreferences> Get();
-
-        IObservable<IDatabasePreferences> Update(EditPreferencesDTO dto);
+        IObservable<IThreadSafePreferences> Update(EditPreferencesDTO dto);
     }
 }

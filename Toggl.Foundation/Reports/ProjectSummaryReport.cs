@@ -12,7 +12,9 @@ namespace Toggl.Foundation.Reports
 
         public ChartSegment[] Segments { get; }
 
-        public ProjectSummaryReport(ChartSegment[] segments)
+        public int ProjectsNotSyncedCount { get; }
+
+        public ProjectSummaryReport(ChartSegment[] segments, int projectsNotSyncedCount)
         {
             var totalSeconds = segments.Select(x => x.TrackedTime.TotalSeconds).Sum();
             var billableSeconds = segments.Select(x => x.BillableSeconds).Sum();
@@ -20,6 +22,7 @@ namespace Toggl.Foundation.Reports
             Segments = segments;
             TotalSeconds = (float)totalSeconds;
             BillablePercentage = (float)(totalSeconds > 0 ? (100.0f / totalSeconds) * billableSeconds : 0);
+            ProjectsNotSyncedCount = projectsNotSyncedCount;
         }
 
         public static bool ShouldDraw(float percent)

@@ -7,6 +7,7 @@ using NSubstitute;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Interactors.AutocompleteSuggestions;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using Xunit;
@@ -20,7 +21,7 @@ namespace Toggl.Foundation.Tests.Interactors.AutocompleteSuggestions
         public GetProjectsAutocompleteSuggestionsInteractorTests()
         {
             dataSource.GetAll(Arg.Any<Func<IDatabaseProject, bool>>())
-                .Returns(callInfo => Observable.Return(Projects.Where(callInfo.Arg<Func<IDatabaseProject, bool>>())));
+                .Returns(callInfo => Observable.Return(Projects.Where(callInfo.Arg<Func<IThreadSafeProject, bool>>())));
         }
 
         [Fact, LogIfTooSlow]

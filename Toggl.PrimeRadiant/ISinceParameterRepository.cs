@@ -1,11 +1,13 @@
-﻿using Toggl.PrimeRadiant.Models;
+﻿using System;
 
 namespace Toggl.PrimeRadiant
 {
     public interface ISinceParameterRepository
     {
-        ISinceParameters Get();
+        DateTimeOffset? Get<T>() where T : IDatabaseSyncable;
 
-        void Set(ISinceParameters parameters);
+        void Set<T>(DateTimeOffset? since);
+
+        bool Supports<T>();
     }
 }

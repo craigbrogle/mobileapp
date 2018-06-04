@@ -22,7 +22,7 @@ using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Foundation.Analytics;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models.Interfaces;
 
 [assembly: MvxNavigation(typeof(StartTimeEntryViewModel), ApplicationUrls.StartTimeEntry)]
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -237,7 +237,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public void Init()
         {
             var now = timeService.CurrentDateTime;
-            var startTimeEntryParameters = userPreferences.IsManualModeEnabled()
+            var startTimeEntryParameters = userPreferences.IsManualModeEnabled
                 ? StartTimeEntryParameters.ForManualMode(now)
                 : StartTimeEntryParameters.ForTimerMode(now);
             Prepare(startTimeEntryParameters);
@@ -266,7 +266,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Duration = parameter.Duration;
 
             PlaceholderText = parameter.PlaceholderText;
-            
+
             setUpTimeSubscriptionIfNeeded();
         }
 
@@ -275,7 +275,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await base.Initialize();
 
             TextFieldInfo =
-                await dataSource.User.Current.Select(user => TextFieldInfo.Empty(user.DefaultWorkspaceId));
+                await dataSource.User.Current.FirstAsync().Select(user => TextFieldInfo.Empty(user.DefaultWorkspaceId));
 
             await setBillableValues(lastProjectId);
 
@@ -286,7 +286,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             hasAnyProjects = (await dataSource.Projects.GetAll()).Any();
         }
 
-        private void onPreferencesChanged(IDatabasePreferences preferences)
+        private void onPreferencesChanged(IThreadSafePreferences preferences)
         {
             dateFormat = preferences.DateFormat;
             timeFormat = preferences.TimeOfDayFormat;

@@ -18,7 +18,7 @@ namespace Toggl.Foundation.Tests.Interactors
             {
                 const long projectId = 10;
                 var project = new MockProject { Billable = isBillable };
-                Database.Projects
+                DataSource.Projects
                     .GetById(Arg.Is(projectId))
                     .Returns(Observable.Return(project));
 

@@ -7,6 +7,7 @@ using FluentAssertions;
 using FsCheck;
 using FsCheck.Xunit;
 using NSubstitute;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Generators;
@@ -22,10 +23,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override SelectWorkspaceViewModel CreateViewModel()
                 => new SelectWorkspaceViewModel(InteractorFactory, NavigationService);
 
-            protected List<IDatabaseWorkspace> GenerateWorkspaceList() =>
+            protected List<IThreadSafeWorkspace> GenerateWorkspaceList() =>
                 Enumerable.Range(0, 10).Select(i =>
                 {
-                    var workspace = Substitute.For<IDatabaseWorkspace>();
+                    var workspace = Substitute.For<IThreadSafeWorkspace>();
                     workspace.Id.Returns(i);
                     workspace.Name.Returns(i.ToString());
                     return workspace;
@@ -136,13 +137,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheSelectWorkspaceCommand : SelectWorkspaceViewModelTest
         {
-            private readonly IDatabaseWorkspace Workspace = Substitute.For<IDatabaseWorkspace>();
+            private readonly IThreadSafeWorkspace Workspace = Substitute.For<IThreadSafeWorkspace>();
 
             [Fact, LogIfTooSlow]
             public async Task ClosesTheViewModel()
             {
                 var selectableWorkspace = new SelectableWorkspaceViewModel(Workspace, true);
-                
+
                 ViewModel.SelectWorkspaceCommand.Execute(selectableWorkspace);
 
                 await NavigationService.Received()

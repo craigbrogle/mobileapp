@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:local="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@android:color/white"
+    android:layout_width="312dp"
+    android:layout_height="320dp">
+    <ImageView
+        android:src="@drawable/paws"
+        android:layout_width="130dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="24dp"
+        android:layout_gravity="center_horizontal" />
+    <TextView
+        android:textSize="20sp"
+        android:text="@string/ReviewTheTerms"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="110dp"
+        android:layout_marginLeft="24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:textSize="16sp"
+        android:textColor="#99000000"
+        android:lineSpacingExtra="7sp"
+        android:text="@string/TermsMessage"
+        android:layout_marginTop="155dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        local:MvxBind="Click ViewTermsOfServiceCommand"
+        android:textSize="16sp"
+        android:textColor="#2e81e6"
+        android:lineSpacingExtra="7sp"
+        android:text="@string/TermsOfService"
+        android:layout_marginTop="205dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:textSize="16sp"
+        android:textColor="#99000000"
+        android:lineSpacingExtra="7sp"
+        android:text="@string/And"
+        android:layout_marginTop="205dp"
+        android:layout_marginLeft="148dp"
+        android:layout_marginRight="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        local:MvxBind="Click ViewPrivacyPolicyCommand"
+        android:textSize="16sp"
+        android:textColor="#2e81e6"
+        android:lineSpacingExtra="7sp"
+        android:text="@string/PrivacyPolicy"
+        android:layout_marginTop="230dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <Button
+        local:MvxBind="Click AcceptCommand"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:textAllCaps="true"
+        android:textColor="#328fff"
+        android:letterSpacing="0.04"
+        android:text="@string/IAgree"
+        android:fontFamily="sans-serif-medium"
+        android:background="?attr/selectableItemBackground"
+        android:layout_width="83dp"
+        android:layout_height="36dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_gravity="bottom|end" />
+</FrameLayout>

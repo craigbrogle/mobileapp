@@ -106,6 +106,8 @@ namespace Toggl.Daneel.ViewControllers
 
         private void prepareViews()
         {
+            NavigationController.NavigationBarHidden = true;
+
             ActivityIndicator.Alpha = 0;
             ActivityIndicator.StartAnimation();
 

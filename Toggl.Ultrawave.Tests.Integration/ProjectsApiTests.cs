@@ -207,7 +207,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async ThreadingTask DoesNotFindProjectInADifferentWorkspace()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
+                var secondWorkspace = await togglApi.Workspaces.Create(Guid.NewGuid().ToString());
                 var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
                 var projectB = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
 
@@ -220,7 +220,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async ThreadingTask ReturnsOnlyProjectInTheSearchedWorkspace()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
+                var secondWorkspace = await togglApi.Workspaces.Create(Guid.NewGuid().ToString());
                 var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
                 var projectB = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
 

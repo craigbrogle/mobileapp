@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
@@ -12,6 +13,7 @@ using MvvmCross.Droid.Support.V7.AppCompat;
 using MvvmCross.Droid.Views.Attributes;
 using MvvmCross.Platform.WeakSubscription;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Multivac.Extensions;
 using Toggl.Giskard.Extensions;
 using static Toggl.Foundation.Sync.SyncProgress;
 using static Toggl.Giskard.Extensions.CircularRevealAnimation.AnimationType;
@@ -53,8 +55,22 @@ namespace Toggl.Giskard.Activities
             stopButton = FindViewById<FloatingActionButton>(Resource.Id.MainStopButton);
             coordinatorLayout = FindViewById<CoordinatorLayout>(Resource.Id.MainCoordinatorLayout);
 
-            disposable =
-                ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.SyncingProgress), onSyncChanged);
+            var disposeBag = new CompositeDisposable();
+
+            disposeBag.Add(ViewModel.TimeEntryCardVisibility.Subscribe(onTimeEntryCardVisibilityChanged));
+            disposeBag.Add(ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.SyncingProgress), onSyncChanged));
+
+            disposable = disposeBag;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (!disposing) return;
+
+            disposable?.Dispose();
+            disposable = null;
         }
 
         private void onSyncChanged(object sender, PropertyChangedEventArgs args)
@@ -82,7 +98,7 @@ namespace Toggl.Giskard.Activities
             }
         }
 
-        internal async void OnTimeEntryCardVisibilityChanged(bool visible)
+        private async void onTimeEntryCardVisibilityChanged(bool visible)
         {
             if (runningEntryCardFrame == null) return;
 

@@ -2,10 +2,10 @@
 using System.Linq;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -13,7 +13,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class TimeEntryViewModel : MvxNotifyPropertyChanged, ITimeEntryPrototype
     {
         public long Id { get; }
-        
+
         public long WorkspaceId { get; }
 
         public bool IsBillable { get; }
@@ -48,7 +48,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public DurationFormat DurationFormat { get; set; }
 
-        public TimeEntryViewModel(IDatabaseTimeEntry timeEntry, DurationFormat durationFormat)
+        public TimeEntryViewModel(IThreadSafeTimeEntry timeEntry, DurationFormat durationFormat)
         {
             Ensure.Argument.IsNotNull(timeEntry, nameof(timeEntry));
 

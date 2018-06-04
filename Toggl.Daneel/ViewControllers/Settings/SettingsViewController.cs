@@ -101,6 +101,10 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.BindTap())
                       .To(vm => vm.AboutCommand);
 
+            bindingSet.Bind(HelpView)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.HelpCommand);
+
             // Logout process
             bindingSet.Bind(LogoutButton)
                       .For(btn => btn.Enabled)
@@ -162,8 +166,6 @@ namespace Toggl.Daneel.ViewControllers
             // Resize Switches
             TwentyFourHourClockSwitch.Resize();
             ManualModeSwitch.Resize();
-
-            TopConstraint.AdaptForIos10(NavigationController.NavigationBar);
         }
 
         private void setIndicatorSyncColor(UIImageView imageView)

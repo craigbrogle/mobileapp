@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 
@@ -8,18 +9,18 @@ namespace Toggl.Foundation.Interactors
     internal sealed class ProjectDefaultsToBillableInteractor : IInteractor<IObservable<bool>>
     {
         private readonly long projectId;
-        private readonly ITogglDatabase database;
+        private readonly ITogglDataSource dataSource;
 
-        public ProjectDefaultsToBillableInteractor(ITogglDatabase database, long projectId)
+        public ProjectDefaultsToBillableInteractor(ITogglDataSource dataSource, long projectId)
         {
-            Ensure.Argument.IsNotNull(database, nameof(database));
+            Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
 
             this.projectId = projectId;
-            this.database = database;
+            this.dataSource = dataSource;
         }
 
         public IObservable<bool> Execute()
-            => database.Projects
+            => dataSource.Projects
                 .GetById(projectId)
                 .Select(project => project.Billable ?? false);
     }

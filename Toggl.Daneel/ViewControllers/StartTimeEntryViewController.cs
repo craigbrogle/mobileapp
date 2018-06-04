@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Foundation;
+using MvvmCross.Binding;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.iOS;
 using MvvmCross.Core.ViewModels;
@@ -59,6 +60,8 @@ namespace Toggl.Daneel.ViewControllers
 
             disabledConfirmationButtonOnboardingDisposable?.Dispose();
             disabledConfirmationButtonOnboardingDisposable = null;
+
+            TimeInput.LostFocus -= onTimeInputLostFocus;
         }
 
         public override void ViewDidLoad()
@@ -122,14 +125,15 @@ namespace Toggl.Daneel.ViewControllers
             //Text
             bindingSet.Bind(TimeInput)
                       .For(v => v.Duration)
-                      .To(vm => vm.DisplayedTime);
+                      .To(vm => vm.DisplayedTime)
+                      .Mode(MvxBindingMode.OneWayToSource);
 
             bindingSet.Bind(DescriptionTextView)
                       .For(v => v.BindTextFieldInfo())
                       .To(vm => vm.TextFieldInfo);
 
-            bindingSet.Bind(TimeInput)
-                      .For(v => v.FormattedDuration)
+            bindingSet.Bind(TimeLabel)
+                      .For(v => v.Text)
                       .To(vm => vm.DisplayedTime)
                       .WithConversion(parametricDurationConverter, DurationFormat.Improved);
 
@@ -183,6 +187,12 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Apply();
         }
 
+        private void switchTimeLabelAndInput()
+        {
+            TimeLabel.Hidden = !TimeLabel.Hidden;
+            TimeInput.Hidden = !TimeInput.Hidden;
+        }
+
         protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
         {
             BottomDistanceConstraint.Constant = e.FrameEnd.Height;
@@ -226,7 +236,31 @@ namespace Toggl.Daneel.ViewControllers
 
             Placeholder.TextView = DescriptionTextView;
             Placeholder.Text = Resources.StartTimeEntryPlaceholder;
+
+            prepareTimeViews();
         }
+
+        private void prepareTimeViews()
+        {
+            var tapRecognizer = new UITapGestureRecognizer(() =>
+            {
+                switchTimeLabelAndInput();
+
+                if (!TimeInput.Hidden)
+                {
+                    TimeInput.FormattedDuration = TimeLabel.Text;
+                    TimeInput.BecomeFirstResponder();
+                }
+            });
+
+            TimeLabel.UserInteractionEnabled = true;
+            TimeLabel.AddGestureRecognizer(tapRecognizer);
+
+            TimeInput.LostFocus += onTimeInputLostFocus;
+        }
+
+        private void onTimeInputLostFocus(object sender, EventArgs e)
+            => switchTimeLabelAndInput();
 
         private IEnumerable<UIButton> getButtons()
         {

@@ -9,13 +9,13 @@ using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Interactors;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels.Settings;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Sync;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave.Network;
 
@@ -171,7 +171,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public override async Task Initialize()
         {
-            var user = await dataSource.User.Current;
+            var user = await dataSource.User.Current.FirstAsync();
             var defaultWorkspace = await interactorFactory.GetDefaultWorkspace().Execute();
 
             Email = user.Email;
@@ -179,7 +179,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Version = userAgent.Version;
             workspaceId = defaultWorkspace.Id;
             WorkspaceName = defaultWorkspace.Name;
-            IsManualModeEnabled = userPreferences.IsManualModeEnabled();
+            IsManualModeEnabled = userPreferences.IsManualModeEnabled;
             BeginningOfWeek = user.BeginningOfWeek;
 
             var workspaces = await interactorFactory.GetAllWorkspaces().Execute();
@@ -192,7 +192,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(updateFromPreferences);
         }
 
-        private void updateFromPreferences(IDatabasePreferences preferences)
+        private void updateFromPreferences(IThreadSafePreferences preferences)
         {
             DateFormat = preferences.DateFormat;
             DurationFormat = preferences.DurationFormat;
@@ -207,7 +207,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public void update() => throw new NotImplementedException();
 
-        public void editProfile() 
+        public void editProfile()
         {
         }
 
@@ -217,7 +217,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var selectedWorkspaceId =
                 await navigationService
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(parameters);
-            
+
             await changeDefaultWorkspace(selectedWorkspaceId);
         }
 
@@ -351,7 +351,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (DateFormat == newDateFormat)
                 return;
-            
+
             var preferencesDto = new EditPreferencesDTO { DateFormat = newDateFormat };
             var newPreferences = await updatePreferences(preferencesDto);
             DateFormat = newPreferences.DateFormat;
@@ -374,7 +374,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private Task openAboutPage()
             => navigationService.Navigate<AboutViewModel>();
-        
+
         private async Task selectDurationFormat()
         {
             var newDurationFormat = await navigationService
@@ -388,7 +388,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             DurationFormat = newPreferences.DurationFormat;
         }
 
-        private async Task<IDatabasePreferences> updatePreferences(EditPreferencesDTO preferencesDto)
+        private async Task<IThreadSafePreferences> updatePreferences(EditPreferencesDTO preferencesDto)
         {
             var newPreferences = await dataSource.Preferences.Update(preferencesDto);
             dataSource.SyncManager.PushSync();

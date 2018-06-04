@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reactive.Linq;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Interactors.AutocompleteSuggestions
 {
@@ -30,7 +30,7 @@ namespace Toggl.Foundation.Interactors.AutocompleteSuggestions
                 .Aggregate(dataSource.GetAll(), (obs, word) => obs.Select(filterByWord(word)))
                 .Select(TimeEntrySuggestion.FromTimeEntries);
 
-        private Func<IEnumerable<IDatabaseTimeEntry>, IEnumerable<IDatabaseTimeEntry>> filterByWord(string word)
+        private Func<IEnumerable<IThreadSafeTimeEntry>, IEnumerable<IThreadSafeTimeEntry>> filterByWord(string word)
             => timeEntries =>
                 timeEntries.Where(
                     te => te.Description.ContainsIgnoringCase(word)
