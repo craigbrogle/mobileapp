@@ -89,10 +89,15 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                             }
                             else
                             {
-                                textFieldInfo = textFieldInfo.WithProjectInfo(workspaceId, projectId, projectName, projectColor);
+                                return;
                             }
                         }
-                    } else
+                        else
+                        {
+                            textFieldInfo = textFieldInfo.WithProjectInfo(workspaceId, projectId, projectName, projectColor);
+                        }
+                    }
+                    else
                     {
                         return;
                     }
@@ -104,7 +109,9 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                     {
                         var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
                         viewModel.TagIdsToReload = tagIds;
-                    } else {
+                    }
+                    else
+                    {
                         return;
                     }
                 }
