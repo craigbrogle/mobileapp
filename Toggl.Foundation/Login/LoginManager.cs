@@ -169,14 +169,16 @@ namespace Toggl.Foundation.Login
         {
             return observable.ConditionalRetryWithBackoffStrategy(
                 numberOfRetriesBeforeGivingUpOnFetchingAUserWithApiToken,
-                backOffStrategyForDelayedRetry(),
+                backOffStrategyForDelayedRetry,
                 exception => exception is UserIsMissingApiTokenException,
                 scheduler);
         }
 
-        private Func<int, TimeSpan> backOffStrategyForDelayedRetry()
+        private TimeSpan backOffStrategyForDelayedRetry(int attempt)
         {
-            return attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt));
+            var delayCap = TimeSpan.FromMinutes(1);
+            var currentAttemptDelay = TimeSpan.FromSeconds(Math.Pow(2, attempt));
+            return currentAttemptDelay >= delayCap ? delayCap : currentAttemptDelay;
         }
     }
 }
