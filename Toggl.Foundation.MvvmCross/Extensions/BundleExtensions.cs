@@ -15,7 +15,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
             bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"] = viewModel.TextFieldInfo.WorkspaceId.ToString();
 
             var hasProject = viewModel.TextFieldInfo.ProjectId.HasValue;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.ProjectId.HasValue)}"] = hasProject.ToString();
+            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(viewModel.TextFieldInfo.ProjectId.HasValue)}"] = hasProject.ToString();
             if (hasProject)
             {
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"] = viewModel.TextFieldInfo.ProjectId.ToString();
@@ -24,7 +24,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
             }
 
             var hasTask = viewModel.TextFieldInfo.TaskId.HasValue;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}"] = hasTask.ToString();
+            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}"] = hasTask.ToString();
             if (hasTask)
             {
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"] = viewModel.TextFieldInfo.TaskId.ToString();
@@ -32,7 +32,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
             }
 
             var hasTags = viewModel.TextFieldInfo.Tags.Length > 0;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}"] = hasTags.ToString();
+            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}"] = hasTags.ToString();
             if (hasTags)
             {
                 var tagIds = viewModel.TextFieldInfo.Tags.Select(tag => tag.TagId);
@@ -59,13 +59,13 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                 bundle.Data.TryGetValue(nameof(viewModel.IsBillable), out var isBillableString) &&
                 bool.TryParse(isBillableString, out var isBillable))
             {
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}", out var hasProjectString);
+                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(viewModel.TextFieldInfo.ProjectId.HasValue)}", out var hasProjectString);
                 bool.TryParse(hasProjectString, out var hasProject);
 
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}", out var hasTaskString);
+                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}", out var hasTaskString);
                 bool.TryParse(hasTaskString, out var hasTask);
 
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}", out var hasTagsString);
+                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}", out var hasTagsString);
                 bool.TryParse(hasTagsString, out var hasTags);
 
                 var textFieldInfo = TextFieldInfo

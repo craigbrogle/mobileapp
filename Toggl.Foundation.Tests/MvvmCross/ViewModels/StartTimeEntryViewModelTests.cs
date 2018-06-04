@@ -223,13 +223,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var bundle = new MvxBundle();
                 ViewModel.SaveState(bundle);
 
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Equals(textFieldInfo.Text);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Equals(textFieldInfo.CursorPosition.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Equals(textFieldInfo.WorkspaceId.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Equals(false.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Equals(false.ToString());
-                bundle.Data[nameof(ViewModel.StartTime)].Equals(ViewModel.StartTime.ToString());
-                bundle.Data[nameof(ViewModel.IsBillable)].Equals(ViewModel.IsBillable.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Should().Be(textFieldInfo.Text);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Should().Be(textFieldInfo.CursorPosition.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Should().Be(textFieldInfo.WorkspaceId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Should().Be(false.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Should().Be(false.ToString());
+                bundle.Data[nameof(ViewModel.StartTime)].Should().Be(ViewModel.StartTime.ToString());
+                bundle.Data[nameof(ViewModel.IsBillable)].Should().Be(ViewModel.IsBillable.ToString());
             }
 
             [Fact, LogIfTooSlow]
@@ -241,23 +241,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"] = Description;
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"] = "5";
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"] = WorkspaceId.ToString();
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"] = false.ToString();
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = false.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"] = false.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = false.ToString();
                 bundle.Data[nameof(ViewModel.StartTime)] = startTime.ToString();
                 bundle.Data[nameof(ViewModel.IsBillable)] = false.ToString();
 
                 ViewModel.ReloadState(bundle);
 
-                ViewModel.TextFieldInfo.Text.Equals(Description);
-                ViewModel.TextFieldInfo.CursorPosition.Equals(5);
-                ViewModel.TextFieldInfo.WorkspaceId.Equals(WorkspaceId);
-                ViewModel.TextFieldInfo.ProjectId.Equals(ProjectId);
-                ViewModel.TextFieldInfo.ProjectColor.Equals(ProjectColor);
-                ViewModel.TextFieldInfo.ProjectName.Equals(ProjectName);
-                ViewModel.TextFieldInfo.TaskId.Equals(TaskId);
-                ViewModel.TextFieldInfo.TaskName.Equals(TaskName);
-                ViewModel.StartTime.Equals(startTime);
-                ViewModel.IsBillable.Equals(false);
+                ViewModel.TextFieldInfo.Text.Should().Be(Description);
+                ViewModel.TextFieldInfo.CursorPosition.Should().Be(5);
+                ViewModel.TextFieldInfo.WorkspaceId.Should().Be(WorkspaceId);
+                ViewModel.TextFieldInfo.ProjectId.Should().Be(null);
+                ViewModel.TextFieldInfo.TaskId.Should().Be(null);
+                ViewModel.StartTime.Should().Be(startTime);
+                ViewModel.IsBillable.Should().Be(false);
             }
 
             [Fact, LogIfTooSlow]
@@ -289,20 +286,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var bundle = new MvxBundle();
                 ViewModel.SaveState(bundle);
 
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Equals(textFieldInfo.Text);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Equals(textFieldInfo.CursorPosition.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Equals(textFieldInfo.WorkspaceId.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Equals(true.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"].Equals(textFieldInfo.ProjectId.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"].Equals(textFieldInfo.ProjectColor);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"].Equals(textFieldInfo.ProjectName);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Equals(true.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"].Equals(textFieldInfo.TaskId.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"].Equals(textFieldInfo.TaskName);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.Tags.Length)}"].Equals(true.ToString());
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}"].Equals($"{TagId};{TagId + 10}");
-                bundle.Data[nameof(ViewModel.StartTime)].Equals(ViewModel.StartTime.ToString());
-                bundle.Data[nameof(ViewModel.IsBillable)].Equals(ViewModel.IsBillable.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"].Should().Be(textFieldInfo.Text);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"].Should().Be(textFieldInfo.CursorPosition.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"].Should().Be(textFieldInfo.WorkspaceId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"].Should().Be(true.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"].Should().Be(textFieldInfo.ProjectId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"].Should().Be(textFieldInfo.ProjectColor);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"].Should().Be(textFieldInfo.ProjectName);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"].Should().Be(true.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"].Should().Be(textFieldInfo.TaskId.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"].Should().Be(textFieldInfo.TaskName);
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}.{nameof(ViewModel.TextFieldInfo.Tags.Length)}"].Should().Be(true.ToString());
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}"].Should().Be($"{TagId};{TagId + 10}");
+                bundle.Data[nameof(ViewModel.StartTime)].Should().Be(ViewModel.StartTime.ToString());
+                bundle.Data[nameof(ViewModel.IsBillable)].Should().Be(ViewModel.IsBillable.ToString());
             }
 
             [Fact, LogIfTooSlow]
@@ -330,35 +327,35 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"] = Description;
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"] = "5";
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"] = WorkspaceId.ToString();
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"] = true.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(ViewModel.TextFieldInfo.ProjectId.HasValue)}"] = true.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"] = ProjectId.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"] = ProjectColor;
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"] = ProjectName;
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = true.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(ViewModel.TextFieldInfo.TaskId.HasValue)}"] = true.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"] = TaskId.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"] = TaskName;
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(ViewModel.TextFieldInfo.Tags.Length)}"] = true.ToString();
+                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}.{nameof(ViewModel.TextFieldInfo.Tags.Length)}"] = true.ToString();
                 bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}"] = $"{TagId};{TagId + 10}";
                 bundle.Data[nameof(ViewModel.StartTime)] = startTime.ToString();
                 bundle.Data[nameof(ViewModel.IsBillable)] = false.ToString();
 
                 ViewModel.ReloadState(bundle);
 
-                ViewModel.TextFieldInfo.Text.Equals(Description);
-                ViewModel.TextFieldInfo.CursorPosition.Equals(5);
-                ViewModel.TextFieldInfo.WorkspaceId.Equals(WorkspaceId);
-                ViewModel.TextFieldInfo.ProjectId.Equals(ProjectId);
-                ViewModel.TextFieldInfo.ProjectColor.Equals(ProjectColor);
-                ViewModel.TextFieldInfo.ProjectName.Equals(ProjectName);
-                ViewModel.TextFieldInfo.TaskId.Equals(TaskId);
-                ViewModel.TextFieldInfo.TaskName.Equals(TaskName);
-                ViewModel.TextFieldInfo.Tags.Length.Equals(tags.Length);
-                ViewModel.TextFieldInfo.Tags[0].TagId.Equals(TagId);
-                ViewModel.TextFieldInfo.Tags[0].Name.Equals($"{TagName} #1");
-                ViewModel.TextFieldInfo.Tags[1].TagId.Equals(TagId + 10);
-                ViewModel.TextFieldInfo.Tags[1].Name.Equals($"{TagName} #2");
-                ViewModel.StartTime.Equals(startTime);
-                ViewModel.IsBillable.Equals(false);
+                ViewModel.TextFieldInfo.Text.Should().Be(Description);
+                ViewModel.TextFieldInfo.CursorPosition.Should().Be(5);
+                ViewModel.TextFieldInfo.WorkspaceId.Should().Be(WorkspaceId);
+                ViewModel.TextFieldInfo.ProjectId.Should().Be(ProjectId);
+                ViewModel.TextFieldInfo.ProjectColor.Should().Be(ProjectColor);
+                ViewModel.TextFieldInfo.ProjectName.Should().Be(ProjectName);
+                ViewModel.TextFieldInfo.TaskId.Should().Be(TaskId);
+                ViewModel.TextFieldInfo.TaskName.Should().Be(TaskName);
+                ViewModel.TextFieldInfo.Tags.Length.Should().Be(tags.Length);
+                ViewModel.TextFieldInfo.Tags[0].TagId.Should().Be(TagId);
+                ViewModel.TextFieldInfo.Tags[0].Name.Should().Be($"{TagName} #1");
+                ViewModel.TextFieldInfo.Tags[1].TagId.Should().Be(TagId + 10);
+                ViewModel.TextFieldInfo.Tags[1].Name.Should().Be($"{TagName} #2");
+                ViewModel.StartTime.Should().Be(startTime);
+                ViewModel.IsBillable.Should().Be(false);
             }
         }
 
