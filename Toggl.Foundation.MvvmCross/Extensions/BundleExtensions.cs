@@ -74,46 +74,38 @@ namespace Toggl.Foundation.MvvmCross.Extensions
 
                 if (hasProject)
                 {
-                    if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}", out var projectIdString) &&
-                        int.TryParse(projectIdString, out var projectId) &&
-                        bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}", out var projectColor) &&
-                        bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}", out var projectName))
+                    if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}", out var projectIdString) &&
+                          int.TryParse(projectIdString, out var projectId) &&
+                          bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}", out var projectColor) &&
+                          bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}", out var projectName)))
                     {
-                        if (hasTask)
+                        return;
+                    }
+
+                    if (hasTask)
+                    {
+                        if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}", out var taskIdString) &&
+                              int.TryParse(taskIdString, out var taskId) &&
+                              bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}", out var taskName)))
                         {
-                            if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}", out var taskIdString) &&
-                                int.TryParse(taskIdString, out var taskId) &&
-                                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}", out var taskName))
-                            {
-                                textFieldInfo = textFieldInfo.WithProjectAndTaskInfo(workspaceId, projectId, projectName, projectColor, taskId, taskName);
-                            }
-                            else
-                            {
-                                return;
-                            }
+                            return;
                         }
-                        else
-                        {
-                            textFieldInfo = textFieldInfo.WithProjectInfo(workspaceId, projectId, projectName, projectColor);
-                        }
+                        textFieldInfo = textFieldInfo.WithProjectAndTaskInfo(workspaceId, projectId, projectName, projectColor, taskId, taskName);
                     }
                     else
                     {
-                        return;
+                        textFieldInfo = textFieldInfo.WithProjectInfo(workspaceId, projectId, projectName, projectColor);
                     }
                 }
 
                 if (hasTags)
                 {
-                    if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString))
-                    {
-                        var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
-                        viewModel.TagIdsToReload = tagIds;
-                    }
-                    else
+                    if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString)))
                     {
                         return;
                     }
+                    var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
+                    viewModel.TagIdsToReload = tagIds;
                 }
 
                 viewModel.TextFieldInfo = textFieldInfo;
