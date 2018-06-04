@@ -89,9 +89,16 @@ namespace Toggl.Multivac.Extensions
                         throw error;
                     }
 
-                    return Observable.Return(Unit.Default).Delay(backOffStrategy(currentTry), scheduler);
+                    var delay = backOffStrategyDelayCap(backOffStrategy(currentTry));
+                    return Observable.Return(Unit.Default).Delay(delay, scheduler);
                 });
             });
+        }
+
+        private static TimeSpan backOffStrategyDelayCap(TimeSpan delay)
+        {
+            var oneMinute = TimeSpan.FromMinutes(1);
+            return delay >= oneMinute ? oneMinute : delay;
         }
     }
 }
