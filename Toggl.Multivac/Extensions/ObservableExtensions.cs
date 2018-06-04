@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -78,9 +79,9 @@ namespace Toggl.Multivac.Extensions
             Func<Exception, bool> shouldRetryOn,
             IScheduler scheduler)
         {
-            return source.RetryWhen(v =>
+            return source.RetryWhen(errorSignal =>
             {
-                return v.SelectMany((error, retryCount) =>
+                return errorSignal.SelectMany((error, retryCount) =>
                 {
                     var currentTry = retryCount + 1;
                     if (!shouldRetryOn(error) || currentTry > maxRetries)
@@ -88,7 +89,7 @@ namespace Toggl.Multivac.Extensions
                         throw error;
                     }
 
-                    return Observable.Return(1).Delay(backOffStrategy(currentTry), scheduler);
+                    return Observable.Return(Unit.Default).Delay(backOffStrategy(currentTry), scheduler);
                 });
             });
         }
