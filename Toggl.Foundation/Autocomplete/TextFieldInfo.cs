@@ -101,12 +101,12 @@ namespace Toggl.Foundation.Autocomplete
 
         public TextFieldInfo AddTags(TagSuggestion[] tagSuggestions)
         {
-            var result = this;
-            foreach (var tagSuggestion in tagSuggestions)
-            {
-                result = result.AddTag(tagSuggestion);
-            }
-            return result;
+            var currentTagIds = Tags.Select(tag => tag.TagId);
+            var tagsToAdd = tagSuggestions.Where(tag => !currentTagIds.Contains(tag.TagId));
+
+            return new TextFieldInfo(
+                Text, CursorPosition, WorkspaceId, ProjectId, ProjectName, ProjectColor, TaskId, TaskName, Tags.Concat(tagsToAdd).ToArray()
+            );
         }
 
         public TextFieldInfo RemoveTag(TagSuggestion tag)
