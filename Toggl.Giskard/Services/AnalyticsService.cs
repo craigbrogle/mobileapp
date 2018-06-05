@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Android.App;
 using Android.OS;
 using Firebase.Analytics;
+using Microsoft.AppCenter.Crashes;
 using Toggl.Foundation.Analytics;
 using AppCenterAnalytics = Microsoft.AppCenter.Analytics.Analytics;
 
@@ -36,11 +37,9 @@ namespace Toggl.Giskard.Services
 
         protected override void NativeTrackException(Exception exception)
         {
-            NativeTrackEvent(exceptionEventName, new Dictionary<string, string>
-            {
-                [exceptionTypeParameter] = exception.GetType().FullName,
-                [exceptionMessageParameter] = exception.Message
-            });
+            #if USE_ANALYTICS
+            Crashes.TrackError(exception);
+            #endif
         }
 
         private Bundle bundleFromParameters(Dictionary<string, string> parameters)
