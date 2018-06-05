@@ -3,7 +3,7 @@ using Toggl.Multivac;
 
 namespace Toggl.Foundation.Services
 {
-    public class IRemoteConfigService
+    public interface IRemoteConfigService
     {
         IObservable<RatingViewConfiguration> RatingViewConfiguration { get; }
     }
