@@ -25,9 +25,11 @@ namespace Toggl.Ultrawave.Exceptions
             LocalizedApiErrorMessage = getLocalizedMessageFromResponse(response);
         }
 
+        #if DEBUG
         public override string ToString()
             => $"{GetType().Name} ({message}) for request {Request.HttpMethod} {Request.Endpoint} "
                + $"with response {serialisedResponse}";
+        #endif
 
         private string serialisedResponse => new JsonSerializer().Serialize(
             new
