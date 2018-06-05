@@ -17,9 +17,11 @@ namespace Toggl.PrimeRadiant.Settings
         void SetCompletedOnboarding();
         void SetIsNewUser(bool isNewUser);
         void SetLastOpened(DateTimeOffset dateString);
+        void SetFirstOpened(DateTimeOffset dateTime);
         void SetUserSignedUp();
 
         string GetLastOpened();
+        DateTimeOffset? GetFirstOpened();
         bool CompletedOnboarding();
 
         void StartButtonWasTapped();

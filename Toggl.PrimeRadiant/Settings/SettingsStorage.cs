@@ -15,6 +15,7 @@ namespace Toggl.PrimeRadiant.Settings
         private const string userSignedUpUsingTheAppKey = "UserSignedUpUsingTheApp";
         private const string isNewUserKey = "IsNewUser";
         private const string lastAccessDateKey = "LastAccessDate";
+        private const string firstAccessDateKey = "FirstAccessDate";
         private const string completedOnboardingKey = "CompletedOnboarding";
 
         private const string preferManualModeKey = "PreferManualMode";
@@ -123,6 +124,12 @@ namespace Toggl.PrimeRadiant.Settings
             keyValueStorage.SetString(lastAccessDateKey, dateString);
         }
 
+        public void SetFirstOpened(DateTimeOffset dateTime)
+        {
+            if (GetFirstOpened() == null)
+                keyValueStorage.SetString(firstAccessDateKey, dateTime.ToString());
+        }
+
         public void SetUserSignedUp()
         {
             userSignedUpUsingTheAppSubject.OnNext(true);
@@ -143,6 +150,16 @@ namespace Toggl.PrimeRadiant.Settings
         public bool CompletedOnboarding() => keyValueStorage.GetBool(completedOnboardingKey);
 
         public string GetLastOpened() => keyValueStorage.GetString(lastAccessDateKey);
+
+        public DateTimeOffset? GetFirstOpened()
+        {
+            var dateString = keyValueStorage.GetString(firstAccessDateKey);
+
+            if (string.IsNullOrEmpty(dateString))
+                return null;
+
+            return DateTimeOffset.Parse(dateString);
+        }
 
         public void StartButtonWasTapped()
         {

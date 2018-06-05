@@ -21,23 +21,36 @@ namespace Toggl.Foundation.MvvmCross
     public sealed class AppStart<TFirstViewModelWhenNotLoggedIn> : IMvxAppStart
         where TFirstViewModelWhenNotLoggedIn : MvxViewModel
     {
+        private readonly ITimeService timeService;
         private readonly ILoginManager loginManager;
+        private readonly IOnboardingStorage onboardingStorage;
         private readonly IMvxNavigationService navigationService;
         private readonly IAccessRestrictionStorage accessRestrictionStorage;
 
-        public AppStart(ILoginManager loginManager, IMvxNavigationService navigationService, IAccessRestrictionStorage accessRestrictionStorage)
+        public AppStart(
+            ITimeService timeService,
+            ILoginManager loginManager,
+            IOnboardingStorage onboardingStorage,
+            IMvxNavigationService navigationService,
+            IAccessRestrictionStorage accessRestrictionStorage)
         {
+            Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
+            Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(accessRestrictionStorage, nameof(accessRestrictionStorage));
 
+            this.timeService = timeService;
             this.loginManager = loginManager;
+            this.onboardingStorage = onboardingStorage;
             this.navigationService = navigationService;
             this.accessRestrictionStorage = accessRestrictionStorage;
         }
 
         public async void Start(object hint = null)
         {
+            onboardingStorage.SetFirstOpened(timeService.CurrentDateTime);
+
             if (accessRestrictionStorage.IsApiOutdated() || accessRestrictionStorage.IsClientOutdated())
             {
                 await navigationService.Navigate<OnboardingViewModel>();
