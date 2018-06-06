@@ -94,13 +94,14 @@ namespace Toggl.Foundation.Login
             if (!password.IsValid)
                 throw new ArgumentException($"A valid {nameof(password)} must be provided when trying to signup");
 
-            return retryWhenUserIsMissingApiToken(database
-                .Clear()
-                .SelectMany(_ => signUp(email, password, termsAccepted, countryId))
-                .Select(User.Clean)
-                .SelectMany(database.User.Create)
-                .Select(dataSourceFromUser)
-                .Do(shortcutCreator.OnLogin)
+            return retryWhenUserIsMissingApiToken(
+                database
+                    .Clear()
+                    .SelectMany(_ => signUp(email, password, termsAccepted, countryId))
+                    .Select(User.Clean)
+                    .SelectMany(database.User.Create)
+                    .Select(dataSourceFromUser)
+                    .Do(shortcutCreator.OnLogin)
             );
 
         }
