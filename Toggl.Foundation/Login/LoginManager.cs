@@ -64,7 +64,7 @@ namespace Toggl.Foundation.Login
 
             var credentials = Credentials.WithPassword(email, password);
 
-            return retryWhenUserIsMissingApiTokenException(
+            return retryWhenUserIsMissingApiToken(
                 database
                     .Clear()
                     .SelectMany(_ => apiFactory.CreateApiWith(credentials).User.Get())
@@ -94,7 +94,7 @@ namespace Toggl.Foundation.Login
             if (!password.IsValid)
                 throw new ArgumentException($"A valid {nameof(password)} must be provided when trying to signup");
 
-            return retryWhenUserIsMissingApiTokenException(database
+            return retryWhenUserIsMissingApiToken(database
                 .Clear()
                 .SelectMany(_ => signUp(email, password, termsAccepted, countryId))
                 .Select(User.Clean)
@@ -164,7 +164,7 @@ namespace Toggl.Foundation.Login
                 .SignUp(email, password, termsAccepted, countryId);
         }
 
-        private IObservable<ITogglDataSource> retryWhenUserIsMissingApiTokenException(
+        private IObservable<ITogglDataSource> retryWhenUserIsMissingApiToken(
             IObservable<ITogglDataSource> observable)
         {
             return observable.ConditionalRetryWithBackoffStrategy(
