@@ -478,6 +478,7 @@ namespace Toggl.Foundation.Tests.Login
                 public sealed class TheLoginMethodRetries : LoginManagerWithTestSchedulerTest
         {
             [Theory, LogIfTooSlow]
+            [InlineData(0, 1)]
             [InlineData(1, 1)]
             [InlineData(3, 2)]
             [InlineData(5, 2)]
@@ -543,6 +544,7 @@ namespace Toggl.Foundation.Tests.Login
         public sealed class TheSignUpMethodRetries : LoginManagerWithTestSchedulerTest
         {
             [Theory, LogIfTooSlow]
+            [InlineData(0, 1)]
             [InlineData(1, 1)]
             [InlineData(3, 2)]
             [InlineData(5, 2)]
@@ -552,12 +554,14 @@ namespace Toggl.Foundation.Tests.Login
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
 
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
-                Api.User.Received(apiCalls).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(apiCalls - 1).Get();
             }
 
             [Fact, LogIfTooSlow]
@@ -565,6 +569,7 @@ namespace Toggl.Foundation.Tests.Login
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
 
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
@@ -579,7 +584,8 @@ namespace Toggl.Foundation.Tests.Login
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
-                Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException), Observable.Throw<IUser>(serverErrorException));
+                Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                Api.User.Get().Returns(Observable.Throw<IUser>(serverErrorException));
 
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
@@ -587,7 +593,8 @@ namespace Toggl.Foundation.Tests.Login
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
                 observer.Messages.Single().Value.Exception.Should().Be(serverErrorException);
-                Api.User.Received(2).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(1).Get();
             }
 
             [Fact, LogIfTooSlow]
@@ -595,13 +602,15 @@ namespace Toggl.Foundation.Tests.Login
             {
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
-                Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException), Observable.Return(User));
+                Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                Api.User.Get().Returns(Observable.Return(User));
 
                 TestScheduler.Start();
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
 
                 TestScheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
-                Api.User.Received(2).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(1).Get();
             }
         }
 

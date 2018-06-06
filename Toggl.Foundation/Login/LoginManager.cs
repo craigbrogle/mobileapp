@@ -62,17 +62,23 @@ namespace Toggl.Foundation.Login
             if (!password.IsValid)
                 throw new ArgumentException($"A valid {nameof(password)} must be provided when trying to login");
 
-            var credentials = Credentials.WithPassword(email, password);
+
 
             return retryWhenUserIsMissingApiToken(
-                database
-                    .Clear()
-                    .SelectMany(_ => apiFactory.CreateApiWith(credentials).User.Get())
-                    .Select(User.Clean)
-                    .SelectMany(database.User.Create)
-                    .Select(dataSourceFromUser)
-                    .Do(shortcutCreator.OnLogin)
+               login(email, password)
             );
+        }
+
+        private IObservable<ITogglDataSource> login(Email email, Password password)
+        {
+            var credentials = Credentials.WithPassword(email, password);
+            return database
+                .Clear()
+                .SelectMany(_ => apiFactory.CreateApiWith(credentials).User.Get())
+                .Select(User.Clean)
+                .SelectMany(database.User.Create)
+                .Select(dataSourceFromUser)
+                .Do(shortcutCreator.OnLogin);
         }
 
         public IObservable<ITogglDataSource> LoginWithGoogle()
@@ -94,16 +100,17 @@ namespace Toggl.Foundation.Login
             if (!password.IsValid)
                 throw new ArgumentException($"A valid {nameof(password)} must be provided when trying to signup");
 
-            return retryWhenUserIsMissingApiToken(
-                database
+
+            return database
                     .Clear()
                     .SelectMany(_ => signUp(email, password, termsAccepted, countryId))
                     .Select(User.Clean)
                     .SelectMany(database.User.Create)
                     .Select(dataSourceFromUser)
                     .Do(shortcutCreator.OnLogin)
-            );
-
+                    .Catch<ITogglDataSource, UserIsMissingApiTokenException>(
+                        _ => Login(email, password).DelaySubscription(TimeSpan.FromSeconds(2), scheduler)
+                    );
         }
 
         public IObservable<ITogglDataSource> SignUpWithGoogle()
