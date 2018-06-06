@@ -62,23 +62,17 @@ namespace Toggl.Foundation.Login
             if (!password.IsValid)
                 throw new ArgumentException($"A valid {nameof(password)} must be provided when trying to login");
 
-
+            var credentials = Credentials.WithPassword(email, password);
 
             return retryWhenUserIsMissingApiToken(
-               login(email, password)
+                database
+                    .Clear()
+                    .SelectMany(_ => apiFactory.CreateApiWith(credentials).User.Get())
+                    .Select(User.Clean)
+                    .SelectMany(database.User.Create)
+                    .Select(dataSourceFromUser)
+                    .Do(shortcutCreator.OnLogin)
             );
-        }
-
-        private IObservable<ITogglDataSource> login(Email email, Password password)
-        {
-            var credentials = Credentials.WithPassword(email, password);
-            return database
-                .Clear()
-                .SelectMany(_ => apiFactory.CreateApiWith(credentials).User.Get())
-                .Select(User.Clean)
-                .SelectMany(database.User.Create)
-                .Select(dataSourceFromUser)
-                .Do(shortcutCreator.OnLogin);
         }
 
         public IObservable<ITogglDataSource> LoginWithGoogle()
