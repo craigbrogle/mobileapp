@@ -488,11 +488,12 @@ namespace Toggl.Foundation.Tests.Login
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(),  Substitute.For<IResponse>());
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.Login(Email, Password).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
+
                 Api.User.Received(apiCalls).Get();
             }
 
@@ -501,9 +502,9 @@ namespace Toggl.Foundation.Tests.Login
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.Login(Email, Password).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
@@ -516,11 +517,11 @@ namespace Toggl.Foundation.Tests.Login
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException), Observable.Return(User));
-
                 TestScheduler.Start();
-                LoginManager.Login(Email, Password).Subscribe(observer);
 
+                LoginManager.Login(Email, Password).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
+
                 Api.User.Received(2).Get();
             }
 
@@ -530,9 +531,9 @@ namespace Toggl.Foundation.Tests.Login
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException), Observable.Throw<IUser>(serverErrorException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.Login(Email, Password).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
@@ -556,11 +557,12 @@ namespace Toggl.Foundation.Tests.Login
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
+
                 Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
                 Api.User.Received(loginApiCalls).Get();
             }
@@ -571,9 +573,9 @@ namespace Toggl.Foundation.Tests.Login
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
@@ -588,9 +590,9 @@ namespace Toggl.Foundation.Tests.Login
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
                 Api.User.Get().Returns(Observable.Throw<IUser>(serverErrorException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
@@ -630,11 +632,12 @@ namespace Toggl.Foundation.Tests.Login
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(),  Substitute.For<IResponse>());
                 GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
                 Api.User.GetWithGoogle().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.LoginWithGoogle().Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
+
                 Api.User.Received(apiCalls).GetWithGoogle();
             }
         }
@@ -655,11 +658,12 @@ namespace Toggl.Foundation.Tests.Login
                 GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
                 Api.User.SignUpWithGoogle(Arg.Any<string>()).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
                 Api.User.GetWithGoogle().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 TestScheduler.Start();
+
                 LoginManager.SignUpWithGoogle().Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
+
                 Api.User.Received(1).SignUpWithGoogle(Arg.Any<string>());
                 Api.User.Received(loginApiCalls).GetWithGoogle();
             }
