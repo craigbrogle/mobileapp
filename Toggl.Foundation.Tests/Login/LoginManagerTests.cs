@@ -542,7 +542,7 @@ namespace Toggl.Foundation.Tests.Login
             }
         }
 
-        public sealed class TheSignUpMethodRetries : LoginManagerWithTestSchedulerTest
+        public sealed class TheSignUpMethodRuns : LoginManagerWithTestSchedulerTest
         {
             [Theory, LogIfTooSlow]
             [InlineData(0, 0)]
@@ -552,7 +552,7 @@ namespace Toggl.Foundation.Tests.Login
             [InlineData(5, 2)]
             [InlineData(13, 3)]
             [InlineData(100, 3)]
-            public void TrySignUpOnceAndResumesTryingToLoginAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int loginApiCalls)
+            public void OnceAndResumesTryingToLoginAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int loginApiCalls)
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -568,7 +568,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void WillNotRetryTheSignUpWhenReceivingUserIsMissingApiTokenExceptionAndWillResumeTryingUpToThreeTimeWithLoginAndThenThrowIt()
+            public void AndWhenReceivingUserIsMissingApiTokenExceptionWillResumeTryingToLoginThreeTimesBeforeThrowingIt()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -584,7 +584,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void WhenReceivingUserIsMissingApiTokenExceptionOnSignUpWillResumeWithTheLoginFlow()
+            public void AndWhenReceivingUserIsMissingApiTokenExceptionOnSignUpWillResumeWithTheLoginFlow()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
