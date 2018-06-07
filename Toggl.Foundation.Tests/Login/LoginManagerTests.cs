@@ -484,7 +484,7 @@ namespace Toggl.Foundation.Tests.Login
             [InlineData(5, 2)]
             [InlineData(13, 3)]
             [InlineData(100, 3)]
-            public void RetriesAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int apiCalls)
+            public void AfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int apiCalls)
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(),  Substitute.For<IResponse>());
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -497,7 +497,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void WillRetryTheLoginTwoTimesWhenReceivingUserIsMissingApiTokenExceptionAndThenThrowIt()
+            public void ToLoginTwoTimesWhenReceivingUserIsMissingApiTokenExceptionAndThenThrowIt()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -511,7 +511,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void WillStopRetryingAfterASuccessFullLoginApiCall()
+            public void AndStopRetryingAfterASuccessFullLoginApiCall()
             {
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
@@ -525,7 +525,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void WillRetryTheLoginWhenReceivingUserIsMissingApiTokenExceptionOrThrowOtherExceptions()
+            public void WhenReceivingUserIsMissingApiTokenExceptionOrThrowOtherExceptions()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
@@ -625,7 +625,7 @@ namespace Toggl.Foundation.Tests.Login
             [InlineData(5, 2)]
             [InlineData(13, 3)]
             [InlineData(100, 3)]
-            public void RetriesAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int apiCalls)
+            public void AfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int apiCalls)
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(),  Substitute.For<IResponse>());
                 GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
@@ -649,7 +649,7 @@ namespace Toggl.Foundation.Tests.Login
             [InlineData(5, 2)]
             [InlineData(13, 3)]
             [InlineData(100, 3)]
-            public void TrySignUpOnceAndResumesTryingToLoginAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int loginApiCalls)
+            public void OnceAndResumesTryingToLoginAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int loginApiCalls)
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
