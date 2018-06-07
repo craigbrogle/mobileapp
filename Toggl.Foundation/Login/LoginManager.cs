@@ -114,11 +114,17 @@ namespace Toggl.Foundation.Login
             => database
                 .Clear()
                 .SelectMany(_ => googleService.GetAuthToken())
-                .SelectMany(apiFactory.CreateApiWith(Credentials.None).User.SignUpWithGoogle)
-                .Select(User.Clean)
-                .SelectMany(database.User.Create)
-                .Select(dataSourceFromUser)
-                .Do(shortcutCreator.OnLogin);
+                .SelectMany(googleToken =>
+                    Observable.Return(googleToken)
+                        .SelectMany(apiFactory.CreateApiWith(Credentials.None).User.SignUpWithGoogle)
+                        .Select(User.Clean)
+                        .SelectMany(database.User.Create)
+                        .Select(dataSourceFromUser)
+                        .Do(shortcutCreator.OnLogin))
+                        .Catch<ITogglDataSource, UserIsMissingApiTokenException>(
+                             _ => LoginWithGoogle().DelaySubscription(TimeSpan.FromSeconds(2), scheduler)
+                        );
+
 
         public IObservable<string> ResetPassword(Email email)
         {
