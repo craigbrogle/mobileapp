@@ -544,13 +544,14 @@ namespace Toggl.Foundation.Tests.Login
         public sealed class TheSignUpMethodRetries : LoginManagerWithTestSchedulerTest
         {
             [Theory, LogIfTooSlow]
-            [InlineData(0, 1)]
-            [InlineData(1, 1)]
-            [InlineData(3, 2)]
+            [InlineData(0, 0)]
+            [InlineData(1, 0)]
+            [InlineData(3, 1)]
+            [InlineData(4, 2)]
             [InlineData(5, 2)]
             [InlineData(13, 3)]
             [InlineData(100, 3)]
-            public void RetriesAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int apiCalls)
+            public void TrySignUpOnceAndResumesTryingToLoginAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int loginApiCalls)
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -561,11 +562,11 @@ namespace Toggl.Foundation.Tests.Login
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
                 Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
-                Api.User.Received(apiCalls - 1).Get();
+                Api.User.Received(loginApiCalls).Get();
             }
 
             [Fact, LogIfTooSlow]
-            public void WillRetryTheSignUpTwoTimesWhenReceivingUserIsMissingApiTokenExceptionAndThenThrowIt()
+            public void WillNotRetryTheSignUpWhenReceivingUserIsMissingApiTokenExceptionAndWillResumeTryingUpToThreeTimeWithLoginAndThenThrowIt()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -576,11 +577,12 @@ namespace Toggl.Foundation.Tests.Login
                 LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
+                Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
                 observer.Messages.Single().Value.Exception.Should().BeOfType<UserIsMissingApiTokenException>();
             }
 
             [Fact, LogIfTooSlow]
-            public void WillRetryTheSignUpWhenReceivingUserIsMissingApiTokenExceptionOrThrowOtherExceptions()
+            public void WhenReceivingUserIsMissingApiTokenExceptionOnSignUpWillResumeWithTheLoginFlow()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
@@ -598,7 +600,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void WillStopRetryingAfterASuccessFullSingUpApiCall()
+            public void WillTrySigningUpOnceAndResumeRetryingToLogin()
             {
                 var observer = TestScheduler.CreateObserver<ITogglDataSource>();
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
