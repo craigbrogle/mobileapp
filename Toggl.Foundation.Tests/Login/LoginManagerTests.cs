@@ -600,22 +600,6 @@ namespace Toggl.Foundation.Tests.Login
                 Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
                 Api.User.Received(1).Get();
             }
-
-            [Fact, LogIfTooSlow]
-            public void WillTrySigningUpOnceAndResumeRetryingToLogin()
-            {
-                var observer = TestScheduler.CreateObserver<ITogglDataSource>();
-                var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
-                Api.User.SignUp(Email, Password, TermsAccepted, CountryId).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
-                Api.User.Get().Returns(Observable.Return(User));
-
-                TestScheduler.Start();
-                LoginManager.SignUp(Email, Password, TermsAccepted, CountryId).Subscribe(observer);
-
-                TestScheduler.AdvanceBy(TimeSpan.FromDays(1).Ticks);
-                Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
-                Api.User.Received(1).Get();
-            }
         }
 
         public sealed class TheLoginUpWithGoogleMethodRetries : LoginManagerWithTestSchedulerTest
