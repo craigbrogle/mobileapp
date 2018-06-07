@@ -475,7 +475,7 @@ namespace Toggl.Foundation.Tests.Login
             }
         }
 
-                public sealed class TheLoginMethodRetries : LoginManagerWithTestSchedulerTest
+        public sealed class TheLoginMethodRetries : LoginManagerWithTestSchedulerTest
         {
             [Theory, LogIfTooSlow]
             [InlineData(0, 1)]
