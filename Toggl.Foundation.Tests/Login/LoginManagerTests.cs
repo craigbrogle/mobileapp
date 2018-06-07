@@ -674,7 +674,7 @@ namespace Toggl.Foundation.Tests.Login
 
         }
 
-        public sealed class TheSignUpWithGoogleMethodRetries : LoginManagerWithTestSchedulerTest
+        public sealed class TheSignUpWithGoogleMethodRuns : LoginManagerWithTestSchedulerTest
         {
             [Theory, LogIfTooSlow]
             [InlineData(0, 0)]
