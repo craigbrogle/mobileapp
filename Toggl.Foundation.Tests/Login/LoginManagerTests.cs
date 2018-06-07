@@ -580,11 +580,12 @@ namespace Toggl.Foundation.Tests.Login
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
                 Api.User.Received(1).SignUp(Email, Password, TermsAccepted, CountryId);
+                Api.User.Received(3).Get();
                 observer.Messages.Single().Value.Exception.Should().BeOfType<UserIsMissingApiTokenException>();
             }
 
             [Fact, LogIfTooSlow]
-            public void AndWhenReceivingUserIsMissingApiTokenExceptionOnSignUpWillResumeWithTheLoginFlow()
+            public void AndWhenReceivingUserIsMissingApiTokenExceptionWillResumeWithTheLoginFlow()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
@@ -698,6 +699,43 @@ namespace Toggl.Foundation.Tests.Login
 
                 Api.User.Received(1).SignUpWithGoogle(Arg.Any<string>());
                 Api.User.Received(loginApiCalls).GetWithGoogle();
+            }
+
+            [Fact, LogIfTooSlow]
+            public void AndWhenReceivingUserIsMissingApiTokenExceptionWillResumeTryingToLoginWithGoogleThreeTimesBeforeThrowingIt()
+            {
+                var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
+                GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
+                Api.User.SignUpWithGoogle(Arg.Any<string>()).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                Api.User.GetWithGoogle().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                var observer = TestScheduler.CreateObserver<ITogglDataSource>();
+                TestScheduler.Start();
+
+                LoginManager.SignUpWithGoogle().Subscribe(observer);
+                TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
+
+                Api.User.Received(1).SignUpWithGoogle(Arg.Any<string>());
+                Api.User.Received(3).GetWithGoogle();
+                observer.Messages.Single().Value.Exception.Should().BeOfType<UserIsMissingApiTokenException>();
+            }
+
+            [Fact, LogIfTooSlow]
+            public void AndWhenReceivingUserIsMissingApiTokenExceptionWillResumeWithTheLoginWithGoogleFlow()
+            {
+                var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
+                var serverErrorException = Substitute.For<ServerErrorException>(Substitute.For<IRequest>(), Substitute.For<IResponse>(), "Some Exception");
+                GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
+                Api.User.SignUpWithGoogle(Arg.Any<string>()).Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+                Api.User.GetWithGoogle().Returns(Observable.Throw<IUser>(serverErrorException));
+                var observer = TestScheduler.CreateObserver<ITogglDataSource>();
+                TestScheduler.Start();
+
+                LoginManager.SignUpWithGoogle().Subscribe(observer);
+                TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
+
+                observer.Messages.Single().Value.Exception.Should().Be(serverErrorException);
+                Api.User.Received(1).SignUpWithGoogle(Arg.Any<string>());
+                Api.User.Received(1).GetWithGoogle();
             }
         }
     }
