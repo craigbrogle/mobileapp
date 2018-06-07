@@ -3,6 +3,7 @@ using System.Linq;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Autocomplete;
+using Toggl.Foundation.Autocomplete.Suggestions;
 
 namespace Toggl.Foundation.MvvmCross.Extensions
 {
@@ -10,108 +11,98 @@ namespace Toggl.Foundation.MvvmCross.Extensions
     {
         public static void SavePropertiesFrom(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
         {
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}"] = viewModel.TextFieldInfo.Text;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}"] = viewModel.TextFieldInfo.CursorPosition.ToString();
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}"] = viewModel.TextFieldInfo.WorkspaceId.ToString();
+            var package = new BundlePackage<StartTimeEntryViewModel>(bundle, viewModel);
+
+            package.Store(vm => vm.TextFieldInfo.Text);
+            package.Store(vm => vm.TextFieldInfo.CursorPosition);
+            package.Store(vm => vm.TextFieldInfo.WorkspaceId);
+
+            package.Store(vm => vm.TextFieldInfo.WorkspaceId);
 
             var hasProject = viewModel.TextFieldInfo.ProjectId.HasValue;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(viewModel.TextFieldInfo.ProjectId.HasValue)}"] = hasProject.ToString();
+            package.Store(vm => vm.TextFieldInfo.ProjectId.HasValue, hasProject);
             if (hasProject)
             {
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}"] = viewModel.TextFieldInfo.ProjectId.ToString();
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}"] = viewModel.TextFieldInfo.ProjectColor;
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}"] = viewModel.TextFieldInfo.ProjectName;
+                package.Store(vm => vm.TextFieldInfo.ProjectId);
+                package.Store(vm => vm.TextFieldInfo.ProjectColor);
+                package.Store(vm => vm.TextFieldInfo.ProjectName);
             }
 
             var hasTask = viewModel.TextFieldInfo.TaskId.HasValue;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}"] = hasTask.ToString();
+            package.Store(vm => vm.TextFieldInfo.TaskId.HasValue, hasTask);
             if (hasTask)
             {
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}"] = viewModel.TextFieldInfo.TaskId.ToString();
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}"] = viewModel.TextFieldInfo.TaskName;
+                package.Store(vm => vm.TextFieldInfo.TaskId);
+                package.Store(vm => vm.TextFieldInfo.TaskName);
             }
 
             var hasTags = viewModel.TextFieldInfo.Tags.Length > 0;
-            bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}"] = hasTags.ToString();
+            package.Store(vm => vm.TextFieldInfo.Tags.Length, hasTags);
             if (hasTags)
             {
                 var tagIds = viewModel.TextFieldInfo.Tags.Select(tag => tag.TagId);
-                bundle.Data[$"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}"] = string.Join(";", tagIds);
+                package.Store(vm => vm.TextFieldInfo.Tags, tagIds);
             }
 
-            bundle.Data[nameof(viewModel.StartTime)] = viewModel.StartTime.ToString();
-            bundle.Data[nameof(viewModel.IsBillable)] = viewModel.IsBillable.ToString();
+            package.Store(vm => vm.StartTime);
+            package.Store(vm => vm.IsBillable);
         }
 
         public static void ReloadPropertiesInto(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
         {
-            if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}", out var text) &&
+            var package = new BundlePackage<StartTimeEntryViewModel>(bundle, viewModel);
 
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.CursorPosition)}", out var cursorPositionString) &&
-                int.TryParse(cursorPositionString, out var cursorPosition) &&
-
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.WorkspaceId)}", out var workspaceIdString) &&
-                long.TryParse(workspaceIdString, out var workspaceId) &&
-
-                bundle.Data.TryGetValue(nameof(viewModel.StartTime), out var startTimeString) &&
-                DateTimeOffset.TryParse(startTimeString, out var startTime) &&
-
-                bundle.Data.TryGetValue(nameof(viewModel.IsBillable), out var isBillableString) &&
-                bool.TryParse(isBillableString, out var isBillable))
+            if (!package.TryGetValue(vm => vm.TextFieldInfo.Text, out string text)
+                || !package.TryGetValue(vm => vm.TextFieldInfo.CursorPosition, out int cursorPosition)
+                || !package.TryGetValue(vm => vm.TextFieldInfo.WorkspaceId, out long workspaceId)
+                || !package.TryGetValue(vm => vm.StartTime, out DateTimeOffset startTime)
+                || !package.TryGetValue(vm => vm.IsBillable, out bool isBillable))
             {
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}.{nameof(viewModel.TextFieldInfo.ProjectId.HasValue)}", out var hasProjectString);
-                bool.TryParse(hasProjectString, out var hasProject);
-
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}.{nameof(viewModel.TextFieldInfo.TaskId.HasValue)}", out var hasTaskString);
-                bool.TryParse(hasTaskString, out var hasTask);
-
-                bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}.{nameof(viewModel.TextFieldInfo.Tags.Length)}", out var hasTagsString);
-                bool.TryParse(hasTagsString, out var hasTags);
-
-                var textFieldInfo = TextFieldInfo
-                    .Empty(workspaceId)
-                    .WithTextAndCursor(text, cursorPosition);
-
-                if (hasProject)
-                {
-                    if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectId)}", out var projectIdString) &&
-                          int.TryParse(projectIdString, out var projectId) &&
-                          bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}", out var projectColor) &&
-                          bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}", out var projectName)))
-                    {
-                        return;
-                    }
-
-                    if (hasTask)
-                    {
-                        if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskId)}", out var taskIdString) &&
-                              int.TryParse(taskIdString, out var taskId) &&
-                              bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}", out var taskName)))
-                        {
-                            return;
-                        }
-                        textFieldInfo = textFieldInfo.WithProjectAndTaskInfo(workspaceId, projectId, projectName, projectColor, taskId, taskName);
-                    }
-                    else
-                    {
-                        textFieldInfo = textFieldInfo.WithProjectInfo(workspaceId, projectId, projectName, projectColor);
-                    }
-                }
-
-                if (hasTags)
-                {
-                    if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString)))
-                    {
-                        return;
-                    }
-                    var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
-                    viewModel.TagIdsToReload = tagIds;
-                }
-
-                viewModel.TextFieldInfo = textFieldInfo;
-                viewModel.StartTime = startTime;
-                viewModel.IsBillable = isBillable;
+                return;
             }
+
+            var textFieldInfo = TextFieldInfo.Empty(workspaceId).WithTextAndCursor(text, cursorPosition);
+
+            package.TryGetValue(vm => vm.TextFieldInfo.ProjectId.HasValue, out bool hasProject);
+            package.TryGetValue(vm => vm.TextFieldInfo.TaskId.HasValue, out bool hasTask);
+
+            if (hasProject)
+            {
+                if (!package.TryGetValue(vm => vm.TextFieldInfo.ProjectId, out int projectId)
+                    || !package.TryGetValue(vm => vm.TextFieldInfo.ProjectColor, out string projectColor)
+                    || !package.TryGetValue(vm => vm.TextFieldInfo.ProjectName, out string projectName))
+                {
+                    return;
+                }
+
+                if (hasTask)
+                {
+                    if (!package.TryGetValue(vm => vm.TextFieldInfo.TaskId, out int taskId)
+                        || !package.TryGetValue(vm => vm.TextFieldInfo.TaskName, out string taskName))
+                    {
+                        return;
+                    }
+
+                    textFieldInfo = textFieldInfo.WithProjectAndTaskInfo(workspaceId, projectId, projectName, projectColor, taskId, taskName);
+                }
+                else
+                {
+                    textFieldInfo = textFieldInfo.WithProjectInfo(workspaceId, projectId, projectName, projectColor);
+                }
+            }
+
+            package.TryGetValue(vm => vm.TextFieldInfo.Tags.Length, out bool hasTags);
+            bool hasIdsString = package.TryGetValue(vm => vm.TextFieldInfo.Tags, out string tagsIdsString);
+
+            if (hasTags && hasIdsString)
+            {
+                var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
+                viewModel.TagIdsToReload = tagIds;
+            }
+
+            viewModel.TextFieldInfo = textFieldInfo;
+            viewModel.StartTime = startTime;
+            viewModel.IsBillable = isBillable;
         }
     }
 }
