@@ -80,12 +80,15 @@ namespace Toggl.Foundation.Login
                 .Clear()
                 .SelectMany(_ => googleService.GetAuthToken())
                 .Select(Credentials.WithGoogleToken)
-                .Select(apiFactory.CreateApiWith)
-                .SelectMany(api => api.User.GetWithGoogle())
-                .Select(User.Clean)
-                .SelectMany(database.User.Create)
-                .Select(dataSourceFromUser)
-                .Do(shortcutCreator.OnLogin);
+                .SelectMany(credentials =>
+                    retryWhenUserIsMissingApiToken(
+                        Observable.Return(apiFactory.CreateApiWith(credentials))
+                            .SelectMany(api => api.User.GetWithGoogle())
+                            .Select(User.Clean)
+                            .SelectMany(database.User.Create)
+                            .Select(dataSourceFromUser)
+                            .Do(shortcutCreator.OnLogin)
+                    ));
 
         public IObservable<ITogglDataSource> SignUp(Email email, Password password, bool termsAccepted, int countryId)
         {
