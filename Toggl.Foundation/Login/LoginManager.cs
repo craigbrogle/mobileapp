@@ -79,7 +79,11 @@ namespace Toggl.Foundation.Login
             => database
                 .Clear()
                 .SelectMany(_ => googleService.GetAuthToken())
-                .Select(Credentials.WithGoogleToken)
+                .SelectMany(loginWithGoogle);
+
+        private IObservable<ITogglDataSource> loginWithGoogle(string googleToken)
+        {
+            return Observable.Return(Credentials.WithGoogleToken(googleToken))
                 .SelectMany(credentials =>
                     retryWhenUserIsMissingApiToken(
                         Observable.Return(apiFactory.CreateApiWith(credentials))
@@ -89,6 +93,7 @@ namespace Toggl.Foundation.Login
                             .Select(dataSourceFromUser)
                             .Do(shortcutCreator.OnLogin)
                     ));
+        }
 
         public IObservable<ITogglDataSource> SignUp(Email email, Password password, bool termsAccepted, int countryId)
         {
@@ -96,7 +101,6 @@ namespace Toggl.Foundation.Login
                 throw new ArgumentException($"A valid {nameof(email)} must be provided when trying to signup");
             if (!password.IsValid)
                 throw new ArgumentException($"A valid {nameof(password)} must be provided when trying to signup");
-
 
             return database
                     .Clear()
@@ -114,17 +118,15 @@ namespace Toggl.Foundation.Login
             => database
                 .Clear()
                 .SelectMany(_ => googleService.GetAuthToken())
-                .SelectMany(googleToken =>
-                    Observable.Return(googleToken)
-                        .SelectMany(apiFactory.CreateApiWith(Credentials.None).User.SignUpWithGoogle)
-                        .Select(User.Clean)
-                        .SelectMany(database.User.Create)
-                        .Select(dataSourceFromUser)
-                        .Do(shortcutCreator.OnLogin))
-                        .Catch<ITogglDataSource, UserIsMissingApiTokenException>(
-                             _ => LoginWithGoogle().DelaySubscription(TimeSpan.FromSeconds(2), scheduler)
-                        );
-
+                .SelectMany(googleToken => Observable.Return(googleToken)
+                    .SelectMany(apiFactory.CreateApiWith(Credentials.None).User.SignUpWithGoogle)
+                    .Select(User.Clean)
+                    .SelectMany(database.User.Create)
+                    .Select(dataSourceFromUser)
+                    .Do(shortcutCreator.OnLogin)
+                    .Catch<ITogglDataSource, UserIsMissingApiTokenException>(
+                        _ => loginWithGoogle(googleToken).DelaySubscription(TimeSpan.FromSeconds(2), scheduler)
+                    ));
 
         public IObservable<string> ResetPassword(Email email)
         {
