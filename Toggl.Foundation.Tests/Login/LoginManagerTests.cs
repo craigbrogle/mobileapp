@@ -616,5 +616,27 @@ namespace Toggl.Foundation.Tests.Login
             }
         }
 
+        public sealed class TheLoginUpWithGoogleMethodRetries : LoginManagerWithTestSchedulerTest
+        {
+            [Theory, LogIfTooSlow]
+            [InlineData(0, 1)]
+            [InlineData(1, 1)]
+            [InlineData(3, 2)]
+            [InlineData(5, 2)]
+            [InlineData(13, 3)]
+            [InlineData(100, 3)]
+            public void RetriesAfterAWhileWhenTheApiThrowsUserIsMissingApiTokenException(int seconds, int apiCalls)
+            {
+                var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(),  Substitute.For<IResponse>());
+                GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
+                Api.User.GetWithGoogle().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
+
+                var observer = TestScheduler.CreateObserver<ITogglDataSource>();
+                TestScheduler.Start();
+                LoginManager.LoginWithGoogle().Subscribe(observer);
+                TestScheduler.AdvanceBy(TimeSpan.FromSeconds(seconds).Ticks);
+                Api.User.Received(apiCalls).GetWithGoogle();
+            }
+        }
     }
 }
