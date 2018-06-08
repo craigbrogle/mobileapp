@@ -49,6 +49,8 @@ namespace Toggl.Foundation.Analytics
 
         IAnalyticsEvent<int> ProjectGhostsCreated { get; }
 
+        IAnalyticsEvent<string, string> HandledException { get; }
+
         void Track(string eventName, Dictionary<string, string> parameters = null);
 
         void Track(Exception exception);
