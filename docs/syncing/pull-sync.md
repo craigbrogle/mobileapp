@@ -61,3 +61,21 @@ The retry loop checks what the `/status` endpoint of the API server returns:
     - slow delay starts with 60 seconds and then is calculated: `previousDelay * rand(1.5, 2)`
 - otherwise wait for the next "fast delay" and try again
     - fast delay starts with 10 seconds and then is calculated: `previousDelay * rand(1, 1.5)`
+
+
+Where everything is implemented in the code
+-------------------------------------------
+
+The code is located (mostly) under the namespace `Toggl.Foundation.Sync.States.Pull`.
+
+We initiate the HTTP requests in the state class `FetchAllSinceState`.
+
+Individual states are instances of the `PersistSingletonState` (user, preferences) and `PersistListState` (the rest).
+
+This basic logic is then wrapped in `SinceDateUpdatingPersistState` for the entities for which we store the `since` date. All states are wrapped with `ApiExceptionCatchingPersistState` which catches known exceptions and leads into the retry loop.
+
+The logic of creating project ghosts is implemented in the `CreateGhostProjectsState` and fetching the details of these projects using the reports API is done in `TryFetchInaccessibleProjectsState`.
+
+Retry loop uses the `CheckServerStatusState` and the `ResetAPIDelayState`.
+
+The states are instantiated and connected in the `Toggl.Foundation.TogglSyncManagerFactory` class.
