@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.AppCenter.Crashes;
 using Toggl.Foundation.Analytics;
 using FirebaseAnalytics = Firebase.Analytics.Analytics;
 using AppCenterAnalytics = Microsoft.AppCenter.Analytics.Analytics;
@@ -10,10 +11,6 @@ namespace Toggl.Daneel.Services
 {
     public sealed class AnalyticsService : BaseAnalyticsService
     {
-        private const string exceptionEventName = "HandledException";
-        private const string exceptionTypeParameter = "ExceptionType";
-        private const string exceptionMessageParameter = "ExceptionMessage";
-
         private const int maxAppCenterStringLength = 64;
 
         public override void Track(string eventName, Dictionary<string, string> parameters = null)
@@ -26,13 +23,9 @@ namespace Toggl.Daneel.Services
             FirebaseAnalytics.LogEvent(new NSString(eventName), convertedDictionary);
         }
 
-        public override void Track(Exception exception)
+        protected override void TrackException(Exception exception)
         {
-            Track(exceptionEventName, new Dictionary<string, string>
-            {
-                [exceptionTypeParameter] = exception.GetType().FullName,
-                [exceptionMessageParameter] = exception.Message
-            });
+            Crashes.TrackError(exception);
         }
 
         private NSDictionary<NSString, NSObject> convertDictionary(Dictionary<string, string> parameters)
