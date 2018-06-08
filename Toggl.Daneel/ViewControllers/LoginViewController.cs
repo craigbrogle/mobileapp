@@ -122,6 +122,12 @@ namespace Toggl.Daneel.ViewControllers
         {
             NavigationController.NavigationBarHidden = true;
 
+            PasswordManagerButton.TouchUpInside += (sender, e) =>
+            {
+                EmailTextField.ResignFirstResponder();
+                PasswordTextField.ResignFirstResponder();
+            };
+
             LoginButton.SetTitleColor(
                 Color.Login.DisabledButtonColor.ToNativeColor(),
                 UIControlState.Disabled
