@@ -83,16 +83,17 @@ namespace Toggl.Foundation.Login
 
         private IObservable<ITogglDataSource> loginWithGoogle(string googleToken)
         {
-            return Observable.Return(Credentials.WithGoogleToken(googleToken))
-                .SelectMany(credentials =>
-                    retryWhenUserIsMissingApiToken(
-                        Observable.Return(apiFactory.CreateApiWith(credentials))
-                            .SelectMany(api => api.User.GetWithGoogle())
-                            .Select(User.Clean)
-                            .SelectMany(database.User.Create)
-                            .Select(dataSourceFromUser)
-                            .Do(shortcutCreator.OnLogin)
-                    ));
+            var credentials = Credentials.WithGoogleToken(googleToken);
+
+            return retryWhenUserIsMissingApiToken(
+                Observable
+                    .Return(apiFactory.CreateApiWith(credentials))
+                    .SelectMany(api => api.User.GetWithGoogle())
+                    .Select(User.Clean)
+                    .SelectMany(database.User.Create)
+                    .Select(dataSourceFromUser)
+                    .Do(shortcutCreator.OnLogin)
+            );
         }
 
         public IObservable<ITogglDataSource> SignUp(Email email, Password password, bool termsAccepted, int countryId)
