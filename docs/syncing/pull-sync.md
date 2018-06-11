@@ -30,7 +30,7 @@ To make sure that the all the dependencies are already persisted, we process the
 Conflict resolution
 -------------------
 
-We use conflict resolution and rivals resolution to avoid any data inconsistencies in our database. There is a dedicated chapter which describes the conflict resolution algorithms.
+We use conflict resolution and rivals resolution to avoid any data inconsistencies in our database. There is a [dedicated chapter](conflict-resolution.md) which describes the conflict resolution algorithms.
 
 Ghost entities
 --------------
