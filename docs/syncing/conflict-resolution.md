@@ -9,7 +9,7 @@ A conflict resolver is a function with this signature:
 ConflictResolutionMode Resolve<T>(T localEntity, T serverEntity);
 ```
 
-There are 4 resolution modes:
+`ConflictResolutionMode` is an `enum` which has 4 possible values:
 
 - `Create`
 - `Update`
