@@ -5,11 +5,14 @@
         Project,
         Tags,
         Billable,
-        Calendar,
-        TimeView,
+        StartDate,
+        StartTime,
         Duration,
         SuggestFromAtCharacter,
         SuggestFromHashCharacter,
-        AutocompleteFromSuggestion
+        PickProjectSuggestion,
+        PickTagSuggestion,
+        PickTimeEntrySuggestion,
+        PickTaskSuggestion
     }
 }
