@@ -498,7 +498,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void ToLoginTwoTimesWhenReceivingUserIsMissingApiTokenExceptionAndThenThrowIt()
+            public void LoggingInWhenReceivingUserIsMissingApiTokenExceptionAndThenForwardTheErrorOnTheThirdFailure()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 Api.User.Get().Returns(Observable.Throw<IUser>(userIsMissingApiTokenException));
@@ -508,6 +508,7 @@ namespace Toggl.Foundation.Tests.Login
                 LoginManager.Login(Email, Password).Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
+                Api.User.Received(3).Get();
                 observer.Messages.Single().Value.Exception.Should().BeOfType<UserIsMissingApiTokenException>();
             }
 
