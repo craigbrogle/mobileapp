@@ -9,7 +9,7 @@ A conflict resolver is a function with this signature:
 ConflictResolutionMode Resolve<T>(T localEntity, T serverEntity);
 ```
 
-`ConflictResolutionMode` is an `enum` which has 4 possible values:
+`ConflictResolutionMode` is an `enum` which has _four possible values_:
 
 - `Create`
 - `Update`
@@ -30,7 +30,7 @@ We use several conflict resolvers:
 Rivals resolution
 -----------------
 
-There is a second type of conflict resolution - so called "rivals" resolution. The difference is that the previously described conflict resolution is between the local and server version of the same entity, rivals are two entities of the same type which are in conflict.
+There is a second type of conflict resolution - so called "rivals" resolution. The difference is that the previously described conflict resolution is _between the local and server version_ of the _same entity_, rivals are _two different entities of the same type which_ are in conflict.
 
 Currently we use this only for a single purpose - to make sure there is just one running time entry - but we could use this concept to prevent projects/tags/clients with the same name in the same workspace.
 

@@ -3,14 +3,14 @@ Sync Manager
 
 The sync manager is the client-facing part of the syncing algorithm. It provides an interface to initiate synchronization (push, or full sync) and a way of observing the progress of syncing. It also handles errors which occur during evaluation of the sync operations.
 
-The sync manager can run only one syncing operation at a time and if the client requests start of a sync operation while another one is already running, it will be queued and will be processed later.
+The sync manager can run only one syncing operation at a time. If the client requests start of a sync operation while another one is already running, it will be queued and will be processed later. The [queue](state-queue.md) ignores duplicities and every operation can be in the queue only once. However, sync manager dequeues the next operation as soon as some synchronization is invoked when the state machine is sleeping, and starts the next operation. If the user then tries to invoke the same syncing process (`push` or `full` sync) while it is already running, it will be added to the queue (the queue does not contain this type of sync anymore) and it is repeated once the first process finishes and the other queued states with higher priority are processed as well.
 
 Observing the progress
 ----------------------
 
 The state of the syncing algorithm can be one of these:
 
-- `Unknown` (only briefly at startup before the first sync operation is started)
+- `Unknown` _(only briefly at startup before the first sync operation is started)_
 - `Syncing`
 - `Synced`
 - `OfflineModeDetected`
