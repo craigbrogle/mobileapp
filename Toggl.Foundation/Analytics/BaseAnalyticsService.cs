@@ -84,13 +84,13 @@ namespace Toggl.Foundation.Analytics
 
         public void Track(Exception exception)
         {
-            if (exception.CanContainSensitiveInformation())
+            if (Attribute.IsDefined(exception.GetType(), typeof(IsAnonymizedAttribute)))
             {
-                HandledException.Track(exception.GetType().FullName, exception.Message);
+                TrackException(exception);
             }
             else
             {
-                TrackException(exception);
+                HandledException.Track(exception.GetType().FullName, exception.Message);
             }
         }
 
