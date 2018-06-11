@@ -123,10 +123,8 @@ namespace Toggl.Foundation.Login
 
         private IObservable<ITogglDataSource> signUpWithGoogle(string googleToken)
         {
-            var credentials = Credentials.WithGoogleToken(googleToken);
-
             return Observable
-                .Return(credentials)
+                .Return(googleToken)
                 .SelectMany(apiFactory.CreateApiWith(Credentials.None).User.SignUpWithGoogle)
                 .Select(User.Clean)
                 .SelectMany(database.User.Create)
