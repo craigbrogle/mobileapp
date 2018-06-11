@@ -5,7 +5,7 @@ namespace Toggl.Ultrawave.Extensions
 {
     public static class UriExtensions
     {
-        private static readonly Regex patternForId = new Regex(@"/\d+/", RegexOptions.Compiled|RegexOptions.CultureInvariant);
+        private static readonly Regex patternForId = new Regex(@"(?<=/)\d+(?=[/]?)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private const string placeholderForId = "{id}";
 
