@@ -628,7 +628,7 @@ namespace Toggl.Foundation.Tests.Login
             }
 
             [Fact, LogIfTooSlow]
-            public void ToLoginTwoTimesWhenReceivingUserIsMissingApiTokenExceptionAndThenThrowIt()
+            public void LoggingInWithGoogleWhenReceivingUserIsMissingApiTokenExceptionAndThenForwardTheErrorOnTheThirdFailure()
             {
                 var userIsMissingApiTokenException = new UserIsMissingApiTokenException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
                 GoogleService.GetAuthToken().Returns(Observable.Return("sometoken"));
@@ -639,6 +639,7 @@ namespace Toggl.Foundation.Tests.Login
                 LoginManager.LoginWithGoogle().Subscribe(observer);
                 TestScheduler.AdvanceBy(TimeSpan.FromSeconds(20).Ticks);
 
+                Api.User.Received(3).GetWithGoogle();
                 observer.Messages.Single().Value.Exception.Should().BeOfType<UserIsMissingApiTokenException>();
             }
 
