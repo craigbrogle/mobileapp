@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Toggl.Multivac;
 using Toggl.Ultrawave.Extensions;
 using Toggl.Ultrawave.Models;
 using Toggl.Ultrawave.Network;
@@ -7,6 +8,7 @@ using Toggl.Ultrawave.Serialization;
 
 namespace Toggl.Ultrawave.Exceptions
 {
+    [IsAnonymized]
     public class ApiException : Exception
     {
         private const string badJsonLocalisedError = "Encountered unexpected error.";
