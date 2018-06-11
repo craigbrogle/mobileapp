@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Toggl.Ultrawave.Extensions;
 using Toggl.Ultrawave.Models;
 using Toggl.Ultrawave.Network;
 using Toggl.Ultrawave.Serialization;
@@ -25,14 +26,19 @@ namespace Toggl.Ultrawave.Exceptions
             LocalizedApiErrorMessage = getLocalizedMessageFromResponse(response);
         }
 
+        public override string ToString()
         #if DEBUG
-        public override string ToString()
-            => $"{GetType().Name} ({message}) for request {Request.HttpMethod} {Request.Endpoint} "
-               + $"with response {serialisedResponse}";
+            => detailedMessage;
         #else
-        public override string ToString()
-            => $"{GetType().Name} ({message}) for request {Request.HttpMethod} {Request.Endpoint}";
+            => anonymizedMessage
         #endif
+
+        private string detailedMessage
+            => $"{GetType().Name} ({message}) for request {Request.HttpMethod} {Request.Endpoint} "
+                + $"with response {serialisedResponse}";
+
+        private string anonymizedMessage
+            => $"{GetType().Name} ({message}) for request {Request.HttpMethod} {Request.Endpoint.Anonymize()}: {LocalizedApiErrorMessage}";
 
         private string serialisedResponse => new JsonSerializer().Serialize(
             new
