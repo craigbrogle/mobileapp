@@ -32,7 +32,7 @@ namespace Toggl.Ultrawave.Exceptions
         #if DEBUG
             => detailedMessage;
         #else
-            => anonymizedMessage
+            => anonymizedMessage;
         #endif
 
         private string detailedMessage
