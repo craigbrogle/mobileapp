@@ -84,7 +84,7 @@ namespace Toggl.Foundation.Analytics
 
         public void Track(Exception exception)
         {
-            if (Attribute.IsDefined(exception.GetType(), typeof(IsAnonymizedAttribute)))
+            if (exception.IsAnonymized())
             {
                 TrackException(exception);
             }
