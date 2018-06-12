@@ -22,7 +22,7 @@ namespace Toggl.Ultrawave.Tests.Extensions
         }
 
         [Property]
-        public void RemovesIdFromTheUriWitaATrailingSlash(PositiveInt id)
+        public void RemovesIdFromTheUriWithATrailingSlash(PositiveInt id)
         {
             var uri = endpoints.Projects.Post(id.Get).Url;
 
