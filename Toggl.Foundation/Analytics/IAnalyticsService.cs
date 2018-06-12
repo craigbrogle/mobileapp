@@ -49,7 +49,7 @@ namespace Toggl.Foundation.Analytics
 
         IAnalyticsEvent<int> ProjectGhostsCreated { get; }
 
-        IAnalyticsEvent<StartViewTapSource> TrackStartViewTap { get; }
+        IAnalyticsEvent<StartViewTapSource> StartViewTapped { get; }
 
         void Track(string eventName, Dictionary<string, string> parameters = null);
 

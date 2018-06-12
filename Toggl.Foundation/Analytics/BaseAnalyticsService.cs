@@ -79,7 +79,7 @@ namespace Toggl.Foundation.Analytics
         public IAnalyticsEvent<int> ProjectGhostsCreated { get; protected set; }
 
         [AnalyticsEvent("TapSource")]
-        public IAnalyticsEvent<StartViewTapSource> TrackStartViewTap { get; protected set; }
+        public IAnalyticsEvent<StartViewTapSource> StartViewTapped { get; protected set; }
 
         public abstract void Track(string eventName, Dictionary<string, string> parameters = null);
 

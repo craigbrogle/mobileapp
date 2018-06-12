@@ -317,7 +317,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 case TimeEntrySuggestion timeEntrySuggestion:
 
-                    analyticsService.TrackStartViewTap.Track(StartViewTapSource.PickTimeEntrySuggestion);
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickTimeEntrySuggestion);
 
                     TextFieldInfo = TextFieldInfo.WithTextAndCursor(
                         timeEntrySuggestion.Description,
@@ -350,7 +350,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 case ProjectSuggestion projectSuggestion:
 
-                    analyticsService.TrackStartViewTap.Track(StartViewTapSource.PickProjectSuggestion);
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickProjectSuggestion);
 
                     if (TextFieldInfo.WorkspaceId == projectSuggestion.WorkspaceId)
                     {
@@ -372,7 +372,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 case TaskSuggestion taskSuggestion:
 
-                    analyticsService.TrackStartViewTap.Track(StartViewTapSource.PickTaskSuggestion);
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickTaskSuggestion);
 
                     if (TextFieldInfo.WorkspaceId == taskSuggestion.WorkspaceId)
                     {
@@ -394,7 +394,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 case TagSuggestion tagSuggestion:
                     
-                    analyticsService.TrackStartViewTap.Track(StartViewTapSource.PickTagSuggestion);
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickTagSuggestion);
 
                     TextFieldInfo = TextFieldInfo
                         .RemoveTagQueryFromDescriptionIfNeeded()
@@ -504,7 +504,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void durationTapped() 
         {
-            analyticsService.TrackStartViewTap.Track(StartViewTapSource.Duration); 
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Duration); 
         }
 
         private void toggleTagSuggestions()
@@ -516,7 +516,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            analyticsService.TrackStartViewTap.Track(StartViewTapSource.Tags);
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Tags);
             analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
             appendSymbol(QuerySymbols.TagsString);
@@ -532,7 +532,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            analyticsService.TrackStartViewTap.Track(StartViewTapSource.Project);
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Project);
             analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
 
@@ -576,7 +576,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void toggleBillable()
         {
-            analyticsService.TrackStartViewTap.Track(StartViewTapSource.Billable);
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Billable);
             IsBillable = !IsBillable;
         }
 
@@ -598,7 +598,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task selectTime(string bindingString)
         {
             var tapSource = getTapSourceFromBindingParameter(bindingString);
-            analyticsService.TrackStartViewTap.Track(tapSource);
+            analyticsService.StartViewTapped.Track(tapSource);
 
             IsEditingTime = true;
 
@@ -626,7 +626,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task changeTime()
         {
-            analyticsService.TrackStartViewTap.Track(StartViewTapSource.StartTime);
+            analyticsService.StartViewTapped.Track(StartViewTapSource.StartTime);
 
             IsEditingTime = true;
 
@@ -643,7 +643,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task setStartDate()
         {
-            analyticsService.TrackStartViewTap.Track(StartViewTapSource.StartDate);
+            analyticsService.StartViewTapped.Track(StartViewTapSource.StartDate);
 
             var parameters = isRunning
                 ? DateTimePickerParameters.ForStartDateOfRunningTimeEntry(StartTime, timeService.CurrentDateTime)
