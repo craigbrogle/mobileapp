@@ -24,3 +24,7 @@ Freezing the state machine
 When the user logs out of the app we need to stop syncing as fast as possible and block any further syncing. This operation is called _freezing_ and it waits until the app finishes the current state that is being evaluated and then completes and locks itself so it is not possible to run syncing after this point.
 
 To continue with syncing, new `StateMachine` and `StateMachineOrchestrator` instances must be created - the previous state machine with its state (e.g., the state in which it was frozen) cannot be resumed and the frozen instance should be destroyed.
+
+---
+
+Next topic: [State queue](state-queue.md)

@@ -48,3 +48,7 @@ transitions.ConfigureTransition(serverStatus.ServerIsDown, serverStatus.Start);
 
 stateMachine.Start(entryPoint.Transition());
 ```
+
+---
+
+This is the end of the syncing docs - you can go back to the [index](index.md).

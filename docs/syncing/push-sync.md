@@ -26,3 +26,7 @@ If the server reports an error, we try to resolve the situation according to the
 - for other client errors we mark the entity as unsyncable and skip it until the user resolves the error in the app
 
 The retry loop works the same way it does in the pull loop - it uses the same code.
+
+---
+
+Next topic: [State machine](state-machine.md)

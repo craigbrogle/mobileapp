@@ -79,3 +79,7 @@ The logic of creating project ghosts is implemented in the `CreateGhostProjectsS
 Retry loop uses the `CheckServerStatusState` and the `ResetAPIDelayState`.
 
 The states are instantiated and connected in the `Toggl.Foundation.TogglSyncManagerFactory` class.
+
+---
+
+Next topic: [Push sync](push-sync.md)

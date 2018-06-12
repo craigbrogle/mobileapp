@@ -11,3 +11,7 @@ Pull-then-push
 --------------
 
 There is only one non-trivial feature of this queue - after every `pull` we automatically perform a `push`. We also call this "full sync" in the `SyncManager`.
+
+---
+
+Next topic: [Sync manager](sync-manager.md)

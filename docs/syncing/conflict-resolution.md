@@ -45,3 +45,7 @@ The time entry which was updated most recently will be left running and the othe
 Selecting the stop time (duration) for the stopped time entry `A` is a complex process - from all of the time entries which start after the start of `A` we select the one with the minimum value or the current time in case of the list was empty.
 
 _Implementation detail: To run the Realm query efficiently we create our own expression for evaluating which time entries start after a given time entry._
+
+---
+
+Next topic: [Pull sync](pull-sync.md)

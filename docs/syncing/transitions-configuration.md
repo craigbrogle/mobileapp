@@ -10,3 +10,7 @@ A transition is just a container which holds reference to the state result and i
 We use the state result to look for the next state in a dictionary-wrapper called `TransitionHandlerProvider`. We pick a transition handler (by convention it is the `Start` method of some state) and call it the parameter specified in the transition (if any).
 
 We configure the coupling between state results with their handlers in `TogglSyncManagerFactory`.
+
+---
+
+Next topic: [Sample sync state](example.md)

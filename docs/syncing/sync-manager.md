@@ -26,3 +26,7 @@ Several fatal errors will cause freezing of the manager and the underlying state
 - `ClientDeprecatedException` - the client app is not supported by the backend and the user must update the app
 - `ApiDeprecatedException` - the API version is not supported anymore and the user must update the app to a newer version
 - `UnauthorizedException` - the API token was revoked and the user is considered "logged out" and must enter his password again
+
+---
+
+Next topic: [Transitions configuration](transitions-configuration.md)
