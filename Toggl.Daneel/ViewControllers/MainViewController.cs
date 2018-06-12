@@ -85,6 +85,8 @@ namespace Toggl.Daneel.ViewControllers
         private readonly ISubject<bool> isEmptySubject = new BehaviorSubject<bool>(false);
         private readonly ISubject<int> timeEntriesCountSubject = new BehaviorSubject<int>(0);
 
+        public bool RatingViewVisible { get; private set; }
+
         public MainViewController()
             : base(nameof(MainViewController), null)
         {
@@ -101,15 +103,11 @@ namespace Toggl.Daneel.ViewControllers
             prepareOnboarding();
 
             var suggestionsView = new SuggestionsView();
-            var ratingView = RatingView.Create();
-            ratingView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth;
-            ratingView.TranslatesAutoresizingMaskIntoConstraints = true;
 
-            TimeEntriesLogTableView.TableHeaderView = ratingView;
+            TimeEntriesLogTableView.TableHeaderView = suggestionsView;
             TimeEntriesLogTableView.Source = source;
 
             suggestionsView.DataContext = ViewModel.SuggestionsViewModel;
-            ratingView.DataContext = ViewModel.RatingViewModel;
 
             source.Initialize();
 
@@ -181,18 +179,6 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Bind(suggestionsView)
                       .For(v => v.SuggestionTappedCommad)
                       .To(vm => vm.SuggestionsViewModel.StartTimeEntryCommand);
-
-            bindingSet.Bind(ratingView)
-                      .For(v => v.ImpressionTappedCommand)
-                      .To(vm => vm.RatingViewModel.RegisterImpressionCommand);
-
-            bindingSet.Bind(ratingView)
-                      .For(v => v.CTATappedCommand)
-                      .To(vm => vm.RatingViewModel.LeaveReviewCommand);
-
-            bindingSet.Bind(ratingView)
-                      .For(v => v.DismissTappedCommand)
-                      .To(vm => vm.RatingViewModel.DismissViewCommand);
 
             //Visibility
             bindingSet.Bind(WelcomeBackView)
