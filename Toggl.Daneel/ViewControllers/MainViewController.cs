@@ -329,6 +329,14 @@ namespace Toggl.Daneel.ViewControllers
             }
         }
 
+        public void ShowRatingView()
+        {
+        }
+
+        public void HideRatingView()
+        {
+        }
+
         private void prepareViews()
         {
             //Prevent bounces in UIScrollView

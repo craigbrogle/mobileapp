@@ -57,20 +57,23 @@ namespace Toggl.Foundation.Experiments
                     return dataSource
                         .TimeEntries
                         .TimeEntryStopped
-                        .Select(_ => (true, configuration));
+                        .Select(_ => (true, configuration))
+                        .Take(1);
 
                 case RatingViewCriterion.Start:
                     return dataSource
                         .TimeEntries
                         .TimeEntryStarted
-                        .Select(_ => (true, configuration));
+                        .Select(_ => (true, configuration))
+                        .Take(1);
                     
                 case RatingViewCriterion.Continue:
                     return dataSource
                         .TimeEntries
                         .TimeEntryContinued
                         .Merge(dataSource.TimeEntries.SuggestionStarted)
-                        .Select(_ => (true, configuration));
+                        .Select(_ => (true, configuration))
+                        .Take(1);
 
                 default:
                     return Observable.Return((false, configuration));

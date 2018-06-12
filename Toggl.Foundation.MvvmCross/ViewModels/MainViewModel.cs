@@ -12,7 +12,6 @@ using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
-using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Foundation.Sync;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Settings;
@@ -20,6 +19,9 @@ using System.Reactive;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Suggestions;
+using Toggl.Foundation.Experiments;
+using MvvmCross.Platform;
+using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 
 [assembly: MvxNavigation(typeof(MainViewModel), ApplicationUrls.Main.Regex)]
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -40,6 +42,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IInteractorFactory interactorFactory;
         private readonly IMvxNavigationService navigationService;
         private readonly TimeSpan currentTimeEntryDueTime = TimeSpan.FromMilliseconds(50);
+
+        private RatingViewExperiment ratingViewExperiment = Mvx.IocConstruct<RatingViewExperiment>();
+        private IDisposable ratingViewExperimentDisposable;
 
         public TimeSpan CurrentTimeEntryElapsedTime { get; private set; } = TimeSpan.Zero;
 
@@ -152,7 +157,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             TimeEntriesLogViewModel = new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
             SuggestionsViewModel = new SuggestionsViewModel(dataSource, interactorFactory, suggestionProviders);
-            RatingViewModel = new RatingViewModel(dataSource, analyticsService);
 
             RefreshCommand = new MvxCommand(refresh);
             OpenReportsCommand = new MvxAsyncCommand(openReports);
@@ -228,6 +232,25 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     await stopTimeEntry();
                     break;
             }
+
+            ratingViewExperimentDisposable = ratingViewExperiment
+                .RatingViewShouldBeVisible
+                .Subscribe(presentRatingViewIfNeeded, disposeRatingViewExperiment);
+        }
+
+        private void presentRatingViewIfNeeded(bool shouldBevisible)
+        {
+            if (shouldBevisible)
+            {
+                navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
+            }
+        }
+
+        private void disposeRatingViewExperiment()
+        {
+            ratingViewExperimentDisposable?.Dispose();
+            ratingViewExperimentDisposable = null;
+            ratingViewExperiment = null;
         }
 
         private async Task continueMostRecentEntry()
