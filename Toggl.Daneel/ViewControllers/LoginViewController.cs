@@ -12,6 +12,8 @@ using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 using System;
+using Toggl.Daneel.Views;
+using Toggl.Multivac;
 
 namespace Toggl.Daneel.ViewControllers
 {
@@ -144,6 +146,18 @@ namespace Toggl.Daneel.ViewControllers
                 EmailTextField.ResignFirstResponder();
                 PasswordTextField.ResignFirstResponder();
             }));
+
+            LoginShakeTriggerButton.TouchUpInside += (sender, e) =>
+            {
+                if (!ViewModel.Email.IsValid)
+                {
+                    EmailTextField.Shake();
+                }
+                if (!ViewModel.Password.IsValid)
+                {
+                    PasswordTextField.Shake();
+                }
+            };
 
             PasswordTextField.ResignFirstResponder();
 

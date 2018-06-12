@@ -48,6 +48,8 @@ namespace Toggl.Foundation.Analytics
         IAnalyticsEvent OfflineModeDetected { get; }
 
         IAnalyticsEvent<int> ProjectGhostsCreated { get; }
+      
+        IAnalyticsEvent<EditViewTapSource> EditViewTapped { get; }
 
         IAnalyticsEvent<StartViewTapSource> StartViewTapped { get; }
 

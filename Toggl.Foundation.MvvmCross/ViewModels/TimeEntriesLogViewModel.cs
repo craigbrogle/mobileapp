@@ -225,6 +225,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     timeEntry.DurationFormat = durationFormat;
                 }
             }
+
+            fetchSectionedTimeEntries();
         }
 
         private bool isNotRunning(IThreadSafeTimeEntry timeEntry) => !timeEntry.IsRunning();
