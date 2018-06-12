@@ -393,7 +393,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     break;
 
                 case TagSuggestion tagSuggestion:
-                    
+
                     analyticsService.StartViewTapped.Track(StartViewTapSource.PickTagSuggestion);
 
                     TextFieldInfo = TextFieldInfo
@@ -502,9 +502,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(currentTime => DisplayedTime = currentTime - StartTime);
         }
 
-        private void durationTapped() 
+        private void durationTapped()
         {
-            analyticsService.StartViewTapped.Track(StartViewTapSource.Duration); 
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Duration);
         }
 
         private void toggleTagSuggestions()

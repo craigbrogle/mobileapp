@@ -597,6 +597,16 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.IsDirty.Should().BeTrue();
             }
+
+            [Fact, LogIfTooSlow]
+            public void TracksBillableTap()
+            {
+                ViewModel.ToggleBillableCommand.Execute();
+
+                AnalyticsService.Received()
+                                .StartViewTapped
+                                .Track(Arg.Is(StartViewTapSource.Billable));
+            }
         }
 
         public sealed class TheToggleProjectSuggestionsCommand : StartTimeEntryViewModelTest
@@ -768,6 +778,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.ToggleProjectSuggestionsCommand.Execute();
 
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Project);
                 AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             }
         }
@@ -872,7 +883,19 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.ToggleTagSuggestionsCommand.Execute();
 
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Tags);
                 AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
+            }
+        }
+
+        public sealed class TheDurationTappedCommand : StartTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void TracksDurationTap()
+            {
+                ViewModel.DurationTapped.Execute();
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Duration);
             }
         }
 
@@ -990,6 +1013,22 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.IsDirty.Should().BeTrue();
             }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartTimeTap()
+            {
+                var now = DateTimeOffset.UtcNow;
+                var parameter = new StartTimeEntryParameters(now, "", null);
+                var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
+                NavigationService
+                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Returns(parameterToReturn);
+                ViewModel.Prepare(parameter);
+
+                await ViewModel.ChangeTimeCommand.ExecuteAsync();
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartTime);
+            }
         }
 
         public sealed class TheSetStartDateCommand : StartTimeEntryViewModelTest
@@ -1093,6 +1132,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.SetStartDateCommand.ExecuteAsync();
 
                 ViewModel.IsDirty.Should().BeTrue();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartDateTap()
+            {
+                var parameterToReturn = now.AddDays(-2);
+                NavigationService
+                    .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(Arg.Any<DateTimePickerParameters>())
+                    .Returns(parameterToReturn);
+                ViewModel.Prepare(prepareParameters);
+
+                await ViewModel.SetStartDateCommand.ExecuteAsync();
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartDate);
             }
         }
 
@@ -1309,6 +1362,42 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.SelectSuggestionCommand.Execute(tagSuggestion);
                     AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.TableCellButton);
+                }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenProjectSuggestionSelected()
+                {
+                    var suggestion = new ProjectSuggestion(Project);
+                    ViewModel.SelectSuggestionCommand.Execute(suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickProjectSuggestion);
+                }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenTagSuggestionSelected()
+                {
+                    var suggestion = new TagSuggestion(Tag);
+                    ViewModel.SelectSuggestionCommand.Execute(suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickTagSuggestion);
+                }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenTaskSuggestionSelected()
+                {
+                    var suggestion = new TaskSuggestion(Task);
+                    ViewModel.SelectSuggestionCommand.Execute(suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickTaskSuggestion);
+                }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenTimeEntrySuggestionSelected()
+                {
+                    var suggestion = new TimeEntrySuggestion(TimeEntry);
+                    ViewModel.SelectSuggestionCommand.Execute(suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickTimeEntrySuggestion);
                 }
             }
 
