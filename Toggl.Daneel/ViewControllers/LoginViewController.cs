@@ -118,14 +118,6 @@ namespace Toggl.Daneel.ViewControllers
             ActivityIndicator.StartAnimation();
         }
 
-        public override void ViewWillDisappear(bool animated)
-        {
-            base.ViewWillDisappear(animated);
-
-            EmailTextField.ResignFirstResponder();
-            PasswordTextField.ResignFirstResponder();
-        }
-
         private void prepareViews()
         {
             NavigationController.NavigationBarHidden = true;
