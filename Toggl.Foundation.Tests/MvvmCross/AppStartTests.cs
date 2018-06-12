@@ -10,7 +10,6 @@ using Toggl.Foundation.MvvmCross;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
-using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Settings;
 using Xunit;
 
@@ -23,12 +22,13 @@ namespace Toggl.Foundation.Tests.MvvmCross
             protected AppStart<OnboardingViewModel> AppStart { get; }
             protected ISyncManager SyncManager { get; } = Substitute.For<ISyncManager>();
             protected ILoginManager LoginManager { get; } = Substitute.For<ILoginManager>();
+            protected IOnboardingStorage OnboardingStorage { get; } = Substitute.For<IOnboardingStorage>();
             protected IAccessRestrictionStorage AccessRestrictionStorage { get; } =
                 Substitute.For<IAccessRestrictionStorage>();
 
             protected AppStartTest()
             {
-                AppStart = new AppStart<OnboardingViewModel>(LoginManager, NavigationService, AccessRestrictionStorage);
+                AppStart = new AppStart<OnboardingViewModel>(TimeService, LoginManager, OnboardingStorage, NavigationService, AccessRestrictionStorage);
                 DataSource.SyncManager.Returns(SyncManager);
                 LoginManager.GetDataSourceIfLoggedIn().Returns(DataSource);
             }
@@ -37,15 +37,27 @@ namespace Toggl.Foundation.Tests.MvvmCross
         public sealed class TheConstructor : AppStartTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(ThreeParameterConstructorTestData))]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool userLoginManager, bool userNavigationService, bool useAccessRestrictionStorage)
+            [ClassData(typeof(FiveParameterConstructorTestData))]
+            public void ThrowsIfAnyOfTheArgumentsIsNull(
+                bool useTimeService,
+                bool userLoginManager,
+                bool useOnboardingStorage,
+                bool userNavigationService,
+                bool useAccessRestrictionStorage)
             {
+                var timeService = useTimeService ? TimeService : null;
                 var loginManager = userLoginManager ? LoginManager : null;
+                var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = userNavigationService ? NavigationService : null;
                 var accessRestrictionStorage = useAccessRestrictionStorage ? AccessRestrictionStorage : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new AppStart<OnboardingViewModel>(loginManager, navigationService, accessRestrictionStorage);
+                    () => new AppStart<OnboardingViewModel>(
+                        timeService,
+                        loginManager,
+                        onboardingStorage,
+                        navigationService,
+                        accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
                     .Should().Throw<ArgumentNullException>();

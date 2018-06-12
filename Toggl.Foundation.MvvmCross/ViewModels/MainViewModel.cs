@@ -28,6 +28,7 @@ using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Foundation.Suggestions;
 using Toggl.Foundation.Sync;
 using Toggl.PrimeRadiant.Settings;
+using Toggl.Foundation.Services;
 
 [assembly: MvxNavigation(typeof(MainViewModel), ApplicationUrls.Main.Regex)]
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -49,7 +50,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IMvxNavigationService navigationService;
         private readonly TimeSpan currentTimeEntryDueTime = TimeSpan.FromMilliseconds(50);
 
-        private RatingViewExperiment ratingViewExperiment = Mvx.IocConstruct<RatingViewExperiment>();
+        private RatingViewExperiment ratingViewExperiment;
         private IDisposable ratingViewExperimentDisposable;
 
         public TimeSpan CurrentTimeEntryElapsedTime { get; private set; } = TimeSpan.Zero;
@@ -142,6 +143,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IAnalyticsService analyticsService,
             IInteractorFactory interactorFactory,
             IMvxNavigationService navigationService,
+            IRemoteConfigService remoteConfigService,
             ISuggestionProviderContainer suggestionProviders)
         {
             Ensure.Argument.IsNotNull(scheduler, nameof(scheduler));
@@ -151,6 +153,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
+            Ensure.Argument.IsNotNull(remoteConfigService, nameof(remoteConfigService));
             Ensure.Argument.IsNotNull(suggestionProviders, nameof(suggestionProviders));
 
             this.scheduler = scheduler;
@@ -164,6 +167,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             RatingViewModel = new RatingViewModel(dataSource, analyticsService);
             SuggestionsViewModel = new SuggestionsViewModel(dataSource, interactorFactory, suggestionProviders);
             TimeEntriesLogViewModel = new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
+
+            ratingViewExperiment = new RatingViewExperiment(timeService, dataSource, onboardingStorage, remoteConfigService);
 
             RefreshCommand = new MvxCommand(refresh);
             OpenReportsCommand = new MvxAsyncCommand(openReports);

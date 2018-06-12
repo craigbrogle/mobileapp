@@ -34,6 +34,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
         private readonly IAnalyticsService analyticsService = Substitute.For<IAnalyticsService>();
         private readonly IBackgroundService backgroundService = Substitute.For<IBackgroundService>();
         private readonly IPlatformConstants platformConstants = Substitute.For<IPlatformConstants>();
+        private readonly IRemoteConfigService remoteConfigService = Substitute.For<IRemoteConfigService>();
         private readonly IApplicationShortcutCreator applicationShortcutCreator = Substitute.For<IApplicationShortcutCreator>();
         private readonly ISuggestionProviderContainer suggestionProviderContainer = Substitute.For<ISuggestionProviderContainer>();
 
@@ -154,6 +155,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithAnalyticsService(analyticsService)
                     .WithBackgroundService(backgroundService)
                     .WithPlatformConstants(platformConstants)
+                    .WithRemoteConfigService(remoteConfigService)
                     .WithApplicationShortcutCreator(applicationShortcutCreator)
                     .WithSuggestionProviderContainer(suggestionProviderContainer)
                     .Build();

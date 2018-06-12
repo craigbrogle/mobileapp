@@ -19,7 +19,7 @@ namespace Toggl.Foundation.Tests
         public class TheCreateMethod
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(FourteenParameterConstructorTestData))]
+            [ClassData(typeof(FifteenParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
                 bool userAgent,
                 bool useVersion,
@@ -33,6 +33,7 @@ namespace Toggl.Foundation.Tests
                 bool useAnalyticsService,
                 bool useBackgroundService,
                 bool usePlatformConstants,
+                bool useRemoteConfigService,
                 bool useApplicationShortcutCreator,
                 bool useSuggestionProviderContainer)
             {
@@ -48,10 +49,11 @@ namespace Toggl.Foundation.Tests
                 var analyticsService = useAnalyticsService ? Substitute.For<IAnalyticsService>() : null;
                 var backgroundService = useBackgroundService ? Substitute.For<IBackgroundService>() : null;
                 var platformConstants = usePlatformConstants ? Substitute.For<IPlatformConstants>() : null;
+                var remoteConfigService = useRemoteConfigService ? Substitute.For<IRemoteConfigService>() : null;
                 var applicationShortcutCreator = useApplicationShortcutCreator ? Substitute.For<IApplicationShortcutCreator>() : null;
                 var suggestionProviderContainer = useSuggestionProviderContainer ? Substitute.For<ISuggestionProviderContainer>() : null;
 
-                Action tryingToConstructWithEmptyParameters = () => 
+                Action tryingToConstructWithEmptyParameters = () =>
                     TogglFoundation
                         .ForClient(agent, version)
                         .WithDatabase(database)
@@ -64,6 +66,7 @@ namespace Toggl.Foundation.Tests
                         .WithAnalyticsService(analyticsService)
                         .WithBackgroundService(backgroundService)
                         .WithPlatformConstants(platformConstants)
+                        .WithRemoteConfigService(remoteConfigService)
                         .WithApplicationShortcutCreator(applicationShortcutCreator)
                         .WithSuggestionProviderContainer(suggestionProviderContainer)
                         .Build();
@@ -86,6 +89,7 @@ namespace Toggl.Foundation.Tests
                 var analyticsService = Substitute.For<IAnalyticsService>();
                 var platformConstants = Substitute.For<IPlatformConstants>();
                 var backgroundService = Substitute.For<IBackgroundService>();
+                var remoteConfigService = Substitute.For<IRemoteConfigService>();
                 var applicationShortcutCreator = Substitute.For<IApplicationShortcutCreator>();
                 var suggestionProviderContainer = Substitute.For<ISuggestionProviderContainer>();
 
@@ -102,6 +106,7 @@ namespace Toggl.Foundation.Tests
                         .WithAnalyticsService(analyticsService)
                         .WithBackgroundService(backgroundService)
                         .WithPlatformConstants(platformConstants)
+                        .WithRemoteConfigService(remoteConfigService)
                         .WithApplicationShortcutCreator(applicationShortcutCreator)
                         .WithSuggestionProviderContainer(suggestionProviderContainer)
                         .Build();
