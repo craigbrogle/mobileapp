@@ -37,7 +37,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntryViewModel(null, DurationFormat.Improved);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

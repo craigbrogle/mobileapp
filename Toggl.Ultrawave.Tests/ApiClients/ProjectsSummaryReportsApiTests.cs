@@ -61,7 +61,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
 
             Action callingClient = () => client.GetByWorkspace(123, from, to).Wait();
 
-            callingClient.ShouldThrow<ArgumentOutOfRangeException>();
+            callingClient.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [Fact, LogIfTooSlow]
@@ -74,7 +74,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
 
             Action callingClient = () => client.GetByWorkspace(123, from, null).Wait();
 
-            callingClient.ShouldNotThrow();
+            callingClient.Should().NotThrow();
         }
 
         private IResponse emptyResponse()

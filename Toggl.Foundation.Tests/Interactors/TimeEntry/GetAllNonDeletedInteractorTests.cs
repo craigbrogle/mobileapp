@@ -35,7 +35,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 var finteredTimeEntries = await InteractorFactory.GetAllNonDeletedTimeEntries().Execute();
 
                 finteredTimeEntries.Should().HaveCount(3);
-                finteredTimeEntries.Select(te => te.IsDeleted).ShouldAllBeEquivalentTo(false);
+                finteredTimeEntries.Select(te => te.IsDeleted).Should().BeEquivalentTo(new[] { false, false, false });
             }
             
             [Fact]
@@ -46,7 +46,7 @@ namespace Toggl.Foundation.Tests.Interactors
 
                 Action tryGetAll = () => InteractorFactory.GetAllNonDeletedTimeEntries().Execute().Wait();
 
-                tryGetAll.ShouldThrow<Exception>();
+                tryGetAll.Should().Throw<Exception>();
             }
         }
     }

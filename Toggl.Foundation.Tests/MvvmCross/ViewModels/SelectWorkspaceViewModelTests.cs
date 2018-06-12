@@ -46,7 +46,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SelectWorkspaceViewModel(interactorFactory, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

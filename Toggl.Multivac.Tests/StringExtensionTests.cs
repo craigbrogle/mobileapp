@@ -49,7 +49,7 @@ namespace Toggl.Multivac.Tests
                 Action tryingToGetSubstringFromNull =
                     () => str.UnicodeSafeSubstring(startIndex, length);
 
-                tryingToGetSubstringFromNull.ShouldThrow<ArgumentNullException>();
+                tryingToGetSubstringFromNull.Should().Throw<ArgumentNullException>();
             }
 
             [Property]
@@ -68,7 +68,7 @@ namespace Toggl.Multivac.Tests
                     () => str.Get.UnicodeSafeSubstring(startIndex, 1);
 
                 tryingToGetSubstringWithNegativeStartIndex
-                    .ShouldThrow<ArgumentOutOfRangeException>();
+                    .Should().Throw<ArgumentOutOfRangeException>();
             }
 
             [Property]
@@ -83,7 +83,7 @@ namespace Toggl.Multivac.Tests
                     = () => str.Substring(startIndex, 1);
 
                 tryingToGetSubstringWithStartIndexGreaterThanStringLength
-                    .ShouldThrow<ArgumentOutOfRangeException>();
+                    .Should().Throw<ArgumentOutOfRangeException>();
             }
 
             [Theory, LogIfTooSlow]
@@ -103,7 +103,7 @@ namespace Toggl.Multivac.Tests
                     () => str.UnicodeSafeSubstring(start, length);
 
                 tryingToGetSubstringThatGoesOutOfStringBounds
-                    .ShouldThrow<ArgumentOutOfRangeException>();
+                    .Should().Throw<ArgumentOutOfRangeException>();
             }
 
             [Theory, LogIfTooSlow]

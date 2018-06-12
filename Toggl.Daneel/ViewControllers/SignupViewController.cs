@@ -19,7 +19,7 @@ namespace Toggl.Daneel.ViewControllers
     public sealed partial class SignupViewController : MvxViewController<SignupViewModel>
     {
         private const int iPhoneSeScreenHeight = 568;
-        private const int topConstraintForBiggerScreens = 70;
+        private const int topConstraintForBiggerScreens = 92;
 
         public SignupViewController() : base(nameof(SignupViewController), null)
         {

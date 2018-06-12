@@ -45,10 +45,11 @@ namespace Toggl.Giskard
         {
             base.OnCreate(bundle);
 
-            var statusBarColor = new Color(ContextCompat.GetColor(this, Resource.Color.onboardingStatusBarColor));
+            var statusBarColor = new Color(ContextCompat.GetColor(this, Resource.Color.lightGray));
             this.ChangeStatusBarColor(statusBarColor);
 
             #if USE_ANALYTICS
+            Firebase.FirebaseApp.InitializeApp(this);
             Microsoft.AppCenter.AppCenter.Start(
                 "{TOGGL_APP_CENTER_ID_DROID}",
                 typeof(Microsoft.AppCenter.Crashes.Crashes),

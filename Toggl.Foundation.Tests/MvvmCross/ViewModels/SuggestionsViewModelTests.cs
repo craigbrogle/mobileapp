@@ -53,7 +53,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SuggestionsViewModel(dataSource, interactorFactory, container);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

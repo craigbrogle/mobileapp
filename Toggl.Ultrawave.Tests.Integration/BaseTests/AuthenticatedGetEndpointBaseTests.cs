@@ -17,7 +17,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var passwordReturn = await CallEndpointWith(passwordClient);
             var apiTokenReturn = await CallEndpointWith(apiTokenClient);
 
-            passwordReturn.ShouldBeEquivalentTo(apiTokenReturn);
+            passwordReturn.Should().BeEquivalentTo(apiTokenReturn);
         }
     }
 }

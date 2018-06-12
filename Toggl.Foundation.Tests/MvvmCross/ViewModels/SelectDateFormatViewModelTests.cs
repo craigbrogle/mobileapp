@@ -25,7 +25,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action tryingToConstructWithEmptyParameter =
                     () => new SelectDateFormatViewModel(null);
 
-                tryingToConstructWithEmptyParameter.ShouldThrow<ArgumentNullException>();
+                tryingToConstructWithEmptyParameter.Should().Throw<ArgumentNullException>();
             }
         }
 

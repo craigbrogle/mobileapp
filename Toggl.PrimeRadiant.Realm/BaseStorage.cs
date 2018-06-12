@@ -55,7 +55,7 @@ namespace Toggl.PrimeRadiant.Realm
                 }
                 catch (InvalidOperationException ex)
                 {
-                    observer.OnError(new EntityNotFoundException(ex));
+                    observer.OnError(new DatabaseOperationException<TModel>(ex));
                 }
                 catch (Exception ex)
                 {

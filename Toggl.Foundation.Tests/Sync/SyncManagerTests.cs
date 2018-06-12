@@ -51,7 +51,7 @@ namespace Toggl.Foundation.Tests.Sync
                 // ReSharper disable once ObjectCreationAsStatement
                 Action constructor = () => new SyncManager(queue, orchestrator, analyticsService);
 
-                constructor.ShouldThrow<ArgumentNullException>();
+                constructor.Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -138,7 +138,7 @@ namespace Toggl.Foundation.Tests.Sync
                 firstCall.Start();
                 // ensure the first call gets inside locked code before starting second one
                 startedFirstCall.WaitOne();
-                
+
                 var endedSecondCallBool = false;
                 var secondCall = new Thread(() =>
                 {
@@ -238,7 +238,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Action emittingUnsupportedResult = () => OrchestratorSyncComplete.OnNext(new UnsupportedResult());
 
-                emittingUnsupportedResult.ShouldThrow<ArgumentException>();
+                emittingUnsupportedResult.Should().Throw<ArgumentException>();
             }
 
             private class UnsupportedResult : SyncResult { }
@@ -254,7 +254,7 @@ namespace Toggl.Foundation.Tests.Sync
             public void ReturnsObservableThatReplaysSyncStatesUntilSleep(bool[] beforeSleep, bool[] afterSleep)
             {
                 var observable = CallSyncMethod();
-                
+
                 var beforeSleepStates = (beforeSleep ?? Enumerable.Empty<bool>())
                     .Select(b => b ? Push : Pull);
                 var afterSleepStates = (afterSleep ?? Enumerable.Empty<bool>())
@@ -267,7 +267,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 var actual = observable.ToList().Wait();
 
-                actual.ShouldBeEquivalentTo(expectedStates);
+                actual.Should().BeEquivalentTo(expectedStates);
             }
 
             [Fact, LogIfTooSlow]
@@ -293,7 +293,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 Queue.DidNotReceive().Dequeue();
             }
-            
+
             [Fact, LogIfTooSlow]
             public void DoesNotTellQueueToStartOrchestratorWhenInSecondPartOfMultiPhaseSync()
             {
@@ -353,7 +353,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 Action freezing = () => SyncManager.Freeze();
 
-                freezing.ShouldNotThrow();
+                freezing.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -383,7 +383,7 @@ namespace Toggl.Foundation.Tests.Sync
             public void RunningPushSyncOnFrozenSyncManagerGoesDirectlyToSleepState()
             {
                 SyncManager.Freeze();
-                
+
                 SyncManager.PushSync();
 
                 Orchestrator.Received(1).Start(Arg.Is(Sleep));
@@ -611,7 +611,7 @@ namespace Toggl.Foundation.Tests.Sync
                     new object[] { new UnauthorizedException(Substitute.For<IRequest>(), Substitute.For<IResponse>()),  }
                 };
         }
-  
+
         public sealed class ErrorHandling : SyncManagerTestBase
         {
             [Fact, LogIfTooSlow]
@@ -678,17 +678,18 @@ namespace Toggl.Foundation.Tests.Sync
 
                 OrchestratorSyncComplete.OnNext(new Error(exception));
 
-                AnalyticsService.Received().TrackSyncError(exception);
+                AnalyticsService.Received().Track(exception);
             }
 
             [Fact, LogIfTooSlow]
-            public void DoNotReportOfflineExceptionsToTheAnalyticsService()
+            public void ReportsOfflineExceptionsToTheAnalyticsServiceAsANormalEvent()
             {
                 var exception = new OfflineException();
 
                 OrchestratorSyncComplete.OnNext(new Error(exception));
 
-                AnalyticsService.DidNotReceive().TrackSyncError(Arg.Any<Exception>());
+                AnalyticsService.DidNotReceive().Track(Arg.Any<OfflineException>());
+                AnalyticsService.OfflineModeDetected.Received().Track();
             }
 
             [Fact, LogIfTooSlow]

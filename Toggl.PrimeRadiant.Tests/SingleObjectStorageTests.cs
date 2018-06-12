@@ -32,7 +32,7 @@ namespace Toggl.PrimeRadiant.Tests
                 async () => await Storage.Single();
 
             callingGetLastInAnEmptyRepository
-                .ShouldThrow<EntityNotFoundException>();
+                .Should().Throw<DatabaseOperationException<TTestModel>>();
         }
 
         [Fact, LogIfTooSlow]
@@ -55,7 +55,7 @@ namespace Toggl.PrimeRadiant.Tests
                 async () => await Storage.Create(GetModelWith(2));
 
             callingCreateASecondTime
-                .ShouldThrow<EntityAlreadyExistsException>();
+                .Should().Throw<EntityAlreadyExistsException>();
         }
 
         [Theory, LogIfTooSlow]
@@ -68,7 +68,7 @@ namespace Toggl.PrimeRadiant.Tests
 
             Func<Task> callingBatchUpdate = async () => await callBatchUpdate(batch);
 
-            callingBatchUpdate.ShouldThrow<ArgumentException>();
+            callingBatchUpdate.Should().Throw<ArgumentException>();
         }
 
         private IObservable<IEnumerable<IConflictResolutionResult<TTestModel>>> callBatchUpdate(IEnumerable<(long, TTestModel)> batch)

@@ -24,7 +24,7 @@ namespace Toggl.Ultrawave.Tests.Serialization
         {
             var output = serializer.Deserialize<OtherClass>(JsonArray);
 
-            output.ShouldBeEquivalentTo(SomeItemsContainer, options => options.IncludingProperties());
+            output.Should().BeEquivalentTo(SomeItemsContainer, options => options.IncludingProperties());
         }
 
         [Fact, LogIfTooSlow]
@@ -32,7 +32,7 @@ namespace Toggl.Ultrawave.Tests.Serialization
         {
             Action deserialization = () => serializer.Deserialize<DifferentClass>(JsonArray);
 
-            deserialization.ShouldThrow<DeserializationException>();
+            deserialization.Should().Throw<DeserializationException>();
         }
 
         private JsonSerializer serializer => new JsonSerializer();

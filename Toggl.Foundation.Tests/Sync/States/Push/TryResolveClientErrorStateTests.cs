@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
 
             Action tryResolve = () => state.Start((exception, model)).Wait();
 
-            tryResolve.ShouldThrow<ArgumentException>();
+            tryResolve.Should().Throw<ArgumentException>();
         }
 
         [Fact, LogIfTooSlow]

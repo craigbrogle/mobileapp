@@ -39,13 +39,14 @@
             android:layout_width="16dp"
             android:layout_height="16dp" />
         <TextView
-            local:MvxBind="Text DateTimeOffsetTimeFormat(StopTimeOrCurrent, TimeFormat)"
+            local:MvxBind="Text StripAmPm(DateTimeOffsetTimeFormat(StopTimeOrCurrent, TimeFormat))"
             tools:text="12:20"
             android:textSize="11sp"
             android:textColor="@color/halfTransparentWhite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
+            local:MvxBind="Text StopTimeAmPmLabel"
             tools:text="AM"
             android:textSize="11sp"
             android:textColor="@color/halfTransparentWhite"
@@ -58,10 +59,9 @@
         android:layout_marginTop="96dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-    <toggl.giskard.views.TogglDroidTimePicker
-        android:id="@+id/SelectStopTimeClockView"
-        local:MvxBind="Value StopTime; Visibility Visibility(And(!IsCalendarView, IsTimeEntryStopped))"
-        android:headerBackground="@color/popupBlueBackground"
+    <FrameLayout
+        android:id="@+id/SelectStopTimeClockViewContainer"
+        local:MvxBind="Visibility Visibility(And(!IsCalendarView, IsTimeEntryStopped))"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     <LinearLayout
@@ -116,39 +116,46 @@
         </LinearLayout>
         <TextView
             android:id="@+id/SelectDateTimeRunningTimeEntryCurrentTime"
-            local:MvxBind="Text DateTimeOffsetTimeFormat(StopTimeOrCurrent, TimeFormat)"
+            local:MvxBind="Text StripAmPm(DateTimeOffsetTimeFormat(StopTimeOrCurrent, TimeFormat))"
             tools:text="12:30"
             android:textSize="60sp"
             android:textColor="@android:color/white"
-            android:layout_marginRight="54dp"
+            android:layout_marginRight="8dp"
             android:gravity="center_vertical|right"
-            android:layout_alignParentRight="true"
+            android:layout_alignWithParentIfMissing="true"
+            android:layout_toLeftOf="@+id/SelectDateTimeAmPmLabels"
             android:layout_width="wrap_content"
             android:layout_height="match_parent" />
-        <TextView
-            local:MvxBind="Visibility Visibility(IsRunningTimeEntryAM)"
-            android:text="AM"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif-medium"
-            android:layout_marginRight="16dp"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="40dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        <TextView
-            local:MvxBind="Visibility Visibility(!IsRunningTimeEntryAM)"
-            android:text="PM"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:layout_alignParentRight="true"
-            android:fontFamily="sans-serif-medium"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="20dp"
+        <LinearLayout
+            android:id="@+id/SelectDateTimeAmPmLabels"
+            local:MvxBind="Visibility Visibility(!TimeFormat.IsTwentyFourHoursFormat)"
+            android:orientation="vertical"
+            android:gravity="right|bottom"
+            android:layout_alignParentEnd="true"
             android:layout_marginRight="16dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/SelectDateTimeRunningTimeEntryAM"
+                local:MvxBind="TextColor MeridiemTransparency(!IsRunningTimeEntryAM)"
+                android:text="AM"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="sans-serif-medium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/SelectDateTimeRunningTimeEntryPM"
+                local:MvxBind="TextColor MeridiemTransparency(IsRunningTimeEntryAM)"
+                android:text="PM"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </RelativeLayout>
     <FrameLayout
         local:MvxBind="Visibility Visibility(!IsTimeEntryStopped)"

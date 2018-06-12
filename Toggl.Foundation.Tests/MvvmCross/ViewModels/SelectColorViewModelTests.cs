@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action tryingToConstructWithEmptyParameter =
                     () => new SelectColorViewModel(null);
 
-                tryingToConstructWithEmptyParameter.ShouldThrow<ArgumentNullException>();
+                tryingToConstructWithEmptyParameter.Should().Throw<ArgumentNullException>();
             }
         }
 

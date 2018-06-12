@@ -49,7 +49,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SelectClientViewModel(dataSource, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

@@ -154,7 +154,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
             var parameter = ((Transition<IThreadSafeTestModel>)transition).Parameter;
 
             transition.Result.Should().Be(state.UpdatingSucceeded);
-            parameter.ShouldBeEquivalentTo(updatedEntity, options => options.IncludingProperties());
+            parameter.Should().BeEquivalentTo(updatedEntity, options => options.IncludingProperties());
             dataSource.Received()
                 .OverwriteIfOriginalDidNotChange(
                     Arg.Is<IThreadSafeTestModel>(theOriginalEntity => theOriginalEntity.Id == entity.Id), Arg.Is<IThreadSafeTestModel>(theUpdatedEntity => theUpdatedEntity.Id == serverEntity.Id));

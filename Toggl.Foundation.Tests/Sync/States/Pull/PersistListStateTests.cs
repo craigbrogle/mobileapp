@@ -51,7 +51,7 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             Action fetchTwice = () => state.Start(fetchObservables).Wait();
 
-            fetchTwice.ShouldThrow<InvalidOperationException>();
+            fetchTwice.Should().Throw<InvalidOperationException>();
         }
 
         [Fact, LogIfTooSlow]
@@ -75,7 +75,7 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             Action startingState = () => state.Start(observables).SingleAsync().Wait();
 
-            startingState.ShouldThrow<TestException>();
+            startingState.Should().Throw<TestException>();
         }
 
         private IFetchObservables createObservables(List<ITestModel> entities = null)

@@ -27,9 +27,9 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglClient, user) = await SetupTestUser();
 
-                var firstClient = new Client { Name = "First", WorkspaceId = user.DefaultWorkspaceId };
+                var firstClient = new Client { Name = "First", WorkspaceId = user.DefaultWorkspaceId.Value };
                 var firstClientPosted = await togglClient.Clients.Create(firstClient);
-                var secondClient = new Client { Name = "Second", WorkspaceId = user.DefaultWorkspaceId };
+                var secondClient = new Client { Name = "Second", WorkspaceId = user.DefaultWorkspaceId.Value };
                 var secondClientPosted = await togglClient.Clients.Create(secondClient);
 
                 var clients = await CallEndpointWith(togglClient);
@@ -48,7 +48,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             protected override DateTimeOffset AtDateOf(IClient model) => model.At;
 
             protected override IClient MakeUniqueModel(ITogglApi api, IUser user)
-                => new Client { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId };
+                => new Client { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value };
 
             protected override IObservable<IClient> PostModelToApi(ITogglApi api, IClient model)
                 => api.Clients.Create(model);
@@ -63,7 +63,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 => Observable.Defer(async () =>
                 {
                     var user = await togglApi.User.Get();
-                    var client = new Client { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId };
+                    var client = new Client { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value };
                     return CallEndpointWith(togglApi, client);
                 });
 
@@ -74,7 +74,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task CreatesNewClient()
             {
                 var (togglClient, user) = await SetupTestUser();
-                var newClient = new Client { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId };
+                var newClient = new Client { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value };
 
                 var persistedClient = await CallEndpointWith(togglClient, newClient);
 

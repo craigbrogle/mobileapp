@@ -68,7 +68,7 @@ namespace Toggl.Foundation.Tests
                         .WithSuggestionProviderContainer(suggestionProviderContainer)
                         .Build();
 
-                tryingToConstructWithEmptyParameters.ShouldThrow<Exception>();
+                tryingToConstructWithEmptyParameters.Should().Throw<Exception>();
             }
 
             [Fact]
@@ -106,7 +106,7 @@ namespace Toggl.Foundation.Tests
                         .WithSuggestionProviderContainer(suggestionProviderContainer)
                         .Build();
 
-                tryingToConstructWithValidParameters.ShouldNotThrow();
+                tryingToConstructWithValidParameters.Should().NotThrow();
             }
         }
     }

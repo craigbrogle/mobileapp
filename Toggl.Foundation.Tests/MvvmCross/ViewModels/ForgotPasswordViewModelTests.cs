@@ -46,7 +46,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         timeService, loginManager, analyticsSerivce, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -72,7 +72,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 LoginManager
                     .ResetPassword(Arg.Any<Email>())
                     .Returns(Observable.Never<string>());
-                
+
                 ViewModel.ResetCommand.Execute();
 
                 ViewModel.IsLoading.Should().BeTrue();
@@ -121,7 +121,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.ResetCommand.Execute();
 
-                AnalyticsService.Received().TrackResetPassword();
+                AnalyticsService.Received().ResetPassword.Track();
             }
 
             [Fact, LogIfTooSlow]
@@ -144,7 +144,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 LoginManager
                     .ResetPassword(Arg.Any<Email>())
                     .Returns(Observable.Never<string>());
-                
+
                 ViewModel.ResetCommand.Execute();
 
                 ViewModel.ResetCommand.CanExecute().Should().BeFalse();

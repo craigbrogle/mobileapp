@@ -50,11 +50,11 @@
     <string name="NoEmailHandlerErrorMessage">Set up an email account or send us your feedback to support@toggl.com</string>
     <string name="OnboardingGetStarted">Let\'s get started!</string>
     <string name="OnboardingKickstartProductivity">Kickstart your productivity\nwith Toggl</string>
-	  <string name="OutdatedAppMessage">Seems you haven’t updated the app
+    <string name="OutdatedAppMessage">Seems you haven’t updated the app
 for quite some time… Please update
 your app to continue.</string>
-	  <string name="TryTogglDotCom"> Try Toggl.com </string>
-	  <string name="UpdateTheApp">Update the app</string>
+    <string name="TryTogglDotCom"> Try Toggl.com </string>
+    <string name="UpdateTheApp">Update the app</string>
     <string name="Reports">Reports</string>
     <string name="NewTimeEntry">New time entry</string>
     <string name="StopTimer">Stop timer</string>
@@ -78,10 +78,12 @@ your app to continue.</string>
     <string name="GetPasswordResetLink">Get Password Reset Link</string>
     <string name="ForgotPasswordTitle">Forgot your password?</string>
     <string name="And">and</string>
-	  <string name="IAgree">I Agree</string>
-	  <string name="ReviewTheTerms">Review the Terms</string>
-	  <string name="TermsMessage">By tapping "I Agree", you
+    <string name="IAgree">I Agree</string>
+    <string name="ReviewTheTerms">Review the Terms</string>
+    <string name="TermsMessage">By tapping "I Agree", you
 understand and agree to Toggl\'s</string>
+    <string name="NothingHere">Nothing here</string>
+    <string name="NoTimeEntries">You have no time entries\nfor selected time period.</string>
 
     <string name="MainTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.MainTemplateSelector, Toggl.Giskard</string>
     <string name="ReportsTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsTemplateSelector, Toggl.Giskard</string>

@@ -13,8 +13,5 @@ namespace Toggl.Ultrawave.Models
 
         [JsonConverter(typeof(ConcreteListTypeConverter<WorkspaceFeature, IWorkspaceFeature>))]
         public IEnumerable<IWorkspaceFeature> Features { get; set; }
-
-        public bool IsEnabled(WorkspaceFeatureId feature)
-            => Features.Any(f => f.FeatureId == feature && f.Enabled);
     }
 }

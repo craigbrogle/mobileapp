@@ -27,14 +27,16 @@ namespace Toggl.Foundation.DataSources
         }
 
         public IObservable<IThreadSafeClient> Create(string name, long workspaceId)
-            => idProvider.GetNextIdentifier()
-                .Apply(Client.Builder.Create)
-                .SetName(name)
-                .SetWorkspaceId(workspaceId)
-                .SetAt(timeService.CurrentDateTime)
-                .SetSyncStatus(SyncStatus.SyncNeeded)
-                .Build()
-                .Apply(Create);
+        {
+            var client = new Client(
+                idProvider.GetNextIdentifier(),
+                workspaceId,
+                name,
+                timeService.CurrentDateTime,
+                SyncStatus.SyncNeeded
+            );
+            return Create(client);
+        }
 
         public IObservable<IEnumerable<IThreadSafeClient>> GetAllInWorkspace(long workspaceId)
             => GetAll(c => c.WorkspaceId == workspaceId);

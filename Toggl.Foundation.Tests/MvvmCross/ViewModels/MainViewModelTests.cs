@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -86,7 +86,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new MainViewModel(scheduler, dataSource, timeService, userPreferences, onboardingStorage, analyticsService, interactorFactory, navigationService, suggestionProviderContainer);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -248,9 +248,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async ThreadingTask NavigatesToTheReportsViewModel()
             {
                 const long workspaceId = 10;
-                var user = Substitute.For<IThreadSafeUser>();
-                user.DefaultWorkspaceId.Returns(workspaceId);
-                DataSource.User.Current.Returns(Observable.Return(user));
+                var workspace = Substitute.For<IThreadSafeWorkspace>();
+                workspace.Id.Returns(workspaceId);
+                InteractorFactory.GetDefaultWorkspace().Execute().Returns(Observable.Return(workspace));
 
                 await ViewModel.OpenReportsCommand.ExecuteAsync();
 
@@ -328,7 +328,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 Action stopTimeEntry = () => ViewModel.StopTimeEntryCommand.ExecuteAsync().Wait();
 
-                stopTimeEntry.ShouldThrow<Exception>();
+                stopTimeEntry.Should().Throw<Exception>();
                 await DataSource.SyncManager.DidNotReceive().PushSync();
             }
 
@@ -582,8 +582,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var timeEntries = Enumerable
                     .Range(0, timeEntryCount)
-                    .Select(createTimeEntry)
-                    .ToArray();
+                    .Select(createTimeEntry);
                 InteractorFactory.GetAllNonDeletedTimeEntries().Execute()
                     .Returns(Observable.Return(timeEntries));
                 DataSource

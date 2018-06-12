@@ -50,7 +50,7 @@ namespace Toggl.Foundation.Tests.Suggestions
                     () => new MostUsedTimeEntrySuggestionProvider(database, timeService, NumberOfSuggestions);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

@@ -38,9 +38,9 @@ namespace Toggl.Multivac.Tests
                 observable.OnNext("second");
 
                 result.Subscribe(items.Add);
-                items.ShouldAllBeEquivalentTo(new[] { "first", "second" });
+                items.Should().BeEquivalentTo(new[] { "first", "second" });
                 result.Subscribe(items.Add);
-                items.ShouldAllBeEquivalentTo(new[] { "first", "second", "first", "second" });
+                items.Should().BeEquivalentTo(new[] { "first", "second", "first", "second" });
             }
         }
 

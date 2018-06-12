@@ -41,7 +41,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new ReportsCalendarViewModel(timeService, dataSource);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -399,7 +399,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 foreach (var shortcut in viewModel.QuickSelectShortcuts)
                 {
                     Action usingShortcut = () => viewModel.QuickSelectCommand.Execute(shortcut);
-                    usingShortcut.ShouldNotThrow();
+                    usingShortcut.Should().NotThrow();
                 }
             }
 
@@ -423,7 +423,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 Action usingShortcut = () => viewModel.QuickSelectCommand.Execute(customShortcut);
 
-                usingShortcut.ShouldNotThrow();
+                usingShortcut.Should().NotThrow();
             }
 
             private sealed class CustomShortcut : CalendarBaseQuickSelectShortcut

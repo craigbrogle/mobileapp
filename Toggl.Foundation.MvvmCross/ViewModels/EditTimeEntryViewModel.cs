@@ -282,7 +282,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             {
                 await interactorFactory.DeleteTimeEntry(Id).Execute();
 
-                analyticsService.TrackDeletingTimeEntry();
+                analyticsService.DeleteTimeEntry.Track();
                 dataSource.SyncManager.PushSync();
                 await navigationService.Close(this);
             }
@@ -429,7 +429,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task selectProject()
         {
-            analyticsService.TrackEditOpensProjectSelector();
+            analyticsService.EditEntrySelectProject.Track();
 
             onboardingStorage.SelectsProject();
 
@@ -483,7 +483,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task selectTags()
         {
-            analyticsService.TrackEditOpensTagSelector();
+            analyticsService.EditEntrySelectTag.Track();
 
             var tagsToPass = tagIds.ToArray();
             var returnedTags = await navigationService

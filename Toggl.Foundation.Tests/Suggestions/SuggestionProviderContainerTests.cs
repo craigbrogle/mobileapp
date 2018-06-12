@@ -17,7 +17,7 @@ namespace Toggl.Foundation.Tests.Suggestions
                     () => new SuggestionProviderContainer(null);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.Suggestions
                     () => new SuggestionProviderContainer();
 
                 tryingToConstructWithoutParameters
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -38,7 +38,7 @@ namespace Toggl.Foundation.Tests.Suggestions
                     () => new SuggestionProviderContainer(provider);
 
                 tryingToConstructWithOneProvider
-                    .ShouldNotThrow();
+                    .Should().NotThrow();
             }
         }
     }

@@ -16,7 +16,7 @@ namespace Toggl.Ultrawave.Tests.Network
                     () => new UserAgent("", "1.0");
 
                 constructingWithWrongParameteres
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -26,7 +26,7 @@ namespace Toggl.Ultrawave.Tests.Network
                     () => new UserAgent("Tests", "");
 
                 constructingWithWrongParameteres
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -36,7 +36,7 @@ namespace Toggl.Ultrawave.Tests.Network
                     () => new UserAgent(null, "1.0");
 
                 constructingWithWrongParameteres
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -46,7 +46,7 @@ namespace Toggl.Ultrawave.Tests.Network
                     () => new UserAgent("Tests", null);
 
                 constructingWithWrongParameteres
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

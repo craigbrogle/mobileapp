@@ -32,7 +32,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected override ReportsViewModel CreateViewModel()
             {
                 DataSource.ReportsProvider.Returns(ReportsProvider);
-                return new ReportsViewModel(DataSource, TimeService, NavigationService, AnalyticsService);
+                return new ReportsViewModel(DataSource, TimeService, NavigationService, InteractorFactory, AnalyticsService);
             }
 
             protected async Task Initialize()
@@ -61,22 +61,24 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : ReportsViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(FourParameterConstructorTestData))]
+            [ClassData(typeof(FiveParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(bool useDataSource,
                                                         bool useTimeService,
                                                         bool useNavigationService,
-                                                        bool useAnalyticsService)
+                                                        bool useAnalyticsService,
+                                                        bool useInteractorFactory)
             {
                 var timeService = useTimeService ? TimeService : null;
                 var reportsProvider = useDataSource ? DataSource : null;
                 var navigationService = useNavigationService ? NavigationService : null;
+                var interactorFactory = useInteractorFactory ? InteractorFactory : null;
                 var analyticsService = useAnalyticsService ? AnalyticsService : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new ReportsViewModel(reportsProvider, timeService, navigationService, analyticsService);
+                    () => new ReportsViewModel(reportsProvider, timeService, navigationService, interactorFactory, analyticsService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -136,7 +138,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await Initialize();
 
-                AnalyticsService.Received().TrackReportsSuccess(ReportsSource.Initial, totalDays, projectsNotSyncedCount, loadingDuration.TotalMilliseconds);
+                AnalyticsService.Received().ReportsSuccess.Track(ReportsSource.Initial, totalDays, projectsNotSyncedCount, loadingDuration.TotalMilliseconds);
             }
 
             [Fact, LogIfTooSlow]
@@ -160,10 +162,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await Initialize();
 
-                AnalyticsService.Received().TrackReportsFailure(ReportsSource.Initial, totalDays, loadingDuration.TotalMilliseconds);
+                AnalyticsService.Received().ReportsFailure.Track(ReportsSource.Initial, totalDays, loadingDuration.TotalMilliseconds);
             }
         }
-
 
         public sealed class TheBillablePercentageMethod : ReportsViewModelTest
         {
@@ -335,33 +336,77 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheSegmentsProperty : ReportsViewModelTest
         {
-            private readonly ChartSegment[] segments =
-            {
-                new ChartSegment("Project 1", "Client 1", 2, 2, 0, "#ffffff"),
-                new ChartSegment("Project 2", "Client 2", 7, 7, 0, "#ffffff"),
-                new ChartSegment("Project 3", "Client 3", 12, 12, 0, "#ffffff"),
-                new ChartSegment("Project 4", "Client 4", 23, 23, 0, "#ffffff"),
-                new ChartSegment("Project 5", "Client 5", 66, 66, 0, "#ffffff")
-            };
             private readonly int projectsNotSyncedCount = 0;
 
             [Fact]
             public async Task GroupsProjectSegmentsWithPercentageLessThanTenPercent()
             {
+                ChartSegment[] segments =
+                {
+                    new ChartSegment("Project 1", "Client 1", 2, 2, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 7, 7, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 12, 12, 0, "#ffffff"),
+                    new ChartSegment("Project 4", "Client 4", 23, 23, 0, "#ffffff"),
+                    new ChartSegment("Project 5", "Client 5", 56, 56, 0, "#ffffff")
+                };
+
                 TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
                 ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
                     .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
 
                 await Initialize();
 
-                ViewModel.Segments.Should().HaveCount(4);
-                ViewModel.Segments.Should().Contain(segment =>
+                ViewModel.Segments.Should().HaveCount(5);
+                ViewModel.GroupedSegments.Should().HaveCount(4);
+                ViewModel.GroupedSegments.Should().Contain(segment =>
                     segment.ProjectName == Resources.Other &&
                     segment.Percentage == segments[0].Percentage + segments[1].Percentage);
-                ViewModel.Segments
+                ViewModel.GroupedSegments
                     .Where(project => project.ProjectName != Resources.Other)
                     .Select(segment => segment.Percentage)
                     .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(10));
+            }
+
+            [Fact]
+            public async Task DoesNotGroupOtherProjectsWhenThereIsJustOneProjectWithLessThanTenPercent()
+            {
+                ChartSegment[] segments =
+                {
+                    new ChartSegment("Project 1", "Client 1", 7, 7, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 23, 23, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 70, 70, 0, "#ffffff")
+                };
+
+                TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
+                ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
+                ViewModel.Prepare(WorkspaceId);
+
+                await Initialize();
+
+                ViewModel.GroupedSegments.Should().HaveCount(3);
+                ViewModel.GroupedSegments.Should().NotContain(segment => segment.ProjectName == Resources.Other);
+            }
+
+            [Fact]
+            public async Task DoesNotGroupOtherProjectsWhenAllProjectsHaveLessThanTenPercent()
+            {
+                ChartSegment[] segments =
+                {
+                    new ChartSegment("Project 1", "Client 1", 1, 1, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 3, 3, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 9, 9, 0, "#ffffff")
+                };
+
+                TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
+                ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
+                ViewModel.Prepare(WorkspaceId);
+
+                await Initialize();
+
+                ViewModel.GroupedSegments.Should().HaveCount(3);
+                ViewModel.GroupedSegments.Should().NotContain(segment => segment.ProjectName == Resources.Other);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var start = DateTimeOffset.UtcNow.AddDays(-8);
                 var end = start.AddDays(5);
 
-                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, end);
+                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, end);
 
                 summary.ProjectsSummaries.Should().BeEmpty();
             }
@@ -40,7 +40,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(8), 1);
 
                 var summary =
-                    await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, null);
+                    await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, null);
 
                 summary.ProjectsSummaries.Should().HaveCount(1);
             }
@@ -53,7 +53,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(2), 10, false);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(8), 20, false);
 
-                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, DateTimeOffset.UtcNow);
+                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, DateTimeOffset.UtcNow);
 
                 summary.ProjectsSummaries.ForEach(project => project.BillableSeconds.Should().BeNull());
             }
@@ -63,12 +63,12 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (api, user) = await SetupTestUser();
                 var start = DateTimeOffset.UtcNow.AddDays(-8);
-                var project = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var project = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(2), 10, false, project.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(3), 20, false, project.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(8), 40, false, project.Id);
 
-                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, start.AddDays(4));
+                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, start.AddDays(4));
                 var projectSummary = summary.ProjectsSummaries.Single(s => s.ProjectId == project.Id);
 
                 projectSummary.TrackedSeconds.Should().Be(30);
@@ -79,15 +79,15 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (api, user) = await SetupTestUser();
                 var start = DateTimeOffset.UtcNow.AddDays(-6);
-                var projectA = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
-                var projectB = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var projectA = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
+                var projectB = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(2), 10, false, projectA.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(3), 20, false, projectA.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(4), 40, false, projectB.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(5), 25, false, projectB.Id);
 
                 var summary =
-                    await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, null);
+                    await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, null);
                 var projectASummary = summary.ProjectsSummaries.Single(s => s.ProjectId == projectA.Id);
                 var projectBSummary = summary.ProjectsSummaries.Single(s => s.ProjectId == projectB.Id);
 
@@ -100,13 +100,13 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (api, user) = await SetupTestUser();
                 var start = DateTimeOffset.UtcNow.AddDays(-8);
-                await WorkspaceHelper.SetSubscription(user, user.DefaultWorkspaceId, PricingPlans.StarterAnnual);
-                var project = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                await WorkspaceHelper.SetSubscription(user, user.DefaultWorkspaceId.Value, PricingPlans.StarterAnnual);
+                var project = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(2), 10, false, project.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(3), 20, true, project.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(8), 40, true, project.Id);
 
-                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, start.AddDays(5));
+                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, start.AddDays(5));
                 var projectSummary = summary.ProjectsSummaries.Single(s => s.ProjectId == project.Id);
 
                 projectSummary.TrackedSeconds.Should().Be(30);
@@ -118,12 +118,12 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (api, user) = await SetupTestUser();
                 var start = DateTimeOffset.UtcNow.AddDays(-8);
-                var project = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var project = await api.Projects.Create(new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(1), null, false, project.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(2), 10, false, project.Id);
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(3), 20, false, project.Id);
 
-                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, start.AddDays(4));
+                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, start.AddDays(4));
                 var projectSummary = summary.ProjectsSummaries.Single(s => s.ProjectId == project.Id);
 
                 projectSummary.TrackedSeconds.Should().Be(30);
@@ -134,10 +134,10 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (api, user) = await SetupTestUser();
                 var start = DateTimeOffset.UtcNow.AddDays(-8);
-                var project = await api.Projects.Create(new Project { Active = false, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var project = await api.Projects.Create(new Project { Active = false, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 await createTimeEntry(api.TimeEntries, user, start.AddDays(2), 10, false, project.Id);
 
-                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, start.AddDays(4));
+                var summary = await api.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, start.AddDays(4));
                 var projectSummary = summary.ProjectsSummaries.Single(s => s.ProjectId == project.Id);
 
                 projectSummary.TrackedSeconds.Should().Be(10);
@@ -151,7 +151,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     Start = at,
                     Duration = duration,
                     UserId = user.Id,
-                    WorkspaceId = user.DefaultWorkspaceId,
+                    WorkspaceId = user.DefaultWorkspaceId.Value,
                     TagIds = new long[0],
                     Billable = billable,
                     ProjectId = projectId
@@ -163,7 +163,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var end = start.AddMonths(5);
                 return ValidApi.User.Get()
                     .SelectMany(user =>
-                        togglApi.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId, start, end));
+                        togglApi.ProjectsSummary.GetByWorkspace(user.DefaultWorkspaceId.Value, start, end));
             }
         }
     }

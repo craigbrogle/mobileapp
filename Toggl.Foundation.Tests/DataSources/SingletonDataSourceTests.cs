@@ -19,7 +19,7 @@ namespace Toggl.Foundation.Tests.DataSources
             {
                 Action createDataSource = () => new TestSingletonSource(null, null);
 
-                createDataSource.ShouldThrow<ArgumentNullException>();
+                createDataSource.Should().Throw<ArgumentNullException>();
             }
 
             [Fact]

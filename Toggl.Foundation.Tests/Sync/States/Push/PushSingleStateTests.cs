@@ -21,7 +21,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         {
             Action creatingWithNullArgument = () => new PushSingleState<IThreadSafeTestModel>(null);
 
-            creatingWithNullArgument.ShouldThrow<ArgumentNullException>();
+            creatingWithNullArgument.Should().Throw<ArgumentNullException>();
         }
 
         [Theory, LogIfTooSlow]
@@ -49,7 +49,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
             var parameter = ((Transition<IThreadSafeTestModel>)transition).Parameter;
 
             transition.Result.Should().Be(state.PushEntity);
-            parameter.ShouldBeEquivalentTo(entity, options => options.IncludingProperties());
+            parameter.Should().BeEquivalentTo(entity, options => options.IncludingProperties());
         }
 
         [Fact, LogIfTooSlow]
@@ -60,7 +60,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
 
             Action callingStart = () => state.Start().SingleAsync().Wait();
 
-            callingStart.ShouldThrow<Exception>();
+            callingStart.Should().Throw<Exception>();
         }
     }
 }

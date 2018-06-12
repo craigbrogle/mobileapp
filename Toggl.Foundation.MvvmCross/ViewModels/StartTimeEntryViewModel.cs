@@ -270,12 +270,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             setUpTimeSubscriptionIfNeeded();
         }
 
-        public async override Task Initialize()
+        public override async Task Initialize()
         {
             await base.Initialize();
 
+            var workspace = await interactorFactory.GetDefaultWorkspace().Execute();
             TextFieldInfo =
-                await dataSource.User.Current.FirstAsync().Select(user => TextFieldInfo.Empty(user.DefaultWorkspaceId));
+                await dataSource.User.Get().Select(user => TextFieldInfo.Empty(workspace.Id));
 
             await setBillableValues(lastProjectId);
 
@@ -300,12 +301,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                     if (querySymbolSuggestion.Symbol == QuerySymbols.ProjectsString)
                     {
-                        analyticsService.TrackStartOpensProjectSelector(ProjectTagSuggestionSource.TableCellButton);
+                        analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.TableCellButton);
                     }
 
                     if (querySymbolSuggestion.Symbol == QuerySymbols.TagsString)
                     {
-                        analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.TableCellButton);
+                        analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.TableCellButton);
                     }
 
                     TextFieldInfo = TextFieldInfo.WithTextAndCursor(querySymbolSuggestion.Symbol, 1);
@@ -431,6 +432,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     projectSuggestion.ProjectId,
                     projectSuggestion.ProjectName,
                     projectSuggestion.ProjectColor);
+
+            IsSuggestingProjects = false;
+            queryByTypeSubject.OnNext(AutocompleteSuggestionType.None);
         }
 
         private void setTask(TaskSuggestion taskSuggestion)
@@ -496,7 +500,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
+            analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
             appendSymbol(QuerySymbols.TagsString);
         }
@@ -505,18 +509,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (IsSuggestingProjects)
             {
-                TextFieldInfo = TextFieldInfo.RemoveProjectQueryFromDescriptionIfNeeded();
                 IsSuggestingProjects = false;
+                TextFieldInfo = TextFieldInfo.RemoveProjectQueryFromDescriptionIfNeeded();
+                queryByTypeSubject.OnNext(AutocompleteSuggestionType.None);
                 return;
             }
 
-            analyticsService.TrackStartOpensProjectSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
+            analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
 
             if (TextFieldInfo.ProjectId != null)
             {
-                queryByTypeSubject.OnNext(AutocompleteSuggestionType.Projects);
                 IsSuggestingProjects = true;
+                queryByTypeSubject.OnNext(AutocompleteSuggestionType.Projects);
                 return;
             }
 
@@ -652,12 +657,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (!IsSuggestingTags && suggestsTags)
             {
-                analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.TextField);
+                analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.TextField);
             }
 
             if (!IsSuggestingProjects && suggestsProjects)
             {
-                analyticsService.TrackStartOpensProjectSelector(ProjectTagSuggestionSource.TextField);
+                analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.TextField);
             }
 
             IsSuggestingTags = suggestsTags;

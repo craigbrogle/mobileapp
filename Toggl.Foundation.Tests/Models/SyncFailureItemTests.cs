@@ -19,7 +19,7 @@ namespace Toggl.Foundation.Tests.SyncModel
                     () => new SyncFailureItem(null);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]

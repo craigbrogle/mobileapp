@@ -31,7 +31,7 @@ namespace Toggl.Foundation.Tests.Sync.States
 
             Action callingStart = () => state.Start((reason, entity)).SingleAsync().Wait();
 
-            callingStart.ShouldThrow<ArgumentNullException>();
+            callingStart.Should().Throw<ArgumentNullException>();
         }
 
         [Fact, LogIfTooSlow]
@@ -45,7 +45,7 @@ namespace Toggl.Foundation.Tests.Sync.States
             Action callingStart = () => state.Start(
                 (new ApiException(request, response, "Test."), new TestModel(1, SyncStatus.SyncNeeded))).SingleAsync().Wait();
 
-            callingStart.ShouldThrow<TestException>();
+            callingStart.Should().Throw<TestException>();
         }
 
         [Fact, LogIfTooSlow]
@@ -57,7 +57,7 @@ namespace Toggl.Foundation.Tests.Sync.States
             Action callingStart = () => state.Start(
                 (exception, new TestModel(1, SyncStatus.SyncNeeded))).SingleAsync().Wait();
 
-            callingStart.ShouldThrow<TestException>().Where(e => e == exception);
+            callingStart.Should().Throw<TestException>().Where(e => e == exception);
         }
 
         [Property]
@@ -116,7 +116,7 @@ namespace Toggl.Foundation.Tests.Sync.States
             var transition = state.Start((reason, entity)).SingleAsync().Wait();
             var unsyncableEntity = ((Transition<IThreadSafeTestModel>)transition).Parameter;
 
-            entity.ShouldBeEquivalentTo(unsyncableEntity, options
+            entity.Should().BeEquivalentTo(unsyncableEntity, options
                 => options.IncludingProperties()
                     .Excluding(x => x.LastSyncErrorMessage)
                     .Excluding(x => x.SyncStatus));

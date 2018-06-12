@@ -99,6 +99,12 @@ namespace Toggl.Multivac.Extensions
                 () => Console.WriteLine($"OnCompleted {tag}")
         );
 
+        public static IObservable<T> WhereAsync<T>(this IObservable<T> observable, Func<T, IObservable<bool>> asyncPredicate)
+            => observable.SelectMany(item =>
+                asyncPredicate(item)
+                    .SingleAsync()
+                    .SelectMany(include => include ? Observable.Return(item) : Observable.Empty<T>()));
+
         public static void DisposedBy(this IDisposable disposable, CompositeDisposable disposeBag)
         {
             disposeBag.Add(disposable);

@@ -21,11 +21,11 @@
     <ProjectReference Include="..\Toggl.Ultrawave\Toggl.Ultrawave.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Reactive.Testing" Version="3.1.1" />
     <PackageReference Include="MvvmCross.Tests" Version="5.5.2" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+    <PackageReference Include="Microsoft.Reactive.Testing" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Interactors\TimeEntry\" />

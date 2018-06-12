@@ -27,7 +27,7 @@ namespace Toggl.Ultrawave.Tests.Models
                 var clonedObject = new Client(validClient);
 
                 clonedObject.Should().NotBeSameAs(validClient);
-                clonedObject.ShouldBeEquivalentTo(validClient, options => options.IncludingProperties());
+                clonedObject.Should().BeEquivalentTo(validClient, options => options.IncludingProperties());
             }
 
             [Fact, LogIfTooSlow]

@@ -28,7 +28,7 @@ namespace Toggl.Foundation.Tests.Sync
                 // ReSharper disable once ObjectCreationAsStatement
                 Action ctor = () => new StateMachine(handler, scheduler, Substitute.For<ISubject<Unit>>());
 
-                ctor.ShouldThrow<ArgumentNullException>();
+                ctor.Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -81,7 +81,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Action callWithNull = () => StateMachine.Start(null);
 
-                callWithNull.ShouldThrow<ArgumentNullException>();
+                callWithNull.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -139,7 +139,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 Action callSecondTime = () => StateMachine.Start(MakeTransitionSubstitute());
 
-                callSecondTime.ShouldThrow<InvalidOperationException>();
+                callSecondTime.Should().Throw<InvalidOperationException>();
             }
         }
 
@@ -326,7 +326,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 Action starting = () => StateMachine.Start(Substitute.For<ITransition>());
 
-                starting.ShouldThrow<InvalidOperationException>();
+                starting.Should().Throw<InvalidOperationException>();
             }
             
 

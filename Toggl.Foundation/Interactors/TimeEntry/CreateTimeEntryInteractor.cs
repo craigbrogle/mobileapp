@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
@@ -66,7 +67,7 @@ namespace Toggl.Foundation.Interactors
                 .SelectMany(dataSource.TimeEntries.Create)
                 .Do(notifyOfNewTimeEntryIfPossible)
                 .Do(_ => dataSource.SyncManager.PushSync())
-                .Do(_ => analyticsService.TrackStartedTimeEntry(origin));
+                .Track(analyticsService.TimeEntryStarted, origin);
 
         private TimeEntry userFromPrototype(IThreadSafeUser user)
             => idProvider.GetNextIdentifier()

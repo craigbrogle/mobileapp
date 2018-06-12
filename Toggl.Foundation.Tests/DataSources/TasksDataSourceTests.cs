@@ -16,7 +16,7 @@ namespace Toggl.Foundation.Tests.DataSources
                     () => new TasksDataSource(null);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
     }

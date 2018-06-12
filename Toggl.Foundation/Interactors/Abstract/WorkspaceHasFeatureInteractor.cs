@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
+using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.Interactors

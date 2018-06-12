@@ -304,7 +304,7 @@ Toggl.Daneel/Views/ActivityIndicatorView.designer.cs
 Toggl.Daneel/service-account.json
 
 giskard.keystore
-Toggl.Giskard/Resources/Resource.designer.cs
+Toggl.Giskard*/Resources/Resource.designer.cs
 
 # macOS Rider creates this .dll folders
 Toggl.Giskard/\*Undefined\*Tools

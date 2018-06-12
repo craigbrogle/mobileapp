@@ -22,8 +22,5 @@ namespace Toggl.Foundation.Tests.Mocks
         public IThreadSafeWorkspace Workspace { get; set; }
 
         public IEnumerable<IThreadSafeWorkspaceFeature> DatabaseFeatures { get; set; }
-
-        public bool IsEnabled(WorkspaceFeatureId feature)
-            => Features.Any(f => f.FeatureId == feature && f.Enabled);
     }
 }

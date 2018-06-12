@@ -202,7 +202,7 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 Action callForTheSecondTime = () => DataSource.StartSyncing();
 
-                callForTheSecondTime.ShouldThrow<InvalidOperationException>();
+                callForTheSecondTime.Should().Throw<InvalidOperationException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -226,7 +226,7 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 Action startSyncing = () => DataSource.StartSyncing().Wait();
 
-                startSyncing.ShouldThrow<InvalidOperationException>();
+                startSyncing.Should().Throw<InvalidOperationException>();
             }
         }
 
@@ -391,7 +391,7 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 Action processingError = () => ProgressSubject.OnError(exception);
 
-                processingError.ShouldNotThrow();
+                processingError.Should().NotThrow();
             }
 
             [Theory, LogIfTooSlow]
@@ -400,7 +400,7 @@ namespace Toggl.Foundation.Tests.DataSources
             {
                 Action handling = () => ProgressSubject.OnError(exception);
 
-                handling.ShouldThrow<ArgumentException>();
+                handling.Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]

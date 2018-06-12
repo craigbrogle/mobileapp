@@ -1,5 +1,5 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Xamarin.Build.Download.0.4.9\build\Xamarin.Build.Download.props" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.9\build\Xamarin.Build.Download.props')" />
+  <Import Project="..\packages\Xamarin.Build.Download.0.4.11\build\Xamarin.Build.Download.props" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.11\build\Xamarin.Build.Download.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -76,18 +76,6 @@
     <Reference Include="Mono.Android.Export" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Reactive.Interfaces">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\netstandard1.0\System.Reactive.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Core">
-      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\netstandard1.3\System.Reactive.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.Linq">
-      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\netstandard1.3\System.Reactive.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Reactive.PlatformServices">
-      <HintPath>..\packages\System.Reactive.PlatformServices.3.1.1\lib\netstandard1.3\System.Reactive.PlatformServices.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Realm.DataBinding">
       <HintPath>..\packages\Realm.DataBinding.1.2.0\lib\MonoAndroid44\Realm.DataBinding.dll</HintPath>
@@ -95,17 +83,8 @@
     <Reference Include="Remotion.Linq">
       <HintPath>..\packages\Remotion.Linq.2.1.2\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.4.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="Realm">
-      <HintPath>..\packages\Realm.Database.2.1.0\lib\netstandard1.4\Realm.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Realm.Sync">
-      <HintPath>..\packages\Realm.2.1.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
     </Reference>
     <Reference Include="Xamarin.Android.Support.Annotations">
       <HintPath>..\packages\Xamarin.Android.Support.Annotations.26.1.0.1\lib\MonoAndroid80\Xamarin.Android.Support.Annotations.dll</HintPath>
@@ -233,28 +212,55 @@
     <Reference Include="Xamarin.GooglePlayServices.Identity">
       <HintPath>..\packages\Xamarin.GooglePlayServices.Identity.60.1142.1\lib\MonoAndroid80\Xamarin.GooglePlayServices.Identity.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AppCenter.Analytics.Android.Bindings">
-      <HintPath>..\packages\Microsoft.AppCenter.Analytics.1.3.0\lib\MonoAndroid403\Microsoft.AppCenter.Analytics.Android.Bindings.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AppCenter.Analytics">
-      <HintPath>..\packages\Microsoft.AppCenter.Analytics.1.3.0\lib\MonoAndroid403\Microsoft.AppCenter.Analytics.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.AppCenter.Android.Bindings">
-      <HintPath>..\packages\Microsoft.AppCenter.1.3.0\lib\MonoAndroid403\Microsoft.AppCenter.Android.Bindings.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AppCenter.1.6.1\lib\MonoAndroid403\Microsoft.AppCenter.Android.Bindings.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.AppCenter">
-      <HintPath>..\packages\Microsoft.AppCenter.1.3.0\lib\MonoAndroid403\Microsoft.AppCenter.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AppCenter.1.6.1\lib\MonoAndroid403\Microsoft.AppCenter.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.AppCenter.Analytics.Android.Bindings">
+      <HintPath>..\packages\Microsoft.AppCenter.Analytics.1.6.1\lib\MonoAndroid403\Microsoft.AppCenter.Analytics.Android.Bindings.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Analytics">
+      <HintPath>..\packages\Microsoft.AppCenter.Analytics.1.6.1\lib\MonoAndroid403\Microsoft.AppCenter.Analytics.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AppCenter.Crashes.Android.Bindings">
-      <HintPath>..\packages\Microsoft.AppCenter.Crashes.1.3.0\lib\MonoAndroid403\Microsoft.AppCenter.Crashes.Android.Bindings.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AppCenter.Crashes.1.6.1\lib\MonoAndroid403\Microsoft.AppCenter.Crashes.Android.Bindings.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AppCenter.Crashes">
-      <HintPath>..\packages\Microsoft.AppCenter.Crashes.1.3.0\lib\MonoAndroid403\Microsoft.AppCenter.Crashes.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AppCenter.Crashes.1.6.1\lib\MonoAndroid403\Microsoft.AppCenter.Crashes.dll</HintPath>
+    </Reference>
+    <Reference Include="Realm">
+      <HintPath>..\packages\Realm.Database.3.0.0\lib\netstandard1.4\Realm.dll</HintPath>
+    </Reference>
+    <Reference Include="Realm.Sync">
+      <HintPath>..\packages\Realm.3.0.0\lib\netstandard1.4\Realm.Sync.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive">
+      <HintPath>..\packages\System.Reactive.4.0.0\lib\netstandard2.0\System.Reactive.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\packages\System.Reactive.Core.4.0.0\lib\netstandard2.0\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\packages\System.Reactive.Interfaces.4.0.0\lib\netstandard2.0\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\packages\System.Reactive.Linq.4.0.0\lib\netstandard2.0\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\packages\System.Reactive.PlatformServices.4.0.0\lib\netstandard2.0\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
     <Reference Include="System.Collections.Immutable">
       <HintPath>..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Firebase.Perf">
+      <HintPath>..\packages\Xamarin.Firebase.Perf.60.1142.1\lib\MonoAndroid80\Xamarin.Firebase.Perf.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -391,6 +397,7 @@
     <Compile Include="Bindings\ViewUpsideDownTargetBinding.cs" />
     <Compile Include="Bindings\ViewHeightTargetBinding.cs" />
     <Compile Include="Views\SelectCountryRecyclerView.cs" />
+    <Compile Include="Helper\ImageUtils.cs" />
     <Compile Include="Activities\SelectCountryActivity.cs" />
     <Compile Include="Helper\VibratorExtensions.cs" />
     <Compile Include="Bindings\DatePickerBoundariesTargetBinding.cs" />
@@ -398,6 +405,12 @@
     <Compile Include="TemplateSelectors\SelecCountryTemplateSelector.cs" />
     <Compile Include="Fragments\TermsOfServiceFragment.cs" />
     <Compile Include="Views\TogglDroidTimePicker.cs" />
+    <Compile Include="Activities\NonBindingAppCompatActivity.cs" />
+    <Compile Include="Extensions\UIExtensions.cs" />
+    <Compile Include="Adapters\BaseRecyclerAdapter.cs" />
+    <Compile Include="ViewHolders\BaseRecyclerViewHolder.cs" />
+    <Compile Include="ViewHolders\WorkspaceSelectionViewHolder.cs" />
+    <Compile Include="Adapters\SimpleAdapter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />
@@ -756,6 +769,16 @@
     <AndroidResource Include="Resources\drawable-xhdpi\logo_googleg_48_dp.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\logo_googleg_48_dp.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\logo_googleg_48_dp.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\reports.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\reports.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\reports.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\reports.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\reports.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\logo_splash.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\logo_splash.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\logo_splash.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\logo_splash.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\logo_splash.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation\Toggl.Foundation.csproj">
@@ -797,10 +820,7 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\add_white.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\packages\Fody.2.2.0\build\netstandard1.2\Fody.targets" Condition="Exists('..\packages\Fody.2.2.0\build\netstandard1.2\Fody.targets')" />
   <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="..\packages\Realm.Database.2.1.0\build\Realm.Database.targets" Condition="Exists('..\packages\Realm.Database.2.1.0\build\Realm.Database.targets')" />
-  <Import Project="..\packages\Realm.2.1.0\build\Realm.targets" Condition="Exists('..\packages\Realm.2.1.0\build\Realm.targets')" />
   <Import Project="..\packages\Xamarin.Android.Support.Annotations.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.Annotations.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Annotations.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.Annotations.targets')" />
   <Import Project="..\packages\Xamarin.Android.Arch.Core.Common.1.0.0\build\MonoAndroid80\Xamarin.Android.Arch.Core.Common.targets" Condition="Exists('..\packages\Xamarin.Android.Arch.Core.Common.1.0.0\build\MonoAndroid80\Xamarin.Android.Arch.Core.Common.targets')" />
   <Import Project="..\packages\Xamarin.Android.Arch.Lifecycle.Common.1.0.1\build\MonoAndroid80\Xamarin.Android.Arch.Lifecycle.Common.targets" Condition="Exists('..\packages\Xamarin.Android.Arch.Lifecycle.Common.1.0.1\build\MonoAndroid80\Xamarin.Android.Arch.Lifecycle.Common.targets')" />
@@ -817,16 +837,20 @@
   <Import Project="..\packages\Xamarin.Android.Support.v7.AppCompat.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.v7.AppCompat.targets" Condition="Exists('..\packages\Xamarin.Android.Support.v7.AppCompat.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.v7.AppCompat.targets')" />
   <Import Project="..\packages\Xamarin.Android.Support.Design.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.Design.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Design.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.Design.targets')" />
   <Import Project="..\packages\Xamarin.Android.Support.v7.CardView.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.v7.CardView.targets" Condition="Exists('..\packages\Xamarin.Android.Support.v7.CardView.26.1.0.1\build\MonoAndroid80\Xamarin.Android.Support.v7.CardView.targets')" />
-  <Import Project="..\packages\Xamarin.Build.Download.0.4.9\build\Xamarin.Build.Download.targets" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.9\build\Xamarin.Build.Download.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Basement.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Basement.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Basement.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Basement.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Tasks.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Tasks.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Tasks.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Tasks.targets')" />
   <Import Project="..\packages\Xamarin.Firebase.Common.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Common.targets" Condition="Exists('..\packages\Xamarin.Firebase.Common.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Common.targets')" />
   <Import Project="..\packages\Xamarin.Firebase.Iid.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Iid.targets" Condition="Exists('..\packages\Xamarin.Firebase.Iid.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Iid.targets')" />
   <Import Project="..\packages\Xamarin.Firebase.Analytics.Impl.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Analytics.Impl.targets" Condition="Exists('..\packages\Xamarin.Firebase.Analytics.Impl.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Analytics.Impl.targets')" />
   <Import Project="..\packages\Xamarin.Firebase.Analytics.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Analytics.targets" Condition="Exists('..\packages\Xamarin.Firebase.Analytics.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Analytics.targets')" />
+  <Import Project="..\packages\Xamarin.Firebase.Perf.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Perf.targets" Condition="Exists('..\packages\Xamarin.Firebase.Perf.60.1142.1\build\MonoAndroid80\Xamarin.Firebase.Perf.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Base.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Base.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Base.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Base.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Auth.Api.Phone.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Auth.Api.Phone.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Auth.Api.Phone.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Auth.Api.Phone.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Auth.Base.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Auth.Base.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Auth.Base.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Auth.Base.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Auth.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Auth.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Auth.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Auth.targets')" />
   <Import Project="..\packages\Xamarin.GooglePlayServices.Identity.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Identity.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Identity.60.1142.1\build\MonoAndroid80\Xamarin.GooglePlayServices.Identity.targets')" />
+  <Import Project="..\packages\Fody.2.4.6\build\Fody.targets" Condition="Exists('..\packages\Fody.2.4.6\build\Fody.targets')" />
+  <Import Project="..\packages\Realm.Database.3.0.0\build\Realm.Database.targets" Condition="Exists('..\packages\Realm.Database.3.0.0\build\Realm.Database.targets')" />
+  <Import Project="..\packages\Realm.3.0.0\build\Realm.targets" Condition="Exists('..\packages\Realm.3.0.0\build\Realm.targets')" />
+  <Import Project="..\packages\Xamarin.Build.Download.0.4.11\build\Xamarin.Build.Download.targets" Condition="Exists('..\packages\Xamarin.Build.Download.0.4.11\build\Xamarin.Build.Download.targets')" />
 </Project>

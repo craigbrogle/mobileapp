@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Realms;
+using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Realm.Models;
 
@@ -261,13 +262,12 @@ namespace Toggl.PrimeRadiant.Realm
             Start = entity.Start;
             Duration = entity.Duration;
             Description = entity.Description;
+
+            var tags = entity.TagIds?.Select(id =>
+                realm.All<RealmTag>().Single(x => x.Id == id || x.OriginalId == id)) ?? new RealmTag[0];
             RealmTags.Clear();
-            if (entity.TagIds != null)
-            {
-                var allRealmTags = entity.TagIds.Select(id => realm.All<RealmTag>().Single(x => x.Id == id || x.OriginalId == id));
-                foreach (var oneOfRealmTags in allRealmTags)
-                    RealmTags.Add(oneOfRealmTags);
-            }
+            tags.ForEach(RealmTags.Add);
+
             var skipUserFetch = entity?.UserId == null || entity.UserId == 0;
             RealmUser = skipUserFetch ? null : realm.All<RealmUser>().Single(x => x.Id == entity.UserId || x.OriginalId == entity.UserId);
         }

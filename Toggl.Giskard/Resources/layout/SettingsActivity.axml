@@ -10,11 +10,26 @@
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize">
         <LinearLayout
+            android:animateLayoutChanges="true"
             android:paddingTop="24dp"
             android:orientation="vertical"
             android:background="@color/lightGray"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+            <LinearLayout
+                android:id="@+id/SettingsViewAvatarImageContainer"
+                android:visibility="gone"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:background="@android:color/transparent"
+                android:layout_height="72dp"
+                android:layout_marginBottom="12dp"
+                android:layout_width="match_parent">
+                <ImageView
+                    android:id="@+id/SettingsViewAvatarImage"
+                    android:layout_width="72dp"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
             <TextView
                 local:MvxBind="Text Name"
                 tools:text="Heidi"

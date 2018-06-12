@@ -31,7 +31,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new OnboardingViewModel(navigationService, onboardingStorage, analyticsService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -109,7 +109,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.SkipCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackOnboardingSkipEvent(expectedPageName);
+                AnalyticsService.Received().OnboardingSkip.Track(expectedPageName);
             }
         }
 

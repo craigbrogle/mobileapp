@@ -1,5 +1,6 @@
-﻿using System.Linq;
-using Android.Content;
+﻿using System;
+using System.Linq;
+using System.Security.Cryptography;
 using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
@@ -7,6 +8,8 @@ using Android.Widget;
 using Java.Lang;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Giskard.Autocomplete;
+using Object = Java.Lang.Object;
+using StringBuilder = System.Text.StringBuilder;
 
 namespace Toggl.Giskard.Extensions
 {
@@ -17,11 +20,28 @@ namespace Toggl.Giskard.Extensions
         public static string GetDescription(this EditText self)
         {
             var spannable = self.TextFormatted as SpannableStringBuilder;
-            var nextTransition = spannable.NextSpanTransition(0, spannable.Length(), Class.FromType(typeof(CharacterStyle)));
+            if (spannable == null)
+                return self.Text;
 
-            var isNextTransitionNormalText = !spannable.GetSpans(0, nextTransition, Class.FromType(typeof(TokenSpan))).Any();
-            return isNextTransitionNormalText ? self.TextFormatted.SubSequence(0, nextTransition) : "";
+            var tokenSpans = spannable.GetSpans(0, spannable.Length(), Class.FromType(typeof(TokenSpan)));
+            if (tokenSpans.Length == 0)
+                return spannable.ToString();
+
+            var descriptionBeforeTokenSpans = new StringBuilder(spannable.SubSequence(0, spannable.GetSpanStart(tokenSpans.First())));
+
+            var descriptionUntilLastTokenSpan = tokenSpans.AsEnumerable()
+                .SkipLast(1)
+                .Select((span, spanIndex) => (leftSpanEnd: spannable.GetSpanEnd(span), rightSpanStart: spannable.GetSpanStart(tokenSpans[spanIndex + 1])))
+                .Aggregate(descriptionBeforeTokenSpans,
+                    (builder, spansBoundaries) =>
+                        builder.Append(spannable.SubSequence(spansBoundaries.leftSpanEnd, spansBoundaries.rightSpanStart)));
+
+            var fullDescription = descriptionUntilLastTokenSpan
+                .Append(spannable.SubSequence(spannable.GetSpanEnd(tokenSpans.Last()), spannable.Length()));
+
+            return fullDescription.ToString();
         }
+
 
         public static ISpannable GetSpannableText(this TextFieldInfo self)
         {

@@ -25,7 +25,7 @@ namespace Toggl.Foundation.Tests.Mocks
 
         public string ApiToken { get; set; }
 
-        public long DefaultWorkspaceId { get; set; }
+        public long? DefaultWorkspaceId { get; set; }
 
         public Email Email { get; set; }
 
