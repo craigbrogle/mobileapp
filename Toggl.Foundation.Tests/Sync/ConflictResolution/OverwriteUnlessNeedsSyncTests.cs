@@ -16,8 +16,8 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
             Action resolving = () => resolver.Resolve(null, null);
             Action resolvingWithExistingLocalEntity = () => resolver.Resolve(existingEntity, null);
 
-            resolving.ShouldThrow<ArgumentNullException>();
-            resolvingWithExistingLocalEntity.ShouldThrow<ArgumentNullException>();
+            resolving.Should().Throw<ArgumentNullException>();
+            resolvingWithExistingLocalEntity.Should().Throw<ArgumentNullException>();
         }
 
         [Fact, LogIfTooSlow]

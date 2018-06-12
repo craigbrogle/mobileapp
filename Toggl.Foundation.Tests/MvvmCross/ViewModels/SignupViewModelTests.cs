@@ -83,7 +83,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         apiErrorHandlingService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -229,7 +229,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.GoogleSignupCommand.Execute();
 
-                AnalyticsService.Received().TrackSignUpEvent(AuthenticationMethod.Google);
+                AnalyticsService.SignUp.Received().Track(AuthenticationMethod.Google);
             }
 
             [Fact, LogIfTooSlow]
@@ -447,9 +447,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public void TracksSignupEvent()
                 {
-                    AnalyticsService
-                        .Received()
-                        .TrackSignUpEvent(AuthenticationMethod.EmailAndPassword);
+                    AnalyticsService.SignUp.Received().Track(AuthenticationMethod.EmailAndPassword);
                 }
 
                 public sealed class WhenSignupSucceeds : SuccessfulSignupTest

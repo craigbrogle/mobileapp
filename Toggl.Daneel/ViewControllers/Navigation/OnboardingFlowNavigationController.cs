@@ -31,9 +31,6 @@ namespace Toggl.Daneel.ViewControllers.Navigation
         {
             if (navBar == null) return;
 
-            navBar.BarStyle = UIBarStyle.Black;
-            navBar.ShadowImage = new UIImage();
-            navBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
             navBar.TitleTextAttributes = new UIStringAttributes
             {
                 ForegroundColor = UIColor.White,

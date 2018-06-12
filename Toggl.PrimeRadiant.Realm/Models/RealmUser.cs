@@ -12,7 +12,7 @@ namespace Toggl.PrimeRadiant.Realm
 
         public DateTimeOffset At { get; set; }
 
-        public long DefaultWorkspaceId { get; set; }
+        public long? DefaultWorkspaceId { get; set; }
 
         //Realm doesn't support enums 
         [Ignored]

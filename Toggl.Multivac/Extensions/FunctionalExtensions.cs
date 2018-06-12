@@ -7,6 +7,10 @@ namespace Toggl.Multivac.Extensions
     public static class CommonFunctions
     {
         public static T Identity<T>(T x) => x;
+
+        public static bool Invert(bool x) => !x;
+
+        public static void DoNothing<T>(T x) { }
     }
 
     public static class FunctionalExtensions

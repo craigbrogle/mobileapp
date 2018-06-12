@@ -5,51 +5,6 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal partial class Client
-    {
-        private Client(IDatabaseClient entity)
-            : this(entity as IClient, entity.SyncStatus, entity.LastSyncErrorMessage, entity.IsDeleted)
-        {
-            Workspace = entity.Workspace == null ? null : Models.Workspace.From(entity.Workspace);
-            SyncStatus = entity.SyncStatus;
-            LastSyncErrorMessage = entity.LastSyncErrorMessage;
-            IsDeleted = entity.IsDeleted;
-        }
-
-        public static Client From(IDatabaseClient entity)
-            => new Client(entity);
-
-        private Client(IClient entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false)
-        {
-            Id = entity.Id;
-            WorkspaceId = entity.WorkspaceId;
-            Name = entity.Name;
-            At = entity.At;
-            ServerDeletedAt = entity.ServerDeletedAt;
-            SyncStatus = syncStatus;
-            LastSyncErrorMessage = lastSyncErrorMessage;
-            IsDeleted = isDeleted;
-        }
-
-        public static Client Clean(IClient entity)
-            => new Client(entity, SyncStatus.InSync, null);
-
-        public static Client Dirty(IClient entity)
-            => new Client(entity, SyncStatus.SyncNeeded, null);
-
-        public static Client Unsyncable(IClient entity, string errorMessage)
-            => new Client(entity, SyncStatus.SyncFailed, errorMessage);
-
-        public static Client CleanDeleted(IClient entity)
-            => new Client(entity, SyncStatus.InSync, null, true);
-
-        public static Client DirtyDeleted(IClient entity)
-            => new Client(entity, SyncStatus.SyncNeeded, null, true);
-
-        public static Client UnsyncableDeleted(IClient entity, string errorMessage)
-            => new Client(entity, SyncStatus.SyncFailed, errorMessage, true);
-    }
-
     internal partial class Preferences
     {
         private Preferences(IDatabasePreferences entity)

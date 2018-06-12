@@ -8,6 +8,7 @@ using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Exceptions;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Interactors.Location;
 using Toggl.Foundation.Login;
@@ -139,7 +140,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void setCountryErrorIfNeeded()
         {
             if (countryId.HasValue) return;
-                
+
             IsCountryErrorVisible = true;
         }
 
@@ -147,7 +148,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (!termsOfServiceAccepted)
                 termsOfServiceAccepted = await navigationService.Navigate<bool>(typeof(TermsOfServiceViewModel));
-            
+
             if (!termsOfServiceAccepted)
                 return;
 
@@ -156,7 +157,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             signupDisposable =
                 loginManager
                     .SignUp(Email, Password, true, (int)countryId.Value)
-                    .Do(_ => analyticsService.TrackSignUpEvent(AuthenticationMethod.EmailAndPassword))
+                    .Track(analyticsService.SignUp, AuthenticationMethod.EmailAndPassword)
                     .Subscribe(onDataSource, onError, onCompleted);
         }
 
@@ -209,7 +210,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             signupDisposable = loginManager
                 .SignUpWithGoogle()
-                .Do(_ => analyticsService.TrackSignUpEvent(AuthenticationMethod.Google))
+                .Track(analyticsService.SignUp, AuthenticationMethod.Google)
                 .Subscribe(onDataSource, onError, onCompleted);
         }
 
@@ -232,7 +233,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var selectedCountry = allCountries
                 .Single(country => country.Id == selectedCountryId.Value);
-            
+
             IsCountryErrorVisible = false;
             countryId = selectedCountry.Id;
             CountryButtonTitle = selectedCountry.Name;

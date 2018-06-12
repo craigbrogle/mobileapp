@@ -81,4 +81,10 @@ namespace Toggl.Giskard.Converters
     {
         public MainFooterHeightValueConverter() : base (104, 70) { }
     }
+
+    public sealed class MeridiemTransparencyValueConverter : BoolToConstantValueConverter<Color>
+    {
+        public MeridiemTransparencyValueConverter()
+            : base(Color.ParseColor("#a6ffffff"), Color.ParseColor("#ffffffff")) { }
+    }
 }

@@ -24,7 +24,7 @@ namespace Toggl.Ultrawave.Tests.Models
             var clonedObject = new Preferences(validPreferences);
 
             clonedObject.Should().NotBeSameAs(validPreferences);
-            clonedObject.ShouldBeEquivalentTo(validPreferences, options => options.IncludingProperties());
+            clonedObject.Should().BeEquivalentTo(validPreferences, options => options.IncludingProperties());
         }
 
         [Fact, LogIfTooSlow]

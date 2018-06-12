@@ -1,7 +1,5 @@
 ﻿using Android.Widget;
 using MvvmCross.Binding;
-using MvvmCross.Platform;
-using MvvmCross.Platform.Droid;
 using Toggl.Foundation.Autocomplete;
 using Toggl.Foundation.MvvmCross.Autocomplete;
 using Toggl.Giskard.Autocomplete;
@@ -46,8 +44,7 @@ namespace Toggl.Giskard.Bindings
             if (!Target.IsFocused) return;
 
             var formattedText = textFieldInfo.GetSpannableText();
-
-            if (Target.TextFormatted.Length() == formattedText.Length())
+            if (formattedText.ToString() == Target.TextFormatted?.ToString())
                 return;
 
             lastKnownPosition = Target.SelectionStart;

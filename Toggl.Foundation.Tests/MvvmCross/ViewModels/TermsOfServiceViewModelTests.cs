@@ -32,7 +32,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TermsOfServiceViewModel(browserService, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

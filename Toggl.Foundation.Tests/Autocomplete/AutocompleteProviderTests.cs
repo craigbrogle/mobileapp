@@ -41,7 +41,7 @@ namespace Toggl.Foundation.Tests.Autocomplete
                     () => new AutocompleteProvider(null);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

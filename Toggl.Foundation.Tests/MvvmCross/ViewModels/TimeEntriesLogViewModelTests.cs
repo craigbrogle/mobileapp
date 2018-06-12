@@ -52,7 +52,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -420,7 +420,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.DeleteCommand.ExecuteAsync(timeEntryViewModel);
 
-                AnalyticsService.Received().TrackDeletingTimeEntry();
+                AnalyticsService.DeleteTimeEntry.Received().Track();
             }
         }
     }

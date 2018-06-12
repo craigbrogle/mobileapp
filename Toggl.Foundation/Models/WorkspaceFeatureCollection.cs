@@ -11,8 +11,5 @@ namespace Toggl.Foundation.Models
 
         public static WorkspaceFeatureCollection From(IWorkspaceFeatureCollection entity)
             => new WorkspaceFeatureCollection(entity);
-
-        public bool IsEnabled(WorkspaceFeatureId feature)
-            => Features.Any(x => x.FeatureId == feature);
     }
 }

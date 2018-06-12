@@ -52,6 +52,11 @@ namespace Toggl.Daneel.ViewControllers
 				ActivityIndicator = null;
 			}
 
+			if (CountryNotSelectedImageView != null) {
+				CountryNotSelectedImageView.Dispose ();
+				CountryNotSelectedImageView = null;
+			}
+
 			if (EmailTextField != null) {
 				EmailTextField.Dispose ();
 				EmailTextField = null;
@@ -95,11 +100,6 @@ namespace Toggl.Daneel.ViewControllers
 			if (TopConstraint != null) {
 				TopConstraint.Dispose ();
 				TopConstraint = null;
-			}
-
-			if (CountryNotSelectedImageView != null) {
-				CountryNotSelectedImageView.Dispose ();
-				CountryNotSelectedImageView = null;
 			}
 		}
 	}

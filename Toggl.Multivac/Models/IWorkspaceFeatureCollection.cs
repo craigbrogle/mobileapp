@@ -7,7 +7,5 @@ namespace Toggl.Multivac.Models
         long WorkspaceId { get; }
 
         IEnumerable<IWorkspaceFeature> Features { get; }
-
-        bool IsEnabled(WorkspaceFeatureId feature);
     }
 }

@@ -193,7 +193,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 var secondStart = startStateMachineAndPrepareSecondStart(someResult, differentResult);
 
-                secondStart.ShouldNotThrow<InvalidOperationException>();
+                secondStart.Should().NotThrow<InvalidOperationException>();
             }
 
             [Theory]
@@ -208,7 +208,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 var secondStart = startStateMachineAndPrepareSecondStart(someResult, someResult);
 
-                secondStart.ShouldNotThrow<InvalidOperationException>();
+                secondStart.Should().NotThrow<InvalidOperationException>();
             }
 
             [Theory]
@@ -224,7 +224,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 var secondStart = startStateMachineAndPrepareSecondStart(someResult, someResult);
 
-                secondStart.ShouldNotThrow<InvalidOperationException>();
+                secondStart.Should().NotThrow<InvalidOperationException>();
             }
 
             [Property(Skip = "there is currently no timeout")]
@@ -241,7 +241,7 @@ namespace Toggl.Foundation.Tests.Sync
                 observable.Wait();
                 Action secondStart = () => StateMachine.Start(someResult.Transition());
 
-                secondStart.ShouldNotThrow<InvalidOperationException>();
+                secondStart.Should().NotThrow<InvalidOperationException>();
             }
 
             private Action startStateMachineAndPrepareSecondStart(StateResult first, StateResult second)

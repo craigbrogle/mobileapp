@@ -29,7 +29,7 @@ namespace Toggl.Ultrawave.Tests.Integration.Helper
         }
 
         public Task EnsureDefaultWorkspaceIsOnPlan(IUser user, PricingPlans plan)
-            => EnsureWorkspaceIsOnPlan(user, user.DefaultWorkspaceId, plan);
+            => EnsureWorkspaceIsOnPlan(user, user.DefaultWorkspaceId.Value, plan);
 
         public async Task EnsureWorkspaceIsOnPlan(IUser user, long workspaceId, PricingPlans plan)
         {

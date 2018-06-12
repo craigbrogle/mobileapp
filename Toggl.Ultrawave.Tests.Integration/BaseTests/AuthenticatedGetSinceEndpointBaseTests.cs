@@ -93,7 +93,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             Func<Task> callingEndpointWithBadThreshold = async () =>
                 await CallEndpointWith(api, DateTimeOffset.Now.AddDays(-95));
 
-            callingEndpointWithBadThreshold.ShouldThrow<BadRequestException>();
+            callingEndpointWithBadThreshold.Should().Throw<BadRequestException>();
         }
     }
 }

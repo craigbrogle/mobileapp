@@ -35,7 +35,7 @@ namespace Toggl.Foundation.Tests.DataSources
                     () => new TagsDataSource(idProvider, repository, timeService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

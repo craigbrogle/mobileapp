@@ -8,29 +8,6 @@ using Toggl.Multivac.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal partial class Client : IThreadSafeClient
-    {
-        public long Id { get; }
-
-        public long WorkspaceId { get; }
-
-        public string Name { get; }
-
-        IDatabaseWorkspace IDatabaseClient.Workspace => Workspace;
-
-        public IThreadSafeWorkspace Workspace { get; }
-
-        public bool IsDeleted { get; }
-
-        public SyncStatus SyncStatus { get; }
-
-        public string LastSyncErrorMessage { get; }
-
-        public DateTimeOffset At { get; }
-
-        public DateTimeOffset? ServerDeletedAt { get; }
-    }
-
     internal partial class Preferences : IThreadSafePreferences
     {
         public TimeFormat TimeOfDayFormat { get; }
@@ -222,7 +199,7 @@ namespace Toggl.Foundation.Models
 
         public string ApiToken { get; }
 
-        public long DefaultWorkspaceId { get; }
+        public long? DefaultWorkspaceId { get; }
 
         public Email Email { get; }
 

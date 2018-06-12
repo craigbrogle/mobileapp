@@ -1,22 +1,22 @@
 ﻿using System;
-using Toggl.Foundation.Sync;
-using Toggl.Foundation.Sync.States;
-using Toggl.PrimeRadiant;
-using Toggl.Ultrawave;
-using System.Reactive.Concurrency;
-using Toggl.Multivac.Models;
-using Toggl.PrimeRadiant.Models;
-using Toggl.Foundation.DataSources;
-using System.Reactive.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DataSources.Interfaces;
 using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
+using Toggl.Foundation.Sync;
+using Toggl.Foundation.Sync.States;
 using Toggl.Foundation.Sync.States.Pull;
 using Toggl.Foundation.Sync.States.Push;
+using Toggl.Multivac.Models;
+using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Models;
+using Toggl.Ultrawave;
 using Toggl.Ultrawave.ApiClients;
 using Toggl.Ultrawave.ApiClients.Interfaces;
 
@@ -40,7 +40,7 @@ namespace Toggl.Foundation
             var apiDelay = new RetryDelayService(random, retryLimit);
             var delayCancellation = new Subject<Unit>();
             var delayCancellationObservable = delayCancellation.AsObservable().Replay();
-            ConfigureTransitions(transitions, database, api, dataSource, apiDelay, scheduler, timeService, entryPoints, delayCancellationObservable);
+            ConfigureTransitions(transitions, database, api, dataSource, apiDelay, scheduler, timeService, analyticsService, entryPoints, delayCancellationObservable);
             var stateMachine = new StateMachine(transitions, scheduler, delayCancellation);
             var orchestrator = new StateMachineOrchestrator(stateMachine, entryPoints);
 
@@ -55,10 +55,11 @@ namespace Toggl.Foundation
             IRetryDelayService apiDelay,
             IScheduler scheduler,
             ITimeService timeService,
+            IAnalyticsService analyticsService,
             StateMachineEntryPoints entryPoints,
             IObservable<Unit> delayCancellation)
         {
-            configurePullTransitions(transitions, database, api, dataSource, timeService, scheduler, entryPoints.StartPullSync, delayCancellation);
+            configurePullTransitions(transitions, database, api, dataSource, timeService, analyticsService, scheduler, entryPoints.StartPullSync, delayCancellation);
             configurePushTransitions(transitions, api, dataSource, apiDelay, scheduler, entryPoints.StartPushSync, delayCancellation);
         }
 
@@ -68,6 +69,7 @@ namespace Toggl.Foundation
             ITogglApi api,
             ITogglDataSource dataSource,
             ITimeService timeService,
+            IAnalyticsService analyticsService,
             IScheduler scheduler,
             StateResult entryPoint,
             IObservable<Unit> delayCancellation)
@@ -111,7 +113,7 @@ namespace Toggl.Foundation
                     .UpdateSince<IProject, IDatabaseProject>(database.SinceParameters)
                     .CatchApiExceptions();
 
-            var createGhostProjects = new CreateGhostProjectsState(dataSource.Projects).CatchApiExceptions();
+            var createGhostProjects = new CreateGhostProjectsState(dataSource.Projects, analyticsService).CatchApiExceptions();
 
             var persistTimeEntries =
                 new PersistListState<ITimeEntry, IDatabaseTimeEntry, IThreadSafeTimeEntry>(dataSource.TimeEntries, TimeEntry.Clean)
@@ -123,23 +125,32 @@ namespace Toggl.Foundation
                     .UpdateSince<ITask, IDatabaseTask>(database.SinceParameters)
                     .CatchApiExceptions();
 
+            var refetchInaccessibleProjects =
+                new TryFetchInaccessibleProjectsState(dataSource.Projects, timeService, api.Projects)
+                    .CatchApiExceptions();
+
             var checkServerStatus = new CheckServerStatusState(api, scheduler, apiDelay, statusDelay, delayCancellation);
 
             var finished = new ResetAPIDelayState(apiDelay);
             var deleteOlderEntries = new DeleteOldEntriesState(timeService, dataSource.TimeEntries);
+            var deleteNonReferencedGhostProjects = new DeleteNonReferencedProjectGhostsState(dataSource.Projects, dataSource.TimeEntries);
 
             transitions.ConfigureTransition(entryPoint, fetchAllSince.Start);
             transitions.ConfigureTransition(fetchAllSince.FetchStarted, persistWorkspaces.Start);
-            transitions.ConfigureTransition(persistWorkspaces.FinishedPersisting, persistUser.Start);
-            transitions.ConfigureTransition(persistUser.FinishedPersisting, persistWorkspaceFeatures.Start);
-            transitions.ConfigureTransition(persistWorkspaceFeatures.FinishedPersisting, persistPreferences.Start);
-            transitions.ConfigureTransition(persistPreferences.FinishedPersisting, persistTags.Start);
-            transitions.ConfigureTransition(persistTags.FinishedPersisting, persistClients.Start);
-            transitions.ConfigureTransition(persistClients.FinishedPersisting, persistProjects.Start);
-            transitions.ConfigureTransition(persistProjects.FinishedPersisting, persistTasks.Start);
-            transitions.ConfigureTransition(persistTasks.FinishedPersisting, createGhostProjects.Start);
-            transitions.ConfigureTransition(createGhostProjects.FinishedPersisting, persistTimeEntries.Start);
-            transitions.ConfigureTransition(persistTimeEntries.FinishedPersisting, deleteOlderEntries.Start);
+            transitions.ConfigureTransition(persistWorkspaces.UnsafeState.FinishedPersisting, persistUser.Start);
+            transitions.ConfigureTransition(persistUser.UnsafeState.FinishedPersisting, persistWorkspaceFeatures.Start);
+            transitions.ConfigureTransition(persistWorkspaceFeatures.UnsafeState.FinishedPersisting, persistPreferences.Start);
+            transitions.ConfigureTransition(persistPreferences.UnsafeState.FinishedPersisting, persistTags.Start);
+            transitions.ConfigureTransition(persistTags.UnsafeState.FinishedPersisting, persistClients.Start);
+            transitions.ConfigureTransition(persistClients.UnsafeState.FinishedPersisting, persistProjects.Start);
+            transitions.ConfigureTransition(persistProjects.UnsafeState.FinishedPersisting, persistTasks.Start);
+            transitions.ConfigureTransition(persistTasks.UnsafeState.FinishedPersisting, createGhostProjects.Start);
+            transitions.ConfigureTransition(createGhostProjects.UnsafeState.FinishedPersisting, persistTimeEntries.Start);
+            transitions.ConfigureTransition(persistTimeEntries.UnsafeState.FinishedPersisting, refetchInaccessibleProjects.Start);
+            transitions.ConfigureTransition(refetchInaccessibleProjects.UnsafeState.FetchNext, refetchInaccessibleProjects.Start);
+
+            transitions.ConfigureTransition(refetchInaccessibleProjects.UnsafeState.FinishedPersisting, deleteOlderEntries.Start);
+            transitions.ConfigureTransition(deleteOlderEntries.FinishedDeleting, deleteNonReferencedGhostProjects.Start);
 
             transitions.ConfigureTransition(persistWorkspaces.Failed, checkServerStatus.Start);
             transitions.ConfigureTransition(persistUser.Failed, checkServerStatus.Start);
@@ -151,12 +162,13 @@ namespace Toggl.Foundation
             transitions.ConfigureTransition(persistTasks.Failed, checkServerStatus.Start);
             transitions.ConfigureTransition(createGhostProjects.Failed, checkServerStatus.Start);
             transitions.ConfigureTransition(persistTimeEntries.Failed, checkServerStatus.Start);
+            transitions.ConfigureTransition(refetchInaccessibleProjects.Failed, checkServerStatus.Start);
 
             transitions.ConfigureTransition(checkServerStatus.Retry, checkServerStatus.Start);
             transitions.ConfigureTransition(checkServerStatus.ServerIsAvailable, finished.Start);
             transitions.ConfigureTransition(finished.Continue, fetchAllSince.Start);
         }
-        
+
         private static void configurePushTransitions(
             TransitionHandlerProvider transitions,
             ITogglApi api,

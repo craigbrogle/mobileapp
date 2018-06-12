@@ -2,7 +2,7 @@
 <resources>
     <style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowBackground">@color/onboardingStatusBarColor</item>
+        <item name="android:windowBackground">@color/lightGray</item>
     </style>
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:actionBarSize">56dp</item>

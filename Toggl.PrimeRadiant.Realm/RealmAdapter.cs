@@ -66,7 +66,7 @@ namespace Toggl.PrimeRadiant.Realm
 
             return doTransaction(realm => addRealmEntity(entity, realm));
         }
-        
+
         public TModel Update(long id, TModel entity)
         {
             Ensure.Argument.IsNotNull(entity, nameof(entity));
@@ -194,23 +194,15 @@ namespace Toggl.PrimeRadiant.Realm
             List<IConflictResolutionResult<TModel>> results)
         {
             var rival = (TRealmEntity)realm.All<TRealmEntity>().SingleOrDefault(resolver.AreRivals(entity));
-            if (rival != null)
-            {
-                long originalRivalId = getId(rival);
-                (TModel fixedEntity, TModel fixedRival) = resolver.FixRivals(entity, rival, realm.All<TRealmEntity>());
+            if (rival == null) return;
 
-                if (entity.Equals(fixedEntity) == false)
-                {
-                    entity.SetPropertiesFrom(fixedEntity, realm);
-                }
+            var originalRivalId = getId(rival);
 
-                if (rival.Equals(fixedRival) == false)
-                {
-                    rival.SetPropertiesFrom(fixedRival, realm);
-                }
+            var (fixedEntity, fixedRival) = resolver.FixRivals(entity, rival, realm.All<TRealmEntity>());
+            entity.SetPropertiesFrom(fixedEntity, realm);
+            rival.SetPropertiesFrom(fixedRival, realm);
 
-                results.Add(new UpdateResult<TModel>(originalRivalId, rival));
-            }
+            results.Add(new UpdateResult<TModel>(originalRivalId, rival));
         }
     }
 }

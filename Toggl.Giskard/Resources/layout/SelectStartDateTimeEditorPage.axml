@@ -39,13 +39,14 @@
             android:layout_width="16dp"
             android:layout_height="16dp" />
         <TextView
-            local:MvxBind="Text DateTimeOffsetTimeFormat(StartTime, TimeFormat)"
+            local:MvxBind="Text StripAmPm(DateTimeOffsetTimeFormat(StartTime, TimeFormat))"
             tools:text="12:20"
             android:textSize="11sp"
             android:textColor="@color/halfTransparentWhite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
+            local:MvxBind="Text StartTimeAmPmLabel"
             tools:text="AM"
             android:textSize="11sp"
             android:textColor="@color/halfTransparentWhite"
@@ -58,10 +59,9 @@
         android:layout_marginTop="96dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-    <toggl.giskard.views.TogglDroidTimePicker
-        android:id="@+id/SelectStartTimeClockView"
-        android:headerBackground="@color/popupBlueBackground"
-        local:MvxBind="Value StartTime; Visibility Visibility(!IsCalendarView)"
+    <FrameLayout
+        android:id="@+id/SelectStartTimeClockViewContainer"
+        local:MvxBind="Visibility Visibility(!IsCalendarView)"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     <LinearLayout

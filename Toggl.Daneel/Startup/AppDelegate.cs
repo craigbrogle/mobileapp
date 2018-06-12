@@ -94,9 +94,17 @@ namespace Toggl.Daneel
 
         public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
         {
-            analyticsService.TrackAppShortcut(shortcutItem.LocalizedTitle);
+            analyticsService.ApplicationShortcut.Track(shortcutItem.LocalizedTitle);
 
-            var shortcutType = (ShortcutType)(int)(NSNumber)shortcutItem.UserInfo[nameof(ApplicationShortcut.Type)];
+            var key = new NSString(nameof(ApplicationShortcut.Type));
+            if (!shortcutItem.UserInfo.ContainsKey(key))
+                return;
+
+            var shortcutNumber = shortcutItem.UserInfo[key] as NSNumber;
+            if (shortcutNumber == null)
+                return;
+
+            var shortcutType = (ShortcutType)(int)shortcutNumber;
 
             switch (shortcutType)
             {

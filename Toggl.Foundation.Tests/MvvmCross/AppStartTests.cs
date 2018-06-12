@@ -48,7 +48,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     () => new AppStart<OnboardingViewModel>(loginManager, navigationService, accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

@@ -113,11 +113,12 @@ namespace Toggl.Foundation.Sync
             if (error is OfflineException)
             {
                 progress.OnNext(SyncProgress.OfflineModeDetected);
+                analyticsService.OfflineModeDetected.Track();
             }
             else
             {
                 progress.OnNext(SyncProgress.Failed);
-                analyticsService.TrackSyncError(error);
+                analyticsService.Track(error);
             }
 
             if (error is ClientDeprecatedException

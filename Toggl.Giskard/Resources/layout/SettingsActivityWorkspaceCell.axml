@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<FrameLayout
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:tools="http://schemas.android.com/tools"
     xmlns:local="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/lightGray"
@@ -8,6 +7,7 @@
     android:layout_height="48dp"
     android:layout_width="match_parent">
     <TextView
+        android:id="@+id/SettingsWorkspaceCellWorkspaceNameTextView"
         local:MvxBind="Text WorkspaceName"
         android:maxLines="1"
         android:textSize="15sp"
@@ -29,6 +29,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical|right" />
     <ImageView
+        android:id="@+id/SettingsWorkspaceCellCheckedImageView"
         local:MvxBind="Visibility Visibility(Selected)"
         android:src="@drawable/check"
         android:layout_marginRight="16dp"

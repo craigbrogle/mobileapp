@@ -9,6 +9,7 @@ using System.Reactive.Linq;
 using Toggl.Daneel.Views;
 using static System.Math;
 using System.Reactive.Disposables;
+using System.Threading;
 
 namespace Toggl.Daneel.Extensions
 {
@@ -127,6 +128,7 @@ namespace Toggl.Daneel.Extensions
             IDisposable visibilityDisposable = null;
             visibilityDisposable = step.ShouldBeVisible
                 .Where(visible => visible == false)
+                .ObserveOn(SynchronizationContext.Current)
                 .Subscribe(_ =>
                 {
                     cell.RemoveGestureRecognizer(panGestureRecognizer);

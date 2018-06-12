@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Android.Content;
 using Toggl.Foundation.Services;
+using Uri = Android.Net.Uri;
 
 namespace Toggl.Giskard.Services
 {
@@ -18,19 +19,20 @@ namespace Toggl.Giskard.Services
         {
             try
             {
-                var emailIntent = new Intent(Intent.ActionSend);
+                var emailIntent = new Intent(Intent.ActionSendto);
 
                 emailIntent.PutExtra(Intent.ExtraEmail, new String[] { recipient });
                 emailIntent.PutExtra(Intent.ExtraSubject, subject);
                 emailIntent.PutExtra(Intent.ExtraText, message);
-                emailIntent.SetType("text/plain");
+                emailIntent.SetData(Uri.Parse("mailto:"));
 
                 var chooserText = context.Resources.GetString(Resource.String.FeedbackChooserCopy);
                 var chooserIntent = Intent.CreateChooser(emailIntent, chooserText);
+                chooserIntent.AddFlags(ActivityFlags.NewTask);
 
                 if (chooserIntent.ResolveActivity(context.PackageManager) == null)
                     throw new ActivityNotFoundException();
-                
+
                 context.StartActivity(chooserIntent);
                 return Task.FromResult(MailResult.Ok);
             }

@@ -34,7 +34,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action tryingToConstructWithEmptyParameters =
                     () => new EditDurationViewModel(navigationService, timeService, dataSource);
 
-                tryingToConstructWithEmptyParameters.ShouldThrow<ArgumentNullException>();
+                tryingToConstructWithEmptyParameters.Should().Throw<ArgumentNullException>();
             }
 
         }

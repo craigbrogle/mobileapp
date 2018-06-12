@@ -25,7 +25,7 @@ namespace Toggl.Ultrawave.Tests.Models
                 var clonedObject = new Location(validLocation);
 
                 clonedObject.Should().NotBeSameAs(validLocation);
-                clonedObject.ShouldBeEquivalentTo(validLocation, options => options.IncludingProperties());
+                clonedObject.Should().BeEquivalentTo(validLocation, options => options.IncludingProperties());
             }
 
             [Fact, LogIfTooSlow]
@@ -39,7 +39,7 @@ namespace Toggl.Ultrawave.Tests.Models
             {
                 Action serializing = () => SerializationHelper.CanBeSerialized(validJson, validLocation);
 
-                serializing.ShouldThrow<SerializationException>();
+                serializing.Should().Throw<SerializationException>();
             }
         }
     }

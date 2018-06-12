@@ -51,7 +51,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                 var userWithoutApiToken = userWithApiToken(null);
 
                 callingEndpointWithReturnedUser(userWithoutApiToken)
-                    .ShouldThrow<UserIsMissingApiTokenException>();
+                    .Should().Throw<UserIsMissingApiTokenException>();
             }
             
             [Fact, LogIfTooSlow]
@@ -60,7 +60,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                 var userWithEmptyApiToken = userWithApiToken("");
                 
                 callingEndpointWithReturnedUser(userWithEmptyApiToken)
-                    .ShouldThrow<UserIsMissingApiTokenException>();
+                    .Should().Throw<UserIsMissingApiTokenException>();
             }
             
             [Fact, LogIfTooSlow]
@@ -69,7 +69,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                 var userWithWhitespaceApiToken = userWithApiToken(" ");
                 
                 callingEndpointWithReturnedUser(userWithWhitespaceApiToken)
-                    .ShouldThrow<UserIsMissingApiTokenException>();
+                    .Should().Throw<UserIsMissingApiTokenException>();
             }
             
             protected abstract IObservable<IUser> CallEndpoint(IUserApi api);

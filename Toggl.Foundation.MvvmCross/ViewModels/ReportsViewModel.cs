@@ -8,9 +8,11 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
+using PropertyChanged;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.Parameters;
@@ -30,6 +32,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
+        private readonly IInteractorFactory interactorFactory;
         private readonly IAnalyticsService analyticsService;
         private readonly ReportsCalendarViewModel calendarViewModel;
         private readonly Subject<Unit> reportSubject = new Subject<Unit>();
@@ -58,13 +61,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IReadOnlyList<ChartSegment> Segments
         {
-            get => groupedSegments ?? (groupedSegments = groupSegments());
+            get => segments;
             private set
             {
                 segments = value;
                 groupedSegments = null;
             }
         }
+
+        [DependsOn(nameof(Segments))]
+        public IReadOnlyList<ChartSegment> GroupedSegments
+            => groupedSegments ?? (groupedSegments = groupSegments());
 
         public bool ShowEmptyState => !segments.Any() && !IsLoading;
 
@@ -89,22 +96,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand<DateRangeParameter> ChangeDateRangeCommand { get; }
 
-        public ReportsViewModel(
-            ITogglDataSource dataSource,
-            ITimeService timeService,
-            IMvxNavigationService navigationService,
-            IAnalyticsService analyticsService
-        )
+        public ReportsViewModel(ITogglDataSource dataSource,
+                                ITimeService timeService,
+                                IMvxNavigationService navigationService,
+                                IInteractorFactory interactorFactory,
+                                IAnalyticsService analyticsService)
         {
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
+            Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
 
             this.timeService = timeService;
             this.navigationService = navigationService;
             this.analyticsService = analyticsService;
             this.dataSource = dataSource;
+            this.interactorFactory = interactorFactory;
 
             calendarViewModel = new ReportsCalendarViewModel(timeService, dataSource);
 
@@ -118,13 +126,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             workspaceId = parameter;
         }
 
-        public async override Task Initialize()
+        public override async Task Initialize()
         {
             if (workspaceId == 0)
-                workspaceId = await dataSource
-                    .User
-                    .Current
-                    .Select(user => user.DefaultWorkspaceId);
+            {
+                var workspace = await interactorFactory.GetDefaultWorkspace().Execute();
+                workspaceId = workspace.Id;
+            }
 
             disposeBag.Add(
                 reportSubject
@@ -189,11 +197,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (success)
             {
-                analyticsService.TrackReportsSuccess(source, totalDays, projectsNotSyncedCount, loadingTime.TotalMilliseconds);
+                analyticsService.ReportsSuccess.Track(source, totalDays, projectsNotSyncedCount, loadingTime.TotalMilliseconds);
             }
             else
             {
-                analyticsService.TrackReportsFailure(source, totalDays, loadingTime.TotalMilliseconds);
+                analyticsService.ReportsFailure.Track(source, totalDays, loadingTime.TotalMilliseconds);
             }
         }
 
@@ -249,7 +257,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private IReadOnlyList<ChartSegment> groupSegments()
         {
             var otherProjects = segments.Where(segment => segment.Percentage < minimumPieChartSegmentPercentage).ToList();
-            if (otherProjects.Count == 0)
+            if (otherProjects.Count <= 1 || otherProjects.Count == segments.Count)
                 return segments;
 
             var otherSegment = new ChartSegment(

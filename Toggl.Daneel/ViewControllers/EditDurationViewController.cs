@@ -218,6 +218,8 @@ namespace Toggl.Daneel.ViewControllers
             base.ViewDidAppear(animated);
 
             viewDidAppear = true;
+
+            DurationInput.BecomeFirstResponder();
         }
 
         protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)

@@ -49,7 +49,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels.CalendarQuickSelectShortcu
             Action tryingToConstructWithNull =
                 () => TryToCreateQuickSelectShortCutWithNull();
 
-            tryingToConstructWithNull.ShouldThrow<ArgumentNullException>();
+            tryingToConstructWithNull.Should().Throw<ArgumentNullException>();
         }
     }
 }

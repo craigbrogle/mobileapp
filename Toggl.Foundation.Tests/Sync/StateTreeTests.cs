@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 Action callingMethod = () => CallMethod(stateResult, stateFactory);
 
-                callingMethod.ShouldThrow<ArgumentNullException>();
+                callingMethod.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -39,7 +39,7 @@ namespace Toggl.Foundation.Tests.Sync
                 Action callingMethodSecondTime =
                     () => CallMethod(stateResult, Substitute.For<TStateFactory>());
 
-                callingMethodSecondTime.ShouldThrow<Exception>();
+                callingMethodSecondTime.Should().Throw<Exception>();
             }
 
             [Fact, LogIfTooSlow]
@@ -82,7 +82,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Action callingMethodWithNull = () => provider.GetTransitionHandler(null);
 
-                callingMethodWithNull.ShouldThrow<ArgumentNullException>();
+                callingMethodWithNull.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]

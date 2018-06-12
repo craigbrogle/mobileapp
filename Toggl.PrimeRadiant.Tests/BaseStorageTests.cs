@@ -24,7 +24,7 @@ namespace Toggl.PrimeRadiant.Tests
                 async () => await Update(12345, new TTestModel());
 
             callingUpdateInAnEmptyRepository
-                .ShouldThrow<EntityNotFoundException>();
+                .Should().Throw<DatabaseOperationException<TTestModel>>();
         }
 
         [Fact, LogIfTooSlow]
@@ -44,7 +44,7 @@ namespace Toggl.PrimeRadiant.Tests
                 async () => await Delete(12345);
 
             callingDeleteInAnEmptyRepository
-                .ShouldThrow<EntityNotFoundException>();
+                .Should().Throw<DatabaseOperationException<TTestModel>>();
         }
     }
 }

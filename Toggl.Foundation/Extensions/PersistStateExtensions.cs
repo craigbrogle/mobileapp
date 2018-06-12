@@ -1,5 +1,4 @@
-﻿using Toggl.Foundation.Sync.States;
-using Toggl.Foundation.Sync.States.Pull;
+﻿using Toggl.Foundation.Sync.States.Pull;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 
@@ -7,8 +6,9 @@ namespace Toggl.Foundation.Extensions
 {
     public static class PersistStateExtensions
     {
-        internal static ApiExceptionsCatchingPersistState CatchApiExceptions(this IPersistState state)
-            => new ApiExceptionsCatchingPersistState(state);
+        internal static ApiExceptionsCatchingPersistState<T> CatchApiExceptions<T>(this T state)
+            where T : IPersistState
+            => new ApiExceptionsCatchingPersistState<T>(state);
 
         internal static IPersistState UpdateSince<TInterface, TDatabaseInterface>(this IPersistState state, ISinceParameterRepository sinceParameterRepository)
             where TInterface : ILastChangedDatable

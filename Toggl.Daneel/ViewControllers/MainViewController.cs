@@ -473,10 +473,12 @@ namespace Toggl.Daneel.ViewControllers
                     swipeLeftStep.ShouldBeVisible,
                     swipeRightStep.ShouldBeVisible,
                     (tapToEdit, swipeLeft, swipeRight) => tapToEdit || swipeLeft || swipeRight)
+                    .ObserveOn(SynchronizationContext.Current)
                     .Subscribe(onScrollableTooltipsVisibilityChanged);
 
             firstTimeEntryDisposable = source.FirstTimeEntry
                 .Where(nextFirstTimeEntry => nextFirstTimeEntry != firstTimeEntry)
+                .ObserveOn(SynchronizationContext.Current)
                 .Subscribe(onFirstTimeEntryChanged);
 
             ViewModel.NavigationService.AfterNavigate += onNavigate;

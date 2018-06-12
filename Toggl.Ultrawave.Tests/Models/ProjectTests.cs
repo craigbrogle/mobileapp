@@ -32,7 +32,7 @@ namespace Toggl.Ultrawave.Tests.Models
             var clonedObject = new Project(validProject);
 
             clonedObject.Should().NotBeSameAs(validProject);
-            clonedObject.ShouldBeEquivalentTo(validProject, options => options.IncludingProperties());
+            clonedObject.Should().BeEquivalentTo(validProject, options => options.IncludingProperties());
         }
 
         [Fact, LogIfTooSlow]

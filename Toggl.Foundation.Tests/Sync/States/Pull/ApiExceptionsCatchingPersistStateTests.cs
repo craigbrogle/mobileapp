@@ -20,32 +20,22 @@ namespace Toggl.Foundation.Tests.Sync.States
 
         private readonly IPersistState internalState = Substitute.For<IPersistState>();
 
-        private readonly ApiExceptionsCatchingPersistState state;
+        private readonly ApiExceptionsCatchingPersistState<IPersistState> state;
 
         public ApiExceptionsCatchingPersistStateTests()
         {
-            state = new ApiExceptionsCatchingPersistState(internalState);
+            state = new ApiExceptionsCatchingPersistState<IPersistState>(internalState);
         }
 
         [Fact]
-        public async Task ReturnsSuccessResultWhenEverythingWorks()
-        {
-            var transition = await state.Start(fetchObservables);
-
-            transition.Result.Should().Be(state.FinishedPersisting);
-        }
-
-        [Fact]
-        public async Task DoesNotReturnTheSuccessResultFromTheInternalStateWhenEverythingWorks()
+        public async Task ReturnsTransitionFromInternalStateWhenEverythingWorks()
         {
             var internalTransition = Substitute.For<ITransition>();
-            var internalResult = Substitute.For<IStateResult>();
-            internalTransition.Result.Returns(internalResult);
             internalState.Start(Arg.Any<IFetchObservables>()).Returns(Observable.Return(internalTransition));
 
             var transition = await state.Start(fetchObservables);
 
-            transition.Result.Should().NotBe(internalResult);
+            transition.Should().Be(internalTransition);
         }
 
         [Theory, LogIfTooSlow]

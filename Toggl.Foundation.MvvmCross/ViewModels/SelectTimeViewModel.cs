@@ -31,6 +31,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         }
 
         private readonly ISubject<TemporalInconsistency> temporalInconsistencySubject = new Subject<TemporalInconsistency>();
+        private readonly ISubject<bool> calendarModeSubject = new BehaviorSubject<bool>(false);
 
         private readonly ITogglDataSource dataSource;
         private readonly IMvxNavigationService navigationService;
@@ -63,7 +64,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public DateTimeOffset StopTimeOrCurrent => StopTime ?? CurrentDateTime;
 
+        public string StartTimeAmPmLabel =>
+            TimeFormat.IsTwentyFourHoursFormat ? "" : StartTime.ToString("tt");
+       
+        public string StopTimeAmPmLabel =>
+            TimeFormat.IsTwentyFourHoursFormat ? "" : StopTimeOrCurrent.ToString("tt");
+
         public IObservable<TemporalInconsistency> TemporalInconsistencyDetected { get; }
+        public IObservable<bool> IsCalendarViewObservable { get; }
 
         public IObservable<bool> Is24HoursModeObservable { get; private set; }
 
@@ -148,6 +156,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             ToggleClockCalendarModeCommand = new MvxCommand(togglClockCalendarMode);
 
             TemporalInconsistencyDetected = temporalInconsistencySubject.AsObservable();
+            IsCalendarViewObservable = calendarModeSubject.AsObservable();
         }
 
         public override void Prepare(SelectTimeParameters parameter)
@@ -160,6 +169,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             StartingTabIndex = parameter.StartingTabIndex;
             IsCalendarView = parameter.ShouldStartOnCalendar;
+            calendarModeSubject.OnNext(IsCalendarView);
 
             initializeTimeConstraints();
             isViewModelPrepared = true;
@@ -202,11 +212,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void togglClockCalendarMode()
         {
             IsCalendarView = !IsCalendarView;
+            calendarModeSubject.OnNext(IsCalendarView);
         }
 
         private void stopTimeEntry()
         {
             StopTime = CurrentDateTime;
+            IsCalendarView = false;
+            calendarModeSubject.OnNext(IsCalendarView);
         }
 
         private void initializeTimeConstraints()

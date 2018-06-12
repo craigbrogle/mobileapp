@@ -74,7 +74,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var (togglApi, user) = await SetupTestUser();
 
                 var userFromApi = await CallEndpointWith(togglApi);
-                var workspace = await togglApi.Workspaces.GetById(userFromApi.DefaultWorkspaceId);
+                var workspace = await togglApi.Workspaces.GetById(userFromApi.DefaultWorkspaceId.Value);
 
                 userFromApi.DefaultWorkspaceId.Should().NotBe(0);
                 workspace.Should().NotBeNull();
@@ -107,7 +107,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .ResetPassword(Email.From(emailString))
                     .Wait();
 
-                resetInvalidEmail.ShouldThrow<BadRequestException>();
+                resetInvalidEmail.Should().Throw<BadRequestException>();
             }
 
             [Fact, LogTestInfo]
@@ -118,7 +118,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action resetInvalidEmail = () => api.User.ResetPassword(email).Wait();
 
-                resetInvalidEmail.ShouldThrow<BadRequestException>();
+                resetInvalidEmail.Should().Throw<BadRequestException>();
             }
 
             [Fact, LogTestInfo]
@@ -150,7 +150,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUp(Email.Empty, "dummyButValidPassword".ToPassword(), true, 237)
                     .Wait();
 
-                signingUp.ShouldThrow<ArgumentException>();
+                signingUp.Should().Throw<ArgumentException>();
             }
 
             [Theory, LogTestInfo]
@@ -162,7 +162,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUp(Email.From(emailString), "dummyButValidPassword".ToPassword(), true, 237)
                     .Wait();
 
-                signingUp.ShouldThrow<ArgumentException>();
+                signingUp.Should().Throw<ArgumentException>();
             }
 
             [Theory, LogTestInfo]
@@ -183,7 +183,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUp(Email.From("dummy@email.com"), empty.ToPassword(), true, 237)
                     .Wait();
 
-                signingUp.ShouldThrow<BadRequestException>();
+                signingUp.Should().Throw<BadRequestException>();
             }
 
             [Theory, LogTestInfo]
@@ -226,7 +226,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUp(email, "thePasswordIsNotImportant".ToPassword(), true, 237)
                     .Wait();
 
-                secondSigningUp.ShouldThrow<EmailIsAlreadyUsedException>();
+                secondSigningUp.Should().Throw<EmailIsAlreadyUsedException>();
             }
 
             [Fact, LogTestInfo]
@@ -238,7 +238,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action secondSigningUp = () => unauthenticatedTogglApi.User.SignUp(email, password, true, 237).Wait();
 
-                secondSigningUp.ShouldThrow<EmailIsAlreadyUsedException>();
+                secondSigningUp.Should().Throw<EmailIsAlreadyUsedException>();
             }
 
             [Fact, LogTestInfo]
@@ -267,7 +267,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var user = await unauthenticatedTogglApi.User.SignUp(email, password, true, 237);
                 var credentials = Credentials.WithPassword(email, password);
                 var togglApi = TogglApiWith(credentials);
-                var workspace = await togglApi.Workspaces.GetById(user.DefaultWorkspaceId);
+                var workspace = await togglApi.Workspaces.GetById(user.DefaultWorkspaceId.Value);
 
                 workspace.Id.Should().BeGreaterThan(0);
                 workspace.Name.Should().Be(expectedWorkspaceName);
@@ -324,7 +324,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUp(email, password, true, countryId)
                     .Wait();
 
-                signingUp.ShouldThrow<BadRequestException>();
+                signingUp.Should().Throw<BadRequestException>();
             }
         }
 
@@ -345,7 +345,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUpWithGoogle(null)
                     .Wait();
 
-                signingUp.ShouldThrow<ArgumentException>();
+                signingUp.Should().Throw<ArgumentException>();
             }
 
             [Theory, LogTestInfo]
@@ -359,7 +359,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUpWithGoogle(notAToken)
                     .Wait();
 
-                signUp.ShouldThrow<UnauthorizedException>();
+                signUp.Should().Throw<UnauthorizedException>();
             }
 
             [Fact, LogTestInfo]
@@ -372,7 +372,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     .SignUpWithGoogle(jwt)
                     .Wait();
 
-                signUp.ShouldThrow<UnauthorizedException>();
+                signUp.Should().Throw<UnauthorizedException>();
             }
         }
 
@@ -392,6 +392,21 @@ namespace Toggl.Ultrawave.Tests.Integration
                 updatedUser.Id.Should().Be(user.Id);
                 updatedUser.DefaultWorkspaceId.Should().NotBe(user.DefaultWorkspaceId);
                 updatedUser.DefaultWorkspaceId.Should().Be(secondWorkspace.Id);
+            }
+
+            [Fact, LogTestInfo]
+            public async Task DoesNotChangeDefaultWorkspaceWhenTheValueIsNull()
+            {
+                var (togglClient, user) = await SetupTestUser();
+
+                var userWithUpdates = new Ultrawave.Models.User(user);
+                userWithUpdates.DefaultWorkspaceId = null;
+
+                var updatedUser = await togglClient.User.Update(userWithUpdates);
+
+                updatedUser.Id.Should().Be(user.Id);
+                updatedUser.DefaultWorkspaceId.Should().NotBeNull();
+                updatedUser.DefaultWorkspaceId.Should().Be(user.DefaultWorkspaceId);
             }
 
             protected override IObservable<IUser> PrepareForCallingUpdateEndpoint(ITogglApi api)

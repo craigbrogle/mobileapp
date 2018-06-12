@@ -160,7 +160,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new EditProjectViewModel(dataSource, dialogService, interactorFactory, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

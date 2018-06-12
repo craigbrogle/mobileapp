@@ -1,29 +1,26 @@
 ﻿using System;
 using System.Reactive.Linq;
-using Toggl.Foundation.Sync.States.Pull;
 using Toggl.Multivac;
 using Toggl.Ultrawave.Exceptions;
 
-namespace Toggl.Foundation.Sync.States
+namespace Toggl.Foundation.Sync.States.Pull
 {
-    internal sealed class ApiExceptionsCatchingPersistState : IPersistState
+    internal sealed class ApiExceptionsCatchingPersistState<T>
+        where T : IPersistState
     {
-        private readonly IPersistState internalState;
-
-        public StateResult<IFetchObservables> FinishedPersisting { get; } = new StateResult<IFetchObservables>();
+        public T UnsafeState { get; }
 
         public StateResult<Exception> Failed { get; } = new StateResult<Exception>();
 
-        public ApiExceptionsCatchingPersistState(IPersistState internalState)
+        public ApiExceptionsCatchingPersistState(T unsafeState)
         {
-            Ensure.Argument.IsNotNull(internalState, nameof(internalState));
+            Ensure.Argument.IsNotNull(unsafeState, nameof(unsafeState));
 
-            this.internalState = internalState;
+            UnsafeState = unsafeState;
         }
 
         public IObservable<ITransition> Start(IFetchObservables fetch)
-            => internalState.Start(fetch)
-                .Select(_ => FinishedPersisting.Transition(fetch))
+            => UnsafeState.Start(fetch)
                 .Catch((Exception exception) => processError(exception));
 
         private IObservable<ITransition> processError(Exception exception)

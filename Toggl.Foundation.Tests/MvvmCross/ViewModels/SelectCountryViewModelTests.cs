@@ -39,7 +39,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SelectCountryViewModel(null);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

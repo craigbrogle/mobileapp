@@ -117,7 +117,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task fetchSectionedTimeEntries()
         {
             var timeEntries = await interactorFactory.GetAllNonDeletedTimeEntries().Execute();
-            if (timeEntries == null) 
+            if (timeEntries == null)
             {
                 TimeEntries.Clear();
                 return;
@@ -240,7 +240,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await interactorFactory.DeleteTimeEntry(timeEntryViewModel.Id).Execute();
 
-            analyticsService.TrackDeletingTimeEntry();
+            analyticsService.DeleteTimeEntry.Track();
             dataSource.SyncManager.PushSync();
         }
 

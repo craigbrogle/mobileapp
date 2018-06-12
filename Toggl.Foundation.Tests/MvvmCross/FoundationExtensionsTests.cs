@@ -97,7 +97,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .Build();
 
             tryingToConstructWithEmptyParameters
-                .ShouldThrow<Exception>();
+                .Should().Throw<Exception>();
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithAccessRestrictionStorage(actualAccessRestrictionStorage)
                     .Build();
 
-            tryingToConstructWithEmptyParameters.ShouldNotThrow<Exception>();
+            tryingToConstructWithEmptyParameters.Should().NotThrow<Exception>();
         }
 
         [Fact, LogIfTooSlow]

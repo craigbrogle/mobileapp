@@ -62,7 +62,7 @@ namespace Toggl.Foundation.Tests.Reports
                     () => new ReportsProvider(api, database);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

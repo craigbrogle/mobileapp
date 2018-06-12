@@ -46,6 +46,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public string Name { get; private set; } = "";
 
+        public string ImageUrl { get; private set; }
+
         public string Version { get; private set; } = "";
 
         public string WorkspaceName { get; private set; } = "";
@@ -181,6 +183,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             WorkspaceName = defaultWorkspace.Name;
             IsManualModeEnabled = userPreferences.IsManualModeEnabled;
             BeginningOfWeek = user.BeginningOfWeek;
+            ImageUrl = user.ImageUrl;
 
             var workspaces = await interactorFactory.GetAllWorkspaces().Execute();
             foreach (var workspace in workspaces)
@@ -335,7 +338,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsLoggingOut = true;
             IsSynced = false;
             IsRunningSync = false;
-            analyticsService.TrackLogoutEvent(LogoutSource.Settings);
+            analyticsService.Logout.Track(LogoutSource.Settings);
             userPreferences.Reset();
             await dataSource.Logout();
             await navigationService.Navigate<LoginViewModel>();

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive.Linq;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 
@@ -20,7 +22,14 @@ namespace Toggl.Foundation.Interactors
         public IObservable<IThreadSafeWorkspace> Execute()
             => dataSource.User
                 .Get()
-                .SelectMany(user =>
-                    dataSource.Workspaces.GetById(user.DefaultWorkspaceId));
+                .SelectMany(user => user.DefaultWorkspaceId.HasValue
+                    ? dataSource.Workspaces.GetById(user.DefaultWorkspaceId.Value)
+                    : chooseWorkspace())
+                .Catch((InvalidOperationException exception) => chooseWorkspace())
+                .Select(Workspace.From);
+
+        private IObservable<IThreadSafeWorkspace> chooseWorkspace()
+            => dataSource.Workspaces.GetAll(workspace => !workspace.IsDeleted)
+                .Select(workspaces => workspaces.OrderBy(workspace => workspace.Id).First());
     }
 }

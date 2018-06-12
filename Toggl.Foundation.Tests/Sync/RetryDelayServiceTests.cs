@@ -47,7 +47,7 @@ namespace Toggl.Foundation.Tests.Sync
                 }
             };
 
-            waitingTooLong.ShouldThrow<TimeoutException>();
+            waitingTooLong.Should().Throw<TimeoutException>();
             maxDelay.Should().BeLessOrEqualTo(limit);
         }
 
@@ -70,7 +70,7 @@ namespace Toggl.Foundation.Tests.Sync
                 }
             };
 
-            waitingTooLong.ShouldThrow<TimeoutException>();
+            waitingTooLong.Should().Throw<TimeoutException>();
             maxDelay.Should().BeLessOrEqualTo(limit);
         }
 
@@ -90,7 +90,7 @@ namespace Toggl.Foundation.Tests.Sync
                 } while (maxDelay <= limit);
             };
 
-            waitingTooLong.ShouldNotThrow();
+            waitingTooLong.Should().NotThrow();
             maxDelay.Should().BeGreaterThan(limit);
         }
 
@@ -110,7 +110,7 @@ namespace Toggl.Foundation.Tests.Sync
                 } while (maxDelay <= limit);
             };
 
-            waitingTooLong.ShouldNotThrow();
+            waitingTooLong.Should().NotThrow();
             maxDelay.Should().BeGreaterThan(limit);
         }
 

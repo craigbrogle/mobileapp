@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.PrimeRadiant;
 using static Toggl.Foundation.Helper.Constants;
 using static Toggl.Multivac.Extensions.StringExtensions;
@@ -13,6 +14,21 @@ namespace Toggl.Foundation.Models
             private const string errorMessage = "You need to set the {0} before building a project";
 
             public static Builder Create(long id) => new Builder(id);
+
+            public static Builder From(IThreadSafeProject project)
+                => new Builder(project.Id)
+                {
+                    Name = project.Name,
+                    Color = project.Color,
+                    Billable = project.Billable,
+                    SyncStatus = project.SyncStatus,
+                    WorkspaceId = project.WorkspaceId,
+                    At = project.At,
+                    ServerDeletedAt = project.ServerDeletedAt,
+                    IsDeleted = project.IsDeleted,
+                    ClientId = project.ClientId,
+                    Active = project.Active
+                };
 
             public long Id { get; }
 

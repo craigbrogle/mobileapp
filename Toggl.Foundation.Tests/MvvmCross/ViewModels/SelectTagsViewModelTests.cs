@@ -73,7 +73,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SelectTagsViewModel(dataSource, navigationService, interactorFactory);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

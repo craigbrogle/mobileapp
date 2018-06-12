@@ -50,7 +50,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntryViewModelCollection(DateTime.Now, null, DurationFormat.Improved);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Theory, LogIfTooSlow]
@@ -64,7 +64,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntryViewModelCollection(dateTime, Enumerable.Empty<TimeEntryViewModel>(), DurationFormat.Improved);
 
                 tryingToConstructWithNonLocalDateTime
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
         }
 

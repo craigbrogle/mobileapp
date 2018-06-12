@@ -60,7 +60,7 @@ namespace Toggl.Foundation.Tests.DataSources
                     () => new UserDataSource(repository, timeService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
     }

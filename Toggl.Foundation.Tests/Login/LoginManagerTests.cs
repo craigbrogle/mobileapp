@@ -79,7 +79,7 @@ namespace Toggl.Foundation.Tests.Login
                     () => new LoginManager(apiFactory, database, googleService, shortcutCreator, accessRestrictionStorage, createDataSource);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -110,7 +110,7 @@ namespace Toggl.Foundation.Tests.Login
                     () => LoginManager.Login(actualEmail, actualPassword).Wait();
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -176,7 +176,7 @@ namespace Toggl.Foundation.Tests.Login
                     .ResetPassword(Email.From(emailString))
                     .Wait();
 
-                tryingToResetWithInvalidEmail.ShouldThrow<ArgumentException>();
+                tryingToResetWithInvalidEmail.Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -256,7 +256,7 @@ namespace Toggl.Foundation.Tests.Login
                     () => LoginManager.SignUp(actualEmail, actualPassword, true, 0).Wait();
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -331,7 +331,7 @@ namespace Toggl.Foundation.Tests.Login
                     () => LoginManager.RefreshToken(password.ToPassword()).Wait();
  
                 tryingToRefreshWithInvalidParameters
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
  
             [Fact, LogIfTooSlow]

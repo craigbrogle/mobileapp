@@ -48,7 +48,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
                     () => new ApiErrorHandlingService(navigationService, accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

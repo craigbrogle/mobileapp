@@ -14,7 +14,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         {
             Action creatingState = () => new InvalidTransitionState(null);
 
-            creatingState.ShouldThrow<ArgumentNullException>();
+            creatingState.Should().Throw<ArgumentNullException>();
         }
 
         [Theory, LogIfTooSlow]
@@ -24,7 +24,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         {
             Action creatingState = () => new InvalidTransitionState(message);
 
-            creatingState.ShouldThrow<ArgumentException>();
+            creatingState.Should().Throw<ArgumentException>();
         }
 
         [Fact, LogIfTooSlow]

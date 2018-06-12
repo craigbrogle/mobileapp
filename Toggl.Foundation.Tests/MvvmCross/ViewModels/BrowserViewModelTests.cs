@@ -23,7 +23,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action tryingToConstructWithEmptyParameters =
                     () => new BrowserViewModel(null);
 
-                tryingToConstructWithEmptyParameters.ShouldThrow<ArgumentNullException>();
+                tryingToConstructWithEmptyParameters.Should().Throw<ArgumentNullException>();
             }
         }
 

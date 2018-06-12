@@ -1,6 +1,8 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
+using Android.Gms.Auth;
 using Android.Gms.Auth.Api;
 using Android.Gms.Auth.Api.SignIn;
 using Android.Gms.Common;
@@ -21,6 +23,7 @@ namespace Toggl.Giskard.Services
 
         private bool isLoggingIn;
         private Subject<string> subject = new Subject<string>();
+        private readonly string scope = $"oauth2:{Scopes.Profile}";
 
         public IObservable<string> GetAuthToken()
         {
@@ -63,15 +66,31 @@ namespace Toggl.Giskard.Services
                 var signInData = Auth.GoogleSignInApi.GetSignInResultFromIntent(result.Data);
                 if (signInData.IsSuccess)
                 {
-                    subject.OnNext(signInData.SignInAccount.IdToken);
-                    subject.OnCompleted();
+                    var activity = Mvx.Resolve<IMvxAndroidCurrentTopActivity>().Activity as FragmentActivity;
+
+                    Task.Run(() =>
+                    {
+                        try
+                        {
+                            var token = GoogleAuthUtil.GetToken(activity, signInData.SignInAccount.Account, scope);
+                            subject.OnNext(token);
+                            subject.OnCompleted();
+                        }
+                        catch (Exception e)
+                        {
+                            subject.OnError(e);
+                        }
+                        finally
+                        {
+                            isLoggingIn = false;
+                        }
+                    });
                 }
                 else
                 {
                     subject.OnError(new GoogleLoginException(signInData.Status.IsCanceled));
+                    isLoggingIn = false;
                 }
-
-                isLoggingIn = false;
             }
         }
 

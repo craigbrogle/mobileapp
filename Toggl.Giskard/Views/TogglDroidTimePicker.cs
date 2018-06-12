@@ -23,9 +23,10 @@ namespace Toggl.Giskard.Views
     {
         private bool isInitialized;
 
-        public TogglDroidTimePicker(Context context)
+        public TogglDroidTimePicker(Context context, bool is24HoursMode)
             : base(context)
         {
+           SetIs24HourView(new JavaBool(is24HoursMode));
         }
 
         public TogglDroidTimePicker(Context context, IAttributeSet attrs)
@@ -82,9 +83,15 @@ namespace Toggl.Giskard.Views
 
         public event EventHandler ValueChanged;
 
-        public void Update24HourMode(bool is24HourMode)
+        protected override void OnFinishInflate()
         {
-            SetIs24HourView(new JavaBool(is24HourMode));
+            base.OnFinishInflate();
+
+            if (OreoApis.AreAvailable)
+            {
+                var keyboardIconId = Resources.GetIdentifier("toggle_mode", "id", "android");
+                FindViewById(keyboardIconId).Visibility = ViewStates.Gone;
+            }
         }
 
         public void OnTimeChanged(TimePicker view, int hourOfDay, int minute)

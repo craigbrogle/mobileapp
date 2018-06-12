@@ -87,7 +87,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action tryingToConstructWithEmptyParameters =
                     () => new EditTimeEntryViewModel(timeService, dataSource, interactorFactory, navigationService, onboardingStorage, dialogService, analyticsService);
 
-                tryingToConstructWithEmptyParameters.ShouldThrow<ArgumentNullException>();
+                tryingToConstructWithEmptyParameters.Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -319,7 +319,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     await ViewModel.DeleteCommand.ExecuteAsync();
 
-                    AnalyticsService.Received().TrackDeletingTimeEntry();
+                    AnalyticsService.Received().DeleteTimeEntry.Track();
                 }
             }
 
@@ -726,7 +726,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 await ViewModel.SelectTagsCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackEditOpensTagSelector();
+                AnalyticsService.Received().EditEntrySelectTag.Track();
             }
 
             private IThreadSafeTag createTag(long id)
@@ -1062,7 +1062,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.SelectProjectCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackEditOpensProjectSelector();
+                AnalyticsService.Received().EditEntrySelectProject.Track();
             }
         }
 

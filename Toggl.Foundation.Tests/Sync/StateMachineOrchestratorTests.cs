@@ -64,7 +64,7 @@ namespace Toggl.Foundation.Tests.Sync
                 // ReSharper disable once ObjectCreationAsStatement
                 Action constructing = () => new StateMachineOrchestrator(stateMachine, entryPoints);
 
-                constructing.ShouldThrow<ArgumentNullException>();
+                constructing.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -100,7 +100,7 @@ namespace Toggl.Foundation.Tests.Sync
             [Fact, LogIfTooSlow]
             public void DoesNotThrowIfNotSyncing()
             {
-                callingMethod.ShouldNotThrow();
+                callingMethod.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -108,7 +108,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Orchestrator.Start(Sleep);
 
-                callingMethod.ShouldNotThrow();
+                callingMethod.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -116,7 +116,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Orchestrator.Start(Pull);
 
-                callingMethod.ShouldThrow<InvalidOperationException>();
+                callingMethod.Should().Throw<InvalidOperationException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -124,7 +124,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Orchestrator.Start(Push);
 
-                callingMethod.ShouldThrow<InvalidOperationException>();
+                callingMethod.Should().Throw<InvalidOperationException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -133,7 +133,7 @@ namespace Toggl.Foundation.Tests.Sync
                 Orchestrator.Start(Pull);
                 SendStateMachineEvent(new StateMachineDeadEnd(null));
 
-                callingMethod.ShouldNotThrow();
+                callingMethod.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -142,7 +142,7 @@ namespace Toggl.Foundation.Tests.Sync
                 Orchestrator.Start(Push);
                 SendStateMachineEvent(new StateMachineDeadEnd(null));
 
-                callingMethod.ShouldNotThrow();
+                callingMethod.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -151,7 +151,7 @@ namespace Toggl.Foundation.Tests.Sync
                 Orchestrator.Start(Pull);
                 SendStateMachineEvent(new StateMachineError(new Exception()));
 
-                callingMethod.ShouldNotThrow();
+                callingMethod.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -160,7 +160,7 @@ namespace Toggl.Foundation.Tests.Sync
                 Orchestrator.Start(Push);
                 SendStateMachineEvent(new StateMachineError(new Exception()));
 
-                callingMethod.ShouldNotThrow();
+                callingMethod.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -268,7 +268,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                     Action callingStartWithUnknownState = () => Orchestrator.Start((SyncState)state);
 
-                    callingStartWithUnknownState.ShouldThrow<ArgumentOutOfRangeException>();
+                    callingStartWithUnknownState.Should().Throw<ArgumentOutOfRangeException>();
                 }
             }
         }

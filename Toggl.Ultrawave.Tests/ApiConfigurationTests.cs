@@ -20,7 +20,7 @@ namespace Toggl.Ultrawave.Tests
                     () => new ApiConfiguration(Staging, null, correctUserAgent);
 
                 constructingWithWrongParameteres
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -30,7 +30,7 @@ namespace Toggl.Ultrawave.Tests
                     () => new ApiConfiguration(Staging, None, null);
 
                 constructingWithWrongParameteres
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
         }
     }

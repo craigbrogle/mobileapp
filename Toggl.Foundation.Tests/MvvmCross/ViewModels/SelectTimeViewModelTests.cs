@@ -109,7 +109,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action constructingWithEmptyParameters =
                     () => new SelectTimeViewModel(dataSource, navigationService, interactorFactory, timeService);
 
-                constructingWithEmptyParameters.ShouldThrow<ArgumentNullException>();
+                constructingWithEmptyParameters.Should().Throw<ArgumentNullException>();
             }
         }
 
