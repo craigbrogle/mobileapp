@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Sync.ConflictResolution;
@@ -28,7 +29,7 @@ namespace Toggl.Foundation.DataSources
 
         public IObservable<IThreadSafeClient> Create(string name, long workspaceId)
         {
-            var client = new Client(
+            var client = new ClientDTO(
                 idProvider.GetNextIdentifier(),
                 workspaceId,
                 name,
