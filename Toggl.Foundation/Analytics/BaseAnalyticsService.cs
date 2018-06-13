@@ -70,13 +70,13 @@ namespace Toggl.Foundation.Analytics
         public IAnalyticsEvent AppWasRated { get; protected set; }
       
         [AnalyticsEvent]
-        public IAnalyticsEvent RatingViewWasShown { get; }
+        public IAnalyticsEvent RatingViewWasShown { get; protected set; }
       
         [AnalyticsEvent("isPositive")]
-        public IAnalyticsEvent<bool> UserFinishedRatingViewFirstStep { get; }
+        public IAnalyticsEvent<bool> UserFinishedRatingViewFirstStep { get; protected set; }
       
         [AnalyticsEvent("outcome")]
-        public IAnalyticsEvent<RatingViewSecondStepOutcome> UserFinishedRatingViewSecondStep { get; }
+        public IAnalyticsEvent<RatingViewSecondStepOutcome> UserFinishedRatingViewSecondStep { get; protected set; }
 
         [AnalyticsEvent("Source", "TotalDays", "ProjectsNotSynced", "LoadingTime")]
         public IAnalyticsEvent<ReportsSource, int, int, double> ReportsSuccess { get; protected set; }
