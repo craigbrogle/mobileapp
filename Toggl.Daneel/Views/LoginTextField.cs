@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
@@ -90,26 +91,30 @@ namespace Toggl.Daneel.Views
 
         public override bool BecomeFirstResponder()
         {
-            base.BecomeFirstResponder();
+            var becomeFirstResponder = base.BecomeFirstResponder();
 
-            IsFirstResponderChanged?.Raise(this);
+            if (becomeFirstResponder)
+            {
+                IsFirstResponderChanged?.Raise(this);
 
-            if (placeholderLayer.Frame.Top != 0)
-                movePlaceholderUp();
+                if (placeholderLayer.Frame.Top != 0)
+                    movePlaceholderUp();
+            }
 
-            return true;
+            return becomeFirstResponder;
         }
 
         public override bool ResignFirstResponder()
         {
-            base.ResignFirstResponder();
+            var resignFirstResponder = base.ResignFirstResponder();
+            if (resignFirstResponder)
+            {
+                IsFirstResponderChanged?.Raise(this);
 
-            IsFirstResponderChanged?.Raise(this);
-
-            if (string.IsNullOrEmpty(Text))
-                movePlaceholderDown();
-
-            return true;
+                if (string.IsNullOrEmpty(Text))
+                    movePlaceholderDown();
+            }
+            return resignFirstResponder;
         }
 
         private void updateBottomLine()
