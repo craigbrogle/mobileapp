@@ -3,7 +3,7 @@ using Toggl.Multivac;
 
 namespace Toggl.Foundation.Sync
 {
-    public sealed class TransitionHandlerProvider : ITransitionHandlerProvider
+    public sealed class TransitionHandlerProvider : ITransitionHandlerProvider, ITransitionConfigurator
     {
         private readonly Dictionary<IStateResult, TransitionHandler> transitionHandlers
             = new Dictionary<IStateResult, TransitionHandler>();
