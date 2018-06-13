@@ -20,20 +20,23 @@ namespace Toggl.Foundation.Models
         public IThreadSafeWorkspace Workspace { get; }
         IDatabaseWorkspace IDatabaseClient.Workspace => Workspace;
 
-        private Client(IClient entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false, IThreadSafeWorkspace workspace = null)
-            : this(entity.Id, entity.WorkspaceId, entity.Name, entity.At, syncStatus, lastSyncErrorMessage, isDeleted, entity.ServerDeletedAt, workspace)
-        { }
-
-        public Client(long id, long workspaceId, string name, DateTimeOffset at, SyncStatus syncStatus, string lastSyncErrorMessage = "", bool isDeleted = false, DateTimeOffset? serverDeletedAt = null, IThreadSafeWorkspace workspace = null)
+        private Client(IClient entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false,
+            IThreadSafeWorkspace workspace = null)
         {
-            Id = id;
-            WorkspaceId = workspaceId;
-            Name = name;
-            At = at;
+            Ensure.Argument.IsNotNullOrEmpty(entity.Name, nameof(entity.Name));
+            Ensure.Argument.IsNotNull(entity.WorkspaceId, nameof(entity.WorkspaceId));
+            Ensure.Argument.IsNotNull(entity.At, nameof(entity.At));
+
+            Id = entity.Id;
+            WorkspaceId = entity.WorkspaceId;
+            Name = entity.Name;
+            At = entity.At;
+            ServerDeletedAt = entity.ServerDeletedAt;
+
             SyncStatus = syncStatus;
             LastSyncErrorMessage = lastSyncErrorMessage;
             IsDeleted = isDeleted;
-            ServerDeletedAt = serverDeletedAt;
+
             Workspace = workspace;
         }
 
