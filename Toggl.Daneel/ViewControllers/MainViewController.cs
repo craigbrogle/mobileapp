@@ -85,6 +85,11 @@ namespace Toggl.Daneel.ViewControllers
         private readonly ISubject<bool> isEmptySubject = new BehaviorSubject<bool>(false);
         private readonly ISubject<int> timeEntriesCountSubject = new BehaviorSubject<int>(0);
 
+        private readonly UIView tableHeader = new UIView();
+        private readonly UIView suggestionsContaier = new UIView { TranslatesAutoresizingMaskIntoConstraints = false };
+        private readonly UIView ratingViewContainer = new UIView { TranslatesAutoresizingMaskIntoConstraints = false };
+        private readonly SuggestionsView suggestionsView = new SuggestionsView{ TranslatesAutoresizingMaskIntoConstraints = false };
+
         public bool RatingViewVisible { get; private set; }
 
         public MainViewController()
@@ -102,12 +107,9 @@ namespace Toggl.Daneel.ViewControllers
 
             prepareOnboarding();
 
-            var suggestionsView = new SuggestionsView();
+            setupTableViewHeader();
 
-            TimeEntriesLogTableView.TableHeaderView = suggestionsView;
             TimeEntriesLogTableView.Source = source;
-
-            suggestionsView.DataContext = ViewModel.SuggestionsViewModel;
 
             source.Initialize();
 
@@ -232,6 +234,28 @@ namespace Toggl.Daneel.ViewControllers
             View.LayoutIfNeeded();
         }
 
+        private void setupTableViewHeader()
+        {
+            TimeEntriesLogTableView.TableHeaderView = tableHeader;
+
+            tableHeader.TranslatesAutoresizingMaskIntoConstraints = false;
+            tableHeader.WidthAnchor.ConstraintEqualTo(TimeEntriesLogTableView.WidthAnchor).Active = true;
+
+            tableHeader.AddSubview(suggestionsContaier);
+            tableHeader.AddSubview(ratingViewContainer);
+
+            suggestionsContaier.ConstrainToViewSides(tableHeader);
+            ratingViewContainer.ConstrainToViewSides(tableHeader);
+
+            suggestionsContaier.TopAnchor.ConstraintEqualTo(tableHeader.TopAnchor).Active = true;
+            suggestionsContaier.BottomAnchor.ConstraintEqualTo(ratingViewContainer.TopAnchor).Active = true;
+            ratingViewContainer.BottomAnchor.ConstraintEqualTo(tableHeader.BottomAnchor).Active = true;
+
+            suggestionsContaier.AddSubview(suggestionsView);
+            suggestionsView.ConstrainInView(suggestionsContaier);
+            suggestionsView.DataContext = ViewModel.SuggestionsViewModel;
+        }
+
         private void onTimeEntryCardVisibilityChanged(bool visible)
         {
             if (!viewInitialized)
@@ -317,6 +341,11 @@ namespace Toggl.Daneel.ViewControllers
 
         public void ShowRatingView()
         {
+            var ratingView = RatingView.Create();
+            ratingView.TranslatesAutoresizingMaskIntoConstraints = false;
+            ratingView.DataContext = ViewModel.RatingViewModel;
+            ratingViewContainer.AddSubview(ratingView);
+            ratingView.ConstrainInView(ratingViewContainer);
         }
 
         public void HideRatingView()

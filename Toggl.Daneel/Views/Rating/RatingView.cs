@@ -37,44 +37,50 @@ namespace Toggl.Daneel
             var boolToHeightConverter = new BoolToConstantValueConverter<nfloat>(289, 262);
             var bindingSet = this.CreateBindingSet<RatingView, RatingViewModel>();
 
+            TranslatesAutoresizingMaskIntoConstraints = false;
             var heightConstraint = HeightAnchor.ConstraintEqualTo(1);
             heightConstraint.Active = true;
 
-            bindingSet.Bind(QuestionView)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.GotImpression);
+            //bindingSet.Bind(QuestionView)
+            //          .For(v => v.BindVisibility())
+            //          .To(vm => vm.GotImpression);
 
-            bindingSet.Bind(CTAView)
-                      .For(v => v.BindVisibility())
-                      .To(vm => vm.GotImpression)
-                      .WithConversion(inverseBoolConverter);
-            
+            //bindingSet.Bind(CTAView)
+            //.For(v => v.BindVisibility())
+            //.To(vm => vm.GotImpression)
+            //.WithConversion(inverseBoolConverter);
+
             bindingSet.Bind(heightConstraint)
                       .For(v => v.BindConstant())
                       .To(vm => vm.GotImpression)
                       .WithConversion(boolToHeightConverter);
 
+            bindingSet.Bind(YesView)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.RegisterImpressionCommand)
+                      .CommandParameter(true);
+
             bindingSet.Apply();
 
-            YesView.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            {
-                ImpressionTappedCommand?.Execute(true);
-            }));
+            //YesView.AddGestureRecognizer(new UITapGestureRecognizer(() =>
+            //{
+            //    ImpressionTappedCommand?.Execute(true);
+            //}));
 
-            NotReallyView.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            {
-                ImpressionTappedCommand?.Execute(false);
-            }));
+            //NotReallyView.AddGestureRecognizer(new UITapGestureRecognizer(() =>
+            //{
+            //    ImpressionTappedCommand?.Execute(false);
+            //}));
 
-            CTAButton.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            {
-                CTATappedCommand?.Execute();
-            }));
+            //CTAButton.AddGestureRecognizer(new UITapGestureRecognizer(() =>
+            //{
+            //    CTATappedCommand?.Execute();
+            //}));
 
-            DismissButton.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            {
-                DismissTappedCommand?.Execute();
-            }));
+            //DismissButton.AddGestureRecognizer(new UITapGestureRecognizer(() =>
+            //{
+            //    DismissTappedCommand?.Execute();
+            //}));
         }
 
         public override void LayoutSubviews()

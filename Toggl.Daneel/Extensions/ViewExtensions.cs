@@ -27,5 +27,19 @@ namespace Toggl.Daneel.Extensions
             animation.To = NSValue.FromCGPoint(new CGPoint(view.Center.X + shakeThreshold, view.Center.Y));
             view.Layer.AddAnimation(animation, "shake");
         }
+
+        public static void ConstrainInView(this UIView self, UIView view)
+        {
+            self.TopAnchor.ConstraintEqualTo(view.TopAnchor).Active = true;
+            self.BottomAnchor.ConstraintEqualTo(view.BottomAnchor).Active = true;
+            self.LeftAnchor.ConstraintEqualTo(view.LeftAnchor).Active = true;
+            self.RightAnchor.ConstraintEqualTo(view.RightAnchor).Active = true;
+        }
+
+        public static void ConstrainToViewSides(this UIView self, UIView view)
+        {
+            self.LeftAnchor.ConstraintEqualTo(view.LeftAnchor).Active = true;
+            self.RightAnchor.ConstraintEqualTo(view.RightAnchor).Active = true;
+        }
     }
 }

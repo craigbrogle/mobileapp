@@ -12,6 +12,9 @@
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Analytics\EmptyClass.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

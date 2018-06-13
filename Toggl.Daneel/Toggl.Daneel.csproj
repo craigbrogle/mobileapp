@@ -121,12 +121,6 @@
     <Reference Include="System.Reactive.PlatformServices">
       <HintPath>..\packages\System.Reactive.PlatformServices.3.0.0\lib\netstandard1.3\System.Reactive.PlatformServices.dll</HintPath>
     </Reference>
-    <Reference Include="Calabash">
-      <HintPath>..\packages\Xamarin.TestCloud.Agent.0.21.1\lib\Xamarin.iOS\Calabash.dll</HintPath>
-    </Reference>
-    <Reference Include="Firebase.CrashReporting">
-      <HintPath>..\packages\Xamarin.Firebase.iOS.CrashReporting.2.0.0\lib\Xamarin.iOS10\Firebase.CrashReporting.dll</HintPath>
-    </Reference>
     <Reference Include="Google.Core">
       <HintPath>..\packages\Xamarin.Google.iOS.Core.3.1.0\lib\Xamarin.iOS10\Google.Core.dll</HintPath>
     </Reference>
