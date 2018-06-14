@@ -9,6 +9,7 @@ using MvvmCross.Droid.Support.V7.AppCompat;
 using MvvmCross.Droid.Views.Attributes;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Giskard.Extensions;
+using System.Reactive.Disposables;
 
 namespace Toggl.Giskard.Activities
 {
@@ -16,8 +17,10 @@ namespace Toggl.Giskard.Activities
     [Activity(Theme = "@style/AppTheme",
               ScreenOrientation = ScreenOrientation.Portrait,
               ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
-    public sealed class StartTimeEntryActivity : MvxAppCompatActivity<StartTimeEntryViewModel>
+    public sealed partial class StartTimeEntryActivity : MvxAppCompatActivity<StartTimeEntryViewModel>, IReactiveBindingHolder
     {
+        public CompositeDisposable DisposeBag { get; private set; } = new CompositeDisposable();
+
         protected override void OnCreate(Bundle bundle)
         {
             this.ChangeStatusBarColor(new Color(ContextCompat.GetColor(this, Resource.Color.blueStatusBarBackground)));
@@ -26,6 +29,9 @@ namespace Toggl.Giskard.Activities
             SetContentView(Resource.Layout.StartTimeEntryActivity);
 
             OverridePendingTransition(Resource.Animation.abc_slide_in_bottom, Resource.Animation.abc_fade_out);
+
+            initializeViews();
+            setupBindings();
         }
 
         public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
