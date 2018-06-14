@@ -9,6 +9,8 @@ namespace Toggl.Giskard.Extensions
 {
     public static class ActivityExtensions
     {
+        private static readonly Color lollipopFallbackStatusBarColor = Color.ParseColor("#2C2C2C");
+
         public static void ChangeStatusBarColor(this Activity activity, Color color, bool useDarkIcons = false)
         {
             var window = activity.Window;
@@ -20,7 +22,7 @@ namespace Toggl.Giskard.Extensions
             {
                 if (color == Color.White && useDarkIcons)
                 {
-                    window.SetStatusBarColor(Color.ParseColor("#2C2C2C"));
+                    window.SetStatusBarColor(lollipopFallbackStatusBarColor);
                 }
                 return;
             }
