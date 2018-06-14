@@ -10,15 +10,6 @@ namespace Toggl.Giskard.Adapters
 {
     public abstract class BaseRecyclerAdapter<T> : RecyclerView.Adapter
     {
-        protected BaseRecyclerAdapter()
-        {
-        }
-
-        protected BaseRecyclerAdapter(IntPtr javaReference, JniHandleOwnership transfer)
-            : base(javaReference, transfer)
-        {
-        }
-
         public Func<T, Task> OnItemTapped { get; set; }
 
         private IList<T> items = new List<T>();
@@ -28,12 +19,21 @@ namespace Toggl.Giskard.Adapters
             set => SetItems(value ?? new List<T>());
         }
 
+        protected BaseRecyclerAdapter()
+        {
+        }
+
+        protected BaseRecyclerAdapter(IntPtr javaReference, JniHandleOwnership transfer)
+            : base(javaReference, transfer)
+        {
+        }
+
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
             var inflater = LayoutInflater.From(parent.Context);
 
             var viewHolder = CreateViewHolder(parent, inflater);
-            viewHolder.Click = OnItemTapped;
+            viewHolder.Tapped = OnItemTapped;
 
             return viewHolder;
         }
