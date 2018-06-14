@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using Toggl.Daneel.ViewSources;
 using Toggl.Multivac.Extensions;
 using UIKit;
 
@@ -37,5 +39,8 @@ namespace Toggl.Daneel.Extensions
 
         public static Action<bool> BindIsOn(this UISwitch @switch)
             => isOn => @switch.SetState(isOn, true);
+
+        public static Action<IList<T>> BindItems<T>(this BaseTableViewSource<T> viewSource)
+            => items => viewSource.Items = items;
     }
 }

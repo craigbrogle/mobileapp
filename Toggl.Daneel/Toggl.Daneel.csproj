@@ -975,6 +975,10 @@
     <Compile Include="Extensions\ImageExtension.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
     <Compile Include="ViewControllers\ReactiveViewController.cs" />
+    <Compile Include="ViewSources\BaseTableViewSource.cs" />
+    <Compile Include="Cells\BaseTableCell.cs" />
+    <Compile Include="Cells\BaseTableHeaderFooterView.cs" />
+    <Compile Include="ViewSources\SimpleTableViewSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
