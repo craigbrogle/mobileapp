@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MvvmCross.Core.ViewModels;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
@@ -73,8 +74,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (!HasProject) return;
 
             ProjectId = timeEntry.Project.Id;
-            ProjectName = timeEntry.Project.Name;
-            ProjectColor = timeEntry.Project.Color;
+            ProjectName = timeEntry.Project.DisplayName();
+            ProjectColor = timeEntry.Project.DisplayColor();
 
             TaskId = timeEntry.TaskId;
             TaskName = timeEntry.Task?.Name ?? "";

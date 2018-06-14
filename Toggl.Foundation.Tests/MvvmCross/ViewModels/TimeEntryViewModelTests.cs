@@ -56,5 +56,22 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 viewModel.HasProject.Should().Be(hasProject);
             }
         }
+
+        public sealed class TheDisplayName : TimeEntryViewModelTest
+        {
+            [Theory, LogIfTooSlow]
+            [InlineData(true)]
+            [InlineData(false)]
+            public void ChecksDisplayNameContainsArchived(bool active)
+            {
+                Project.Active.Returns(active);
+                MockTimeEntry.Duration.Returns((long)TimeSpan.FromHours(1).TotalSeconds);
+                MockTimeEntry.Project.Returns(Project);
+
+                var viewModel = new TimeEntryViewModel(MockTimeEntry, DurationFormat.Improved);
+
+                viewModel.ProjectName.Contains("(archived)").Should().Be(!active);
+            }
+        }
     }
 }
