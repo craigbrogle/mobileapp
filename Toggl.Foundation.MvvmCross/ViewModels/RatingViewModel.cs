@@ -68,6 +68,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             GotImpression = true;
             impressionIsPositive = isPositive;
+            analyticsService.UserFinishedRatingViewFirstStep.Track(isPositive);
             if (isPositive)
             {
                 CTATitle = Resources.RatingViewPositiveCTATitle;
@@ -86,20 +87,31 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (impressionIsPositive == null)
                 return;
-
             if (impressionIsPositive.Value)
             {
                 ratingService.AskForRating();
+                //We can't really know whether the user actually rated
+                //We only know that we presented the iOS rating view
+                analyticsService.UserFinishedRatingViewSecondStep.Track(RatingViewSecondStepOutcome.AppWasRated);
             }
             else
             {
                 await feedbackService.SubmitFeedback();
+                analyticsService.UserFinishedRatingViewSecondStep.Track(RatingViewSecondStepOutcome.FeedbackWasLeft);
             }
         }
 
         private void dismiss()
         {
             navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
+
+            if (impressionIsPositive.HasValue)
+            {
+                var outcome = impressionIsPositive.Value
+                    ? RatingViewSecondStepOutcome.AppWasNotRated
+                    : RatingViewSecondStepOutcome.FeedbackWasNotLeft;
+                analyticsService.UserFinishedRatingViewSecondStep.Track(outcome);
+            }
         }
     }
 }

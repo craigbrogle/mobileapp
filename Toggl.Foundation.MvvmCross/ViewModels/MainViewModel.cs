@@ -45,6 +45,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
         private readonly IUserPreferences userPreferences;
+        private readonly IAnalyticsService analyticsService;
         private readonly IOnboardingStorage onboardingStorage;
         private readonly IInteractorFactory interactorFactory;
         private readonly IMvxNavigationService navigationService;
@@ -139,8 +140,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             ITogglDataSource dataSource,
             ITimeService timeService,
             IUserPreferences userPreferences,
-            IOnboardingStorage onboardingStorage,
             IAnalyticsService analyticsService,
+            IOnboardingStorage onboardingStorage,
             IInteractorFactory interactorFactory,
             IMvxNavigationService navigationService,
             IRemoteConfigService remoteConfigService,
@@ -150,6 +151,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(userPreferences, nameof(userPreferences));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
@@ -160,6 +162,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.dataSource = dataSource;
             this.timeService = timeService;
             this.userPreferences = userPreferences;
+            this.analyticsService = analyticsService;
             this.interactorFactory = interactorFactory;
             this.navigationService = navigationService;
             this.onboardingStorage = onboardingStorage;
@@ -255,6 +258,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (shouldBevisible)
             {
                 navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
+                analyticsService.RatingViewWasShown.Track();
             }
         }
 
