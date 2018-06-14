@@ -339,9 +339,11 @@ namespace Toggl.Daneel.ViewControllers
             }
         }
 
+        RatingView ratingView;
         public void ShowRatingView()
         {
-            var ratingView = RatingView.Create();
+            RatingViewVisible = true;
+            ratingView = RatingView.Create();
             ratingView.TranslatesAutoresizingMaskIntoConstraints = false;
             ratingView.DataContext = ViewModel.RatingViewModel;
             ratingViewContainer.AddSubview(ratingView);
@@ -350,6 +352,20 @@ namespace Toggl.Daneel.ViewControllers
 
         public void HideRatingView()
         {
+            RatingViewVisible = false;
+            ratingView.RemoveFromSuperview();
+
+            //We have to scroll a little to update the header size.
+            //Using LayoutSubviews(), SetNeedsLayout(), LayoutIfNeeded() etc. does not work.
+            var offset = TimeEntriesLogTableView.ContentOffset;
+            var rect = new CGRect
+            {
+                X = offset.X,
+                Y = offset.Y - 1,
+                Width = 1,
+                Height = 1
+            };
+            TimeEntriesLogTableView.ScrollRectToVisible(rect, true);
         }
 
         private void prepareViews()

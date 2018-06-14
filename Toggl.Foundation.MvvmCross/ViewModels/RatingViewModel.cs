@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
+using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Multivac;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -11,6 +13,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     {
         private readonly ITogglDataSource dataSource;
         private readonly IAnalyticsService analyticsService;
+        private readonly IMvxNavigationService navigationService;
 
         public bool GotImpression { get; private set; }
 
@@ -24,13 +27,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public MvxCommand LeaveReviewCommand { get; set; }
         public MvxCommand DismissViewCommand { get; set; }
 
-        public RatingViewModel(ITogglDataSource dataSource, IAnalyticsService analyticsService)
+        public RatingViewModel(
+            ITogglDataSource dataSource,
+            IAnalyticsService analyticsService,
+            IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
+            Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
 
             this.dataSource = dataSource;
             this.analyticsService = analyticsService;
+            this.navigationService = navigationService;
 
             GotImpression = false;
 
@@ -68,7 +76,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void dismiss()
         {
-            GotImpression = true;
+            navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
         }
     }
 }
