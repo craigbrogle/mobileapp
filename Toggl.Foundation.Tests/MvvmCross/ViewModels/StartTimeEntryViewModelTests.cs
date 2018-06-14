@@ -1021,7 +1021,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ViewModel.Prepare(parameter);
 
@@ -1350,6 +1350,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         .First();
 
                     ViewModel.SelectSuggestionCommand.Execute(projectSuggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickEmptyStateProjectSuggestion);
                     AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.TableCellButton);
                 }
 
@@ -1361,6 +1363,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         .First();
 
                     ViewModel.SelectSuggestionCommand.Execute(tagSuggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickEmptyStateTagSuggestion);
                     AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.TableCellButton);
                 }
 
@@ -1755,6 +1759,40 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var stopTime = hoursToAddToStopTime.HasValue ? now.AddHours(hoursToAddToStopTime.Value) : (DateTimeOffset?)null;
                 tcs.SetResult(new SelectTimeResultsParameters(now, stopTime));
                 return commandTask;
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartTimeTap()
+            {
+                ViewModel.Prepare();
+
+                await ViewModel.SelectTimeCommand.ExecuteAsync("StartTime");
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartTime);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartDateTap()
+            {
+                ViewModel.Prepare();
+
+                await ViewModel.SelectTimeCommand.ExecuteAsync("StartDate");
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde @fgh", 10);
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartDate);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksDurationTap()
+            {
+                ViewModel.Prepare();
+
+                await ViewModel.SelectTimeCommand.ExecuteAsync("Duration");
+
+                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde @fgh", 10);
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Duration);
             }
         }
 

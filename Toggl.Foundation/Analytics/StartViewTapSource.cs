@@ -10,6 +10,8 @@
         Duration,
         SuggestFromAtCharacter,
         SuggestFromHashCharacter,
+        PickEmptyStateProjectSuggestion,
+        PickEmptyStateTagSuggestion,
         PickProjectSuggestion,
         PickTagSuggestion,
         PickTimeEntrySuggestion,
