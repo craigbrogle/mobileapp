@@ -1778,8 +1778,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.SelectTimeCommand.ExecuteAsync("StartDate");
 
-                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde @fgh", 10);
-
                 AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartDate);
             }
 
@@ -1789,8 +1787,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.Prepare();
 
                 await ViewModel.SelectTimeCommand.ExecuteAsync("Duration");
-
-                ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde @fgh", 10);
 
                 AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Duration);
             }
