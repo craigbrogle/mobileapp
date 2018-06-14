@@ -54,6 +54,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private RatingViewExperiment ratingViewExperiment;
         private IDisposable ratingViewExperimentDisposable;
 
+        private readonly TimeSpan ratingViewTimeout = TimeSpan.FromMinutes(5);
+
         public TimeSpan CurrentTimeEntryElapsedTime { get; private set; } = TimeSpan.Zero;
 
         private DateTimeOffset? currentTimeEntryStart;
@@ -259,6 +261,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             {
                 navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
                 analyticsService.RatingViewWasShown.Track();
+                timeService.RunAfterDelay(ratingViewTimeout, () =>
+                {
+                    navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
+                });
             }
         }
 
