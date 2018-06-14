@@ -18,6 +18,7 @@ using Toggl.PrimeRadiant.Settings;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Models.Interfaces;
 using static Toggl.Foundation.Helper.Constants;
+using SelectTimeOrigin = Toggl.Foundation.MvvmCross.Parameters.SelectTimeParameters.Origin;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -170,7 +171,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxAsyncCommand SelectDurationCommand { get; }
 
-        public IMvxAsyncCommand<string> SelectTimeCommand { get; }
+        public IMvxAsyncCommand<SelectTimeOrigin> SelectTimeCommand { get; }
 
         public IMvxAsyncCommand SelectStartTimeCommand { get; }
 
@@ -222,7 +223,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             SelectStopTimeCommand = new MvxAsyncCommand(selectStopTime);
             SelectStartDateCommand = new MvxAsyncCommand(selectStartDate);
             SelectDurationCommand = new MvxAsyncCommand(selectDuration);
-            SelectTimeCommand = new MvxAsyncCommand<string>(selectTime);
+            SelectTimeCommand = new MvxAsyncCommand<SelectTimeOrigin>(selectTime);
 
             SelectProjectCommand = new MvxAsyncCommand(selectProject);
             SelectTagsCommand = new MvxAsyncCommand(selectTags);
@@ -381,14 +382,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await editDuration(true);
         }
 
-        private async Task selectTime(string bindingParameter)
+        private async Task selectTime(SelectTimeOrigin origin)
         {
-            var tapSource = getTapSourceFromBindingParameter(bindingParameter);
+            var tapSource = getTapSourceFromBindingParameter(origin);
             analyticsService.EditViewTapped.Track(tapSource);
 
-            var parameters =
-                SelectTimeParameters
-                .CreateFromBindingString(bindingParameter, StartTime, StopTime)
+            var parameters = SelectTimeParameters
+                .CreateFromSelectTimeOrigin(origin, StartTime, StopTime)
                 .WithFormats(DateFormat, TimeFormat);
 
             var data = await navigationService
@@ -402,17 +402,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTime = data.Stop;
         }
 
-        private EditViewTapSource getTapSourceFromBindingParameter(string bindingParameter)
+        private EditViewTapSource getTapSourceFromBindingParameter(SelectTimeOrigin origin)
         {
-            switch (bindingParameter)
+            switch (origin)
             {
-                case "StartTime":
-                case "StartDate":
+                case SelectTimeOrigin.StartTime:
+                case SelectTimeOrigin.StartDate:
                     return EditViewTapSource.StartTime;
-                case "StopTime":
-                case "StopDate":
+                case SelectTimeOrigin.StopTime:
+                case SelectTimeOrigin.StopDate:
                     return EditViewTapSource.StopTime;
-                case "Duration":
+                case SelectTimeOrigin.Duration:
                     return EditViewTapSource.Duration;
                 default:
                     throw new ArgumentException("Binding parameter is incorrect.");
