@@ -16,7 +16,14 @@ namespace Toggl.Giskard.Extensions
             window.ClearFlags(WindowManagerFlags.TranslucentStatus);
             window.SetStatusBarColor(color);
 
-            if (MarshmallowApis.AreNotAvailable) return;
+            if (MarshmallowApis.AreNotAvailable)
+            {
+                if (color == Color.White && useDarkIcons)
+                {
+                    window.SetStatusBarColor(Color.ParseColor("#2C2C2C"));
+                }
+                return;
+            }
 
             window.DecorView.SystemUiVisibility =
                 (StatusBarVisibility)(useDarkIcons ? SystemUiFlags.LightStatusBar : SystemUiFlags.Visible);
