@@ -1,15 +1,13 @@
-﻿using MvvmCross.Binding.BindingContext;
-using MvvmCross.Binding.iOS;
-using MvvmCross.iOS.Views;
+﻿using Toggl.Daneel.Extensions;
 using Toggl.Foundation;
-using Toggl.Foundation.MvvmCross.ViewModels.Settings;
-using static Toggl.Daneel.Extensions.LayoutConstraintExtensions;
+using Toggl.Foundation.MvvmCross.ViewModels;
 
-namespace Toggl.Daneel.ViewControllers.Settings
+namespace Toggl.Daneel.ViewControllers
 {
-    public sealed partial class AboutViewController : MvxViewController<AboutViewModel>
+    public sealed partial class AboutViewController : ReactiveViewController<AboutViewModel>
     {
-        public AboutViewController() : base(nameof(AboutViewController), null)
+        public AboutViewController() 
+            : base(nameof(AboutViewController))
         {
         }
 
@@ -19,21 +17,9 @@ namespace Toggl.Daneel.ViewControllers.Settings
 
             Title = Resources.About;
 
-            var bindingSet = this.CreateBindingSet<AboutViewController, AboutViewModel>();
-
-            bindingSet.Bind(PrivacyPolicyView)
-                      .For(v => v.BindTap())
-                      .To(vm => vm.OpenPrivacyPolicyCommand);
-
-            bindingSet.Bind(TermsOfServiceView)
-                      .For(v => v.BindTap())
-                      .To(vm => vm.OpenTermsOfServiceCommand);
-
-            bindingSet.Bind(LicensesView)
-                      .For(v => v.BindTap())
-                      .To(vm => vm.OpenLicensesCommand);
-
-            bindingSet.Apply();
+            this.Bind(LicensesView.Tapped(), ViewModel.OpenLicensesView);
+            this.Bind(PrivacyPolicyView.Tapped(), ViewModel.OpenPrivacyPolicyView);
+            this.Bind(TermsOfServiceView.Tapped(), ViewModel.OpenTermsOfServiceView);
         }
     }
 }

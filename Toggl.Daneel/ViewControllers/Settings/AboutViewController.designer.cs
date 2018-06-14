@@ -7,7 +7,7 @@
 using Foundation;
 using System.CodeDom.Compiler;
 
-namespace Toggl.Daneel.ViewControllers.Settings
+namespace Toggl.Daneel.ViewControllers
 {
 	[Register ("AboutViewController")]
 	partial class AboutViewController
