@@ -674,6 +674,7 @@
     </Compile>
     <Compile Include="ViewSources\SelectTagsTableViewSource.cs" />
     <Compile Include="ViewSources\GroupedCollectionTableViewSource.cs" />
+    <Compile Include="Views\EditDuration\DurationFieldTextFormatter.cs" />
     <Compile Include="Views\MarqueeView.cs" />
     <Compile Include="Binding\SwitchAnimatedOnTargetBinding.cs" />
     <Compile Include="Views\Onboarding\TrackPage.cs" />
@@ -973,6 +974,7 @@
     </Compile>
     <Compile Include="Extensions\ImageExtension.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
+    <Compile Include="ViewControllers\ReactiveViewController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">

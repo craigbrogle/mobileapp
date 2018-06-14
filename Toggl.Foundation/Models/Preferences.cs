@@ -1,129 +1,62 @@
 ﻿using System;
 using Toggl.Foundation.DTOs;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
+using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal sealed partial class Preferences
+    internal class Preferences : IThreadSafePreferences
     {
-        public const long fakeId = 0;
+        public TimeFormat TimeOfDayFormat { get; }
+        public DateFormat DateFormat { get; }
+        public DurationFormat DurationFormat { get; }
+        public bool CollapseTimeEntries { get; }
+        public SyncStatus SyncStatus { get; }
+        public string LastSyncErrorMessage { get; }
+        public bool IsDeleted { get; }
 
+        public const long fakeId = 0;
         public long Id => fakeId;
 
+        private Preferences(IPreferences entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false)
+            : this(entity.TimeOfDayFormat, entity.DateFormat, entity.DurationFormat, entity.CollapseTimeEntries, syncStatus, lastSyncErrorMessage, isDeleted)
+        { }
+
+        public Preferences(TimeFormat timeOfDayFormat, DateFormat dateFormat, DurationFormat durationFormat, bool collapseTimeEntries, SyncStatus syncStatus = default(SyncStatus), string lastSyncErrorMessage = "", bool isDeleted = false)
+        {
+            Ensure.Argument.IsADefinedEnumValue(syncStatus, nameof(syncStatus));
+            Ensure.Argument.IsNotNull(dateFormat.Localized, nameof(dateFormat));
+            Ensure.Argument.IsNotNull(timeOfDayFormat.Localized, nameof(timeOfDayFormat));
+
+            TimeOfDayFormat = timeOfDayFormat;
+            DateFormat = dateFormat;
+            DurationFormat = durationFormat;
+            CollapseTimeEntries = collapseTimeEntries;
+            SyncStatus = syncStatus;
+            LastSyncErrorMessage = lastSyncErrorMessage;
+            IsDeleted = isDeleted;
+        }
+
+        public static Preferences From(IDatabasePreferences entity)
+        {
+            return new Preferences(entity, entity.SyncStatus, entity.LastSyncErrorMessage, entity.IsDeleted);
+        }
+
+        public static Preferences Clean(IPreferences entity)
+            => new Preferences(entity, SyncStatus.InSync, null);
+
+        public static Preferences Unsyncable(IPreferences entity, string errorMessage)
+            => new Preferences(entity, SyncStatus.SyncFailed, errorMessage);
+
         public static Preferences DefaultPreferences { get; } =
-            Builder.Create()
-                .SetDurationFormat(DurationFormat.Improved)
-                .SetDateFormat(DateFormat.FromLocalizedDateFormat("DD.MM.YYYY"))
-                .SetTimeOfDayFormat(TimeFormat.FromLocalizedTimeFormat("H:mm"))
-                .SetCollapseTimeEntries(false)
-                .Build();
-
-        internal sealed class Builder
-        {
-            public static Builder FromExisting(IDatabasePreferences preferences)
-                => new Builder(preferences);
-
-            public static Builder Create()
-                => new Builder();
-
-            public DateFormat DateFormat { get; private set; }
-
-            public TimeFormat TimeOfDayFormat { get; private set; }
-
-            public DurationFormat DurationFormat { get; private set; }
-
-            public bool CollapseTimeEntries { get; private set; }
-
-            public SyncStatus SyncStatus { get; private set; }
-
-            private Builder()
-            {
-            }
-
-            private Builder(IDatabasePreferences preferences)
-            {
-                DateFormat = preferences.DateFormat;
-                TimeOfDayFormat = preferences.TimeOfDayFormat;
-                DurationFormat = preferences.DurationFormat;
-                CollapseTimeEntries = preferences.CollapseTimeEntries;
-                SyncStatus = preferences.SyncStatus;
-            }
-
-            public Preferences Build()
-            {
-                ensureValidity();
-                return new Preferences(this);
-            }
-
-            public Builder SetFrom(EditPreferencesDTO dto)
-            {
-                if (dto.DateFormat.HasValue)
-                    DateFormat = dto.DateFormat.Value;
-
-                if (dto.DurationFormat.HasValue)
-                    DurationFormat = dto.DurationFormat.Value;
-
-                if (dto.TimeOfDayFormat.HasValue)
-                    TimeOfDayFormat = dto.TimeOfDayFormat.Value;
-
-                if (dto.CollapseTimeEntries.HasValue)
-                    CollapseTimeEntries = dto.CollapseTimeEntries.Value;
-
-                return this;
-            }
-
-            public Builder SetDateFormat(DateFormat dateFormat)
-            {
-                DateFormat = dateFormat;
-                return this;
-            }
-
-            public Builder SetTimeOfDayFormat(TimeFormat timeFormat)
-            {
-                TimeOfDayFormat = timeFormat;
-                return this;
-            }
-
-            public Builder SetDurationFormat(DurationFormat durationFormat)
-            {
-                DurationFormat = durationFormat;
-                return this;
-            }
-
-            public Builder SetCollapseTimeEntries(bool collapseTimeEntries)
-            {
-                CollapseTimeEntries = collapseTimeEntries;
-                return this;
-            }
-
-            public Builder SetSyncStatus(SyncStatus syncStatus)
-            {
-                SyncStatus = syncStatus;
-                return this;
-            }
-
-            private void ensureValidity()
-            {
-                if (Enum.IsDefined(typeof(DurationFormat), DurationFormat) == false)
-                    throw new InvalidOperationException($"You need to set a valid value to the {nameof(DurationFormat)} property before building preferences.");
-
-                if (DateFormat.Localized == null)
-                    throw new InvalidOperationException($"You must set a valid value to the {nameof(DateFormat)} property before building preferences.");
-
-                if (TimeOfDayFormat.Localized == null)
-                    throw new InvalidOperationException($"You must set a valid value to the {nameof(TimeOfDayFormat)} property before building preferences.");
-            }
-        }
-
-        private Preferences(Builder builder)
-        {
-            DateFormat = builder.DateFormat;
-            TimeOfDayFormat = builder.TimeOfDayFormat;
-            DurationFormat = builder.DurationFormat;
-            CollapseTimeEntries = builder.CollapseTimeEntries;
-            SyncStatus = builder.SyncStatus;
-        }
+            new Preferences(
+                TimeFormat.FromLocalizedTimeFormat("H:mm"),
+                DateFormat.FromLocalizedDateFormat("DD.MM.YYYY"),
+                DurationFormat.Improved,
+                false
+            );
     }
 }

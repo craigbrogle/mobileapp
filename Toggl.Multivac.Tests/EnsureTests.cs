@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Toggl.PrimeRadiant;
 using Xunit;
 
 namespace Toggl.Multivac.Tests
@@ -96,7 +97,7 @@ namespace Toggl.Multivac.Tests
 
                 Action whenTheCalledArgumentIsNull =
                     () => Ensure.Argument.IsAbsoluteUri(new Uri("/something", UriKind.Relative), argumentName);
-                
+
                 whenTheCalledArgumentIsNull
                     .Should().Throw<ArgumentException>()
                     .WithMessage("Uri must be absolute.\nParameter name: argument");
@@ -120,6 +121,31 @@ namespace Toggl.Multivac.Tests
                 whenTheCalledArgumentIsNull
                     .Should().Throw<ArgumentException>()
                     .WithMessage("Value cannot be null.\nParameter name: argument"); ;
+            }
+        }
+
+        public sealed class TheArgumentIsADefinedEnumValueMethod
+        {
+            [Fact, LogIfTooSlow]
+            public void ThrowsWhenTheArgumentIsNotADefinedEnumValue()
+            {
+                const string argumentName = "argument";
+
+                Action whenTheCalledArgumentIsNotADefinedEnumValue =
+                    () => Ensure.Argument.IsADefinedEnumValue<SyncStatus>((SyncStatus)10, argumentName);
+
+                whenTheCalledArgumentIsNotADefinedEnumValue
+                    .Should().Throw<ArgumentException>()
+                    .WithMessage("Invalid enum value.\nParameter name: argument");
+            }
+
+            [Fact, LogIfTooSlow]
+            public void DoesNotThrowWhenTheArgumentIsNotNull()
+            {
+                Action whenTheCalledArgumentIsNotADefinedEnumValue =
+                    () => Ensure.Argument.IsADefinedEnumValue<SyncStatus>(SyncStatus.SyncNeeded, "argument");
+
+                whenTheCalledArgumentIsNotADefinedEnumValue.Should().NotThrow();
             }
         }
     }

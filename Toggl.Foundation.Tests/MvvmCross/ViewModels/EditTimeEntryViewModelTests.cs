@@ -189,8 +189,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var newStartTime = TheTimeEntry.Start.AddHours(1);
                 var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(
-                        Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
                     .Returns(newDurationParameter);
 
                 await ViewModel.SelectStartTimeCommand.ExecuteAsync();
@@ -407,7 +407,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-3), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ConfigureEditedTimeEntry(now);
                 ViewModel.Prepare(Id);
@@ -424,7 +424,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var duration = TimeSpan.FromHours(1);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(start, duration);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ConfigureEditedTimeEntry(now);
                 ViewModel.Prepare(Id);
@@ -444,8 +444,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var newStartTime = TheTimeEntry.Start.AddHours(1);
                 var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(
-                        Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
                     .Returns(newDurationParameter);
 
                 ViewModel.SelectDurationCommand.Execute();
@@ -453,6 +453,41 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 AnalyticsService.Received()
                                 .EditViewTapped
                                 .Track(Arg.Is(EditViewTapSource.Duration));
+            }
+        }
+
+        public sealed class TheEditDurationAndShowNumpadCommand : EditTimeEntryViewModelTest
+        {
+            [Property]
+            public void SetsTheStartTimeToTheValueReturnedByTheSelectDateTimeDialogViewModelWhenEditingARunningTimeEntry(DateTimeOffset now)
+            {
+                var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-3), null);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
+                    .Returns(parameterToReturn);
+                ConfigureEditedTimeEntry(now);
+                ViewModel.Prepare(Id);
+
+                ViewModel.SelectDurationCommand.ExecuteAsync().Wait();
+
+                ViewModel.StartTime.Should().Be(parameterToReturn.Start);
+            }
+
+            [Property]
+            public void SetsTheStopTimeToTheValueReturnedByTheSelectDateTimeDialogViewModelWhenEditingACompletedTimeEntry(DateTimeOffset now)
+            {
+                var start = now.AddHours(-4);
+                var duration = TimeSpan.FromHours(1);
+                var parameterToReturn = DurationParameter.WithStartAndDuration(start, duration);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
+                    .Returns(parameterToReturn);
+                ConfigureEditedTimeEntry(now);
+                ViewModel.Prepare(Id);
+
+                ViewModel.SelectDurationCommand.ExecuteAsync().Wait();
+
+                ViewModel.Duration.Should().Be(parameterToReturn.Duration.Value);
             }
         }
 
@@ -645,7 +680,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
-        public sealed class TheToggleBillableCommand : EditTimeEntryViewModelTest 
+        public sealed class TheToggleBillableCommand : EditTimeEntryViewModelTest
         {
             [Fact, LogIfTooSlow]
             public void TracksBillableTap()
@@ -657,7 +692,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                                 .Track(Arg.Is(EditViewTapSource.Billable));
             }
         }
-       
+
         public sealed class TheStartEditingDescriptionCommand : EditTimeEntryViewModelTest
         {
             [Fact, LogIfTooSlow]
@@ -1299,7 +1334,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(
                         Arg.Any<DateTimePickerParameters>())
                     .Returns(newStartTime);
-                
+
                 await ViewModel.SelectStartDateCommand.ExecuteAsync();
 
                 AnalyticsService.Received()
@@ -1320,12 +1355,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var newStartTime = TheTimeEntry.Start.AddHours(1);
                 var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(
-                        Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
                     .Returns(newDurationParameter);
-                
+
                 await ViewModel.SelectStartTimeCommand.ExecuteAsync();
-              
+
                 AnalyticsService.Received()
                                 .EditViewTapped
                                 .Track(Arg.Is(EditViewTapSource.StartTime));
@@ -1344,12 +1379,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var newStartTime = TheTimeEntry.Start.AddHours(1);
                 var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(
-                        Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
                     .Returns(newDurationParameter);
 
                 await ViewModel.SelectStopTimeCommand.ExecuteAsync();
-               
+
                 AnalyticsService.Received()
                                 .EditViewTapped
                                 .Track(Arg.Is(EditViewTapSource.StopTime));

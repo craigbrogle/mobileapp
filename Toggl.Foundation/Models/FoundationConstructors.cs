@@ -5,49 +5,6 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal partial class Preferences
-    {
-        private Preferences(IDatabasePreferences entity)
-            : this(entity as IPreferences, entity.SyncStatus, entity.LastSyncErrorMessage, entity.IsDeleted)
-        {
-            SyncStatus = entity.SyncStatus;
-            LastSyncErrorMessage = entity.LastSyncErrorMessage;
-            IsDeleted = entity.IsDeleted;
-        }
-
-        public static Preferences From(IDatabasePreferences entity)
-            => new Preferences(entity);
-
-        private Preferences(IPreferences entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false)
-        {
-            TimeOfDayFormat = entity.TimeOfDayFormat;
-            DateFormat = entity.DateFormat;
-            DurationFormat = entity.DurationFormat;
-            CollapseTimeEntries = entity.CollapseTimeEntries;
-            SyncStatus = syncStatus;
-            LastSyncErrorMessage = lastSyncErrorMessage;
-            IsDeleted = isDeleted;
-        }
-
-        public static Preferences Clean(IPreferences entity)
-            => new Preferences(entity, SyncStatus.InSync, null);
-
-        public static Preferences Dirty(IPreferences entity)
-            => new Preferences(entity, SyncStatus.SyncNeeded, null);
-
-        public static Preferences Unsyncable(IPreferences entity, string errorMessage)
-            => new Preferences(entity, SyncStatus.SyncFailed, errorMessage);
-
-        public static Preferences CleanDeleted(IPreferences entity)
-            => new Preferences(entity, SyncStatus.InSync, null, true);
-
-        public static Preferences DirtyDeleted(IPreferences entity)
-            => new Preferences(entity, SyncStatus.SyncNeeded, null, true);
-
-        public static Preferences UnsyncableDeleted(IPreferences entity, string errorMessage)
-            => new Preferences(entity, SyncStatus.SyncFailed, errorMessage, true);
-    }
-
     internal partial class Project
     {
         private Project(IDatabaseProject entity)

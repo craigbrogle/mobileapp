@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Toggl.Multivac
 {
@@ -45,6 +46,13 @@ namespace Toggl.Multivac
                 if (uri.IsAbsoluteUri) return;
 
                 throw new ArgumentException("Uri must be absolute.", argumentName);
+            }
+
+            public static void IsADefinedEnumValue<T>(T value, string argumentName) where T : struct
+            {
+                if (Enum.IsDefined(typeof(T), value)) return;
+
+                throw new ArgumentException("Invalid enum value.", argumentName);
             }
         }
     }

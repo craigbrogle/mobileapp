@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Exceptions;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.Ultrawave.Exceptions;
@@ -109,6 +110,12 @@ namespace Toggl.Foundation.Sync
         {
             queue.Clear();
             orchestrator.Start(Sleep);
+
+            if (error is NoWorkspaceException)
+            {
+                progress.OnError(error);
+                return;
+            }
 
             if (error is OfflineException)
             {

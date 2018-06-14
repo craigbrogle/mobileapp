@@ -76,5 +76,11 @@ namespace Toggl.Foundation.Interactors
         IInteractor<IObservable<IThreadSafePreferences>> GetPreferences();
 
         #endregion
+
+        #region User
+
+        IInteractor<IObservable<byte[]>> GetUserAvatar(string url);
+
+        #endregion
     }
 }

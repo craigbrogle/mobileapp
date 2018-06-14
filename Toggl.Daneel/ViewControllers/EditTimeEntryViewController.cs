@@ -247,7 +247,7 @@ namespace Toggl.Daneel.ViewControllers
         public override void ViewDidLayoutSubviews()
         {
             base.ViewDidLayoutSubviews();
-            
+
             //This binding needs to be created, when TagsTextView has it's
             //proper size. In ViewDidLoad() TagsTextView width isn't initialized
             //yet, which results in displaying less tags than possible

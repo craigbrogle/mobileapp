@@ -24,6 +24,14 @@ namespace Toggl.Foundation.MvvmCross.Helper
                 .GroupByWorkspace()
                 .Select(withNoProject);
 
+        public static IEnumerable<WorkspaceGroupedSuggestionsCollection> OrderByDefaultWorkspaceAndName(
+            this IEnumerable<WorkspaceGroupedSuggestionsCollection> suggestions, long defaultWorkSpaceId)
+        {
+            return suggestions
+                .OrderByDescending(suggestion => suggestion.WorkspaceId == defaultWorkSpaceId)
+                .ThenBy(s => s.WorkspaceName);
+        }
+
         private static WorkspaceGroupedSuggestionsCollection withNoProject(WorkspaceGroupedSuggestionsCollection collection)
         {
             collection.Insert(0, ProjectSuggestion.NoProject(collection.WorkspaceId, collection.WorkspaceName));

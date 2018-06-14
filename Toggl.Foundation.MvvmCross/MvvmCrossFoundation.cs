@@ -40,7 +40,7 @@ namespace Toggl.Foundation.MvvmCross
         public IOnboardingStorage OnboardingStorage { get; }
         public IMvxNavigationService NavigationService { get; }
         public IPasswordManagerService PasswordManagerService { get; }
-        public IApiErrorHandlingService ApiErrorHandlingService { get; }
+        public IErrorHandlingService ErrorHandlingService { get; }
         public IAccessRestrictionStorage AccessRestrictionStorage { get; }
 
         private MvvmCrossFoundation(Builder builder)
@@ -54,7 +54,7 @@ namespace Toggl.Foundation.MvvmCross
             OnboardingStorage = builder.OnboardingStorage;
             NavigationService = builder.NavigationService;
             PasswordManagerService = builder.PasswordManagerService;
-            ApiErrorHandlingService = builder.ApiErrorHandlingService;
+            ErrorHandlingService = builder.ErrorHandlingService;
             AccessRestrictionStorage = builder.AccessRestrictionStorage;
 
             Version = builder.Foundation.Version;
@@ -84,7 +84,7 @@ namespace Toggl.Foundation.MvvmCross
             public IOnboardingStorage OnboardingStorage { get; private set; }
             public IMvxNavigationService NavigationService { get; private set; }
             public IPasswordManagerService PasswordManagerService { get; private set; }
-            public IApiErrorHandlingService ApiErrorHandlingService { get; private set; }
+            public IErrorHandlingService ErrorHandlingService { get; private set; }
             public IAccessRestrictionStorage AccessRestrictionStorage { get; private set; }
 
             public Builder(TogglFoundation foundation)
@@ -142,9 +142,9 @@ namespace Toggl.Foundation.MvvmCross
                 return this;
             }
 
-            public Builder WithApiErrorHandlingService(IApiErrorHandlingService apiErrorHandlingService)
+            public Builder WithErrorHandlingService(IErrorHandlingService errorHandlingService)
             {
-                ApiErrorHandlingService = apiErrorHandlingService;
+                ErrorHandlingService = errorHandlingService;
                 return this;
             }
 
@@ -180,9 +180,9 @@ namespace Toggl.Foundation.MvvmCross
                 where TPasswordManagerService : IPasswordManagerService, new()
                 => WithPasswordManagerService(new TPasswordManagerService());
 
-            public Builder WithApiErrorHandlingService<TApiErrorHandlingService>()
-                where TApiErrorHandlingService : IApiErrorHandlingService, new()
-                => WithApiErrorHandlingService(new TApiErrorHandlingService());
+            public Builder WithErrorHandlingService<TErrorHandlingService>()
+                where TErrorHandlingService : IErrorHandlingService, new()
+                => WithErrorHandlingService(new TErrorHandlingService());
 
             public MvvmCrossFoundation Build()
                 => new MvvmCrossFoundation(this);
@@ -195,7 +195,7 @@ namespace Toggl.Foundation.MvvmCross
                 Ensure.Argument.IsNotNull(UserPreferences, nameof(UserPreferences));
                 Ensure.Argument.IsNotNull(OnboardingStorage, nameof(OnboardingStorage));
                 Ensure.Argument.IsNotNull(NavigationService, nameof(NavigationService));
-                Ensure.Argument.IsNotNull(ApiErrorHandlingService, nameof(ApiErrorHandlingService));
+                Ensure.Argument.IsNotNull(ErrorHandlingService, nameof(ErrorHandlingService));
                 Ensure.Argument.IsNotNull(AccessRestrictionStorage, nameof(AccessRestrictionStorage));
             }
         }

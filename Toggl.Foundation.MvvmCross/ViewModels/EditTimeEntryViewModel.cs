@@ -214,6 +214,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             DeleteCommand = new MvxAsyncCommand(delete);
             ConfirmCommand = new MvxCommand(confirm);
             CloseCommand = new MvxAsyncCommand(closeWithConfirmation);
+
             StopCommand = new MvxCommand(stopTimeEntry, () => IsTimeEntryRunning);
             StopTimeEntryCommand = new MvxAsyncCommand<string>(onStopTimeEntryCommand);
 
@@ -345,13 +346,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task selectStartTime()
         {
             analyticsService.EditViewTapped.Track(EditViewTapSource.StartTime);
-            await selectStartStopDuration();
+            await editDuration();
         }
 
         private async Task selectStopTime()
         {
             analyticsService.EditViewTapped.Track(EditViewTapSource.StopTime);
-            await selectStartStopDuration();
+            await editDuration();
         }
 
         private async Task selectStartDate()
@@ -377,7 +378,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task selectDuration()
         {
             analyticsService.EditViewTapped.Track(EditViewTapSource.Duration);
-            await selectStartStopDuration();
+            await editDuration(true);
         }
 
         private async Task selectTime(string bindingParameter)
@@ -474,12 +475,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await updateFeaturesAvailability();
         }
 
-        private async Task selectStartStopDuration()
+        private async Task editDuration(bool isDurationInitiallyFocused = false)
         {
             var duration = StopTime.HasValue ? Duration : (TimeSpan?)null;
             var currentDuration = DurationParameter.WithStartAndDuration(StartTime, duration);
+            var editDurationParam = new EditDurationParameters(currentDuration, isDurationInitiallyFocused);
             var selectedDuration = await navigationService
-                .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(currentDuration)
+                .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(editDurationParam)
                 .ConfigureAwait(false);
 
             StartTime = selectedDuration.Start;

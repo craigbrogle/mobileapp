@@ -24,8 +24,6 @@ namespace Toggl.Foundation.Models
             : this(entity.Id, entity.WorkspaceId, entity.Name, entity.At, syncStatus, lastSyncErrorMessage, isDeleted, entity.ServerDeletedAt, workspace)
         { }
 
-        // Public initializers
-
         public Client(long id, long workspaceId, string name, DateTimeOffset at, SyncStatus syncStatus, string lastSyncErrorMessage = "", bool isDeleted = false, DateTimeOffset? serverDeletedAt = null, IThreadSafeWorkspace workspace = null)
         {
             Id = id;
