@@ -352,7 +352,6 @@
     <Compile Include="TemplateSelectors\SelectWorkspaceTemplateSelector.cs" />
     <Compile Include="Bindings\TextViewFontWeightTargetBinding.cs" />
     <Compile Include="Services\LicenseProvider.cs" />
-    <Compile Include="TemplateSelectors\SettingsTemplateSelector.cs" />
     <Compile Include="Views\SelectProjectWithExpandableTasksRecyclerViewHolder.cs" />
     <Compile Include="Fragments\SelectDateFormatFragment.cs" />
     <Compile Include="TemplateSelectors\SelectDateFormatTemplateSelector.cs" />
@@ -397,7 +396,6 @@
     <Compile Include="Bindings\ViewUpsideDownTargetBinding.cs" />
     <Compile Include="Bindings\ViewHeightTargetBinding.cs" />
     <Compile Include="Views\SelectCountryRecyclerView.cs" />
-    <Compile Include="Helper\ImageUtils.cs" />
     <Compile Include="Activities\SelectCountryActivity.cs" />
     <Compile Include="Helper\VibratorExtensions.cs" />
     <Compile Include="Bindings\DatePickerBoundariesTargetBinding.cs" />
@@ -405,12 +403,15 @@
     <Compile Include="TemplateSelectors\SelecCountryTemplateSelector.cs" />
     <Compile Include="Fragments\TermsOfServiceFragment.cs" />
     <Compile Include="Views\TogglDroidTimePicker.cs" />
-    <Compile Include="Activities\NonBindingAppCompatActivity.cs" />
+    <Compile Include="Activities\ReactiveActivity.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
     <Compile Include="Adapters\BaseRecyclerAdapter.cs" />
     <Compile Include="ViewHolders\BaseRecyclerViewHolder.cs" />
     <Compile Include="ViewHolders\WorkspaceSelectionViewHolder.cs" />
     <Compile Include="Adapters\SimpleAdapter.cs" />
+    <Compile Include="Activities\SettingsActivity.ViewBinds.cs">
+      <DependentUpon>SettingsActivity.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\AndroidManifest.xml" />

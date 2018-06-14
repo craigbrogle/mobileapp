@@ -1,14 +1,13 @@
 ﻿using MvvmCross.Core.ViewModels;
-using MvvmCross.iOS.Views;
 using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
 {
-    public abstract class KeyboardAwareViewController<TViewModel> : MvxViewController<TViewModel>
+    public abstract class KeyboardAwareViewController<TViewModel> : ReactiveViewController<TViewModel>
         where TViewModel : class, IMvxViewModel
     {
-        public KeyboardAwareViewController(string nibName)
-            : base(nibName, null) { }
+        protected KeyboardAwareViewController(string nibName)
+            : base(nibName) { }
 
         public override void ViewDidLoad()
         {

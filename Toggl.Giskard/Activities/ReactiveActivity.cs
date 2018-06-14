@@ -1,18 +1,22 @@
-﻿using Android.Content;
+﻿using System.Reactive.Disposables;
+using Android.Content;
 using Android.OS;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Binding.Droid.BindingContext;
+using MvvmCross.Binding.Droid.Views;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Core.Views;
 using MvvmCross.Droid.Support.V7.AppCompat.EventSource;
 using MvvmCross.Droid.Views;
-using MvvmCross.Binding.Droid.Views;
+using Toggl.Foundation.MvvmCross.ViewModels;
 
 namespace Toggl.Giskard.Activities
 {
-    public abstract class NonBindingAppCompatActivity<TViewModel> : MvxEventSourceAppCompatActivity, IMvxAndroidView
+    public abstract class ReactiveActivity<TViewModel> : MvxEventSourceAppCompatActivity, IMvxAndroidView, IReactiveBindingHolder
         where TViewModel : class, IMvxViewModel 
     {
+        public CompositeDisposable DisposeBag { get; private set; } = new CompositeDisposable();
+
         protected abstract void InitializeViews();
 
         public object DataContext
@@ -35,7 +39,7 @@ namespace Toggl.Giskard.Activities
 
         public IMvxBindingContext BindingContext { get; set; }
 
-        protected NonBindingAppCompatActivity()
+        protected ReactiveActivity()
         {
             BindingContext = new MvxAndroidBindingContext(this, this);
             this.AddEventListeners();
@@ -85,6 +89,14 @@ namespace Toggl.Giskard.Activities
         public void MvxInternalStartActivityForResult(Intent intent, int requestCode)
         {
             StartActivityForResult(intent, requestCode);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (!disposing) return;
+            DisposeBag?.Dispose();
         }
     }
 }

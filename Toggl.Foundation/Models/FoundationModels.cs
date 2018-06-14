@@ -8,23 +8,6 @@ using Toggl.Multivac.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal partial class Preferences : IThreadSafePreferences
-    {
-        public TimeFormat TimeOfDayFormat { get; }
-
-        public DateFormat DateFormat { get; }
-
-        public DurationFormat DurationFormat { get; }
-
-        public bool CollapseTimeEntries { get; }
-
-        public bool IsDeleted { get; }
-
-        public SyncStatus SyncStatus { get; }
-
-        public string LastSyncErrorMessage { get; }
-    }
-
     internal partial class Project : IThreadSafeProject
     {
         public long Id { get; }

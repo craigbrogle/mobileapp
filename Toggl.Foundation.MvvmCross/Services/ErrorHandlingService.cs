@@ -2,18 +2,19 @@
 using MvvmCross.Core.Navigation;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Services;
+using Toggl.Foundation.Exceptions;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.MvvmCross.Services
 {
-    public sealed class ApiErrorHandlingService : IApiErrorHandlingService
+    public sealed class ErrorHandlingService : IErrorHandlingService
     {
         private readonly IMvxNavigationService navigationService;
         private readonly IAccessRestrictionStorage accessRestrictionStorage;
 
-        public ApiErrorHandlingService(
+        public ErrorHandlingService(
             IMvxNavigationService navigationService,
             IAccessRestrictionStorage accessRestrictionStorage)
         {
@@ -52,6 +53,17 @@ namespace Toggl.Foundation.MvvmCross.Services
                     navigationService.Navigate<TokenResetViewModel>();
                 }
 
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryHandleNoWorkspaceError(Exception error)
+        {
+            if (error is NoWorkspaceException)
+            {
+                // Show no workspace UI here. Also don't forget to call `DataSource.StartSyncing` when the user creates the workspace
                 return true;
             }
 

@@ -885,7 +885,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ViewModel.Prepare(parameter);
 
@@ -902,7 +902,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 var tcs = new TaskCompletionSource<DurationParameter>();
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(tcs.Task);
                 ViewModel.Prepare(parameter);
 
@@ -926,7 +926,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), TimeSpan.FromMinutes(30));
                 var tcs = new TaskCompletionSource<DurationParameter>();
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(tcs.Task);
                 ViewModel.Prepare(parameter);
 
@@ -951,7 +951,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.Prepare(parameter);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now, null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(Task.FromResult(parameterToReturn));
 
                 await ViewModel.ChangeTimeCommand.ExecuteAsync();
@@ -966,7 +966,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(Task.FromResult(parameterToReturn));
                 ViewModel.Prepare(parameter);
 
@@ -982,7 +982,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now, TimeSpan.FromMinutes(10));
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(Task.FromResult(parameterToReturn));
                 ViewModel.Prepare(parameter);
 

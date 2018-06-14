@@ -1,22 +1,17 @@
-using System;
-using System.Net;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
-using Android.Widget;
-using MvvmCross.Droid.Support.V7.AppCompat;
 using MvvmCross.Droid.Views.Attributes;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Giskard.Adapters;
 using Toggl.Giskard.Extensions;
-using Toggl.Giskard.Helper;
+using Toggl.Giskard.ViewHolders;
+using Toggl.Multivac.Extensions;
 using Toolbar = Android.Support.V7.Widget.Toolbar;
-using static Toggl.Multivac.Extensions.CommonFunctions;
 
 namespace Toggl.Giskard.Activities
 {
@@ -24,12 +19,8 @@ namespace Toggl.Giskard.Activities
     [Activity(Theme = "@style/AppTheme",
               ScreenOrientation = ScreenOrientation.Portrait,
               ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
-    public sealed class SettingsActivity : MvxAppCompatActivity<SettingsViewModel>
+    public sealed partial class SettingsActivity : ReactiveActivity<SettingsViewModel>
     {
-        private LinearLayout avatarContainer;
-        private IDisposable avatarBitmapDisposable;
-        private ImageView avatarView;
-
         protected override void OnCreate(Bundle bundle)
         {
             this.ChangeStatusBarColor(Color.ParseColor("#2C2C2C"));
@@ -39,26 +30,38 @@ namespace Toggl.Giskard.Activities
 
             OverridePendingTransition(Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
 
-            avatarView = FindViewById<ImageView>(Resource.Id.SettingsViewAvatarImage);
-            avatarContainer = FindViewById<LinearLayout>(Resource.Id.SettingsViewAvatarImageContainer);
+            InitializeViews();
+
+            var adapter = new SimpleAdapter<SelectableWorkspaceViewModel>(
+                Resource.Layout.SettingsActivityWorkspaceCell,
+                WorkspaceSelectionViewHolder.Create
+            );
+            adapter.OnItemTapped = ViewModel.SelectDefaultWorkspace;
+            workspacesRecyclerView.SetAdapter(adapter);
+            workspacesRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
+
+            this.Bind(ViewModel.Name, nameTextView.BindText());
+            this.Bind(ViewModel.Email, emailTextView.BindText());
+            this.Bind(ViewModel.Workspaces, adapter.BindItems());
+            this.Bind(ViewModel.IsManualModeEnabled, manualModeSwitch.BindChecked());
+            this.Bind(ViewModel.BeginningOfWeek, beginningOfWeekTextView.BindText());
+            this.Bind(ViewModel.UserAvatar.Select(userImageFromBytes), bitmap =>
+            {
+                avatarView.SetImageBitmap(bitmap);
+                avatarContainer.Visibility = ViewStates.Visible;
+            });
+
+            this.Bind(logoutButton.Tapped(), ViewModel.TryLogout);
+            this.Bind(helpButton.Tapped(), ViewModel.ShowHelpView);
+            this.Bind(feedbackButton.Tapped(), ViewModel.SubmitFeedback);
+            this.BindVoid(manualModeView.Tapped(), ViewModel.ToggleManualMode);
+            this.Bind(beginningOfWeekView.Tapped(), ViewModel.SelectBeginningOfWeek);
 
             setupToolbar();
-            setupAvatar();
         }
 
-        private void setupAvatar()
-        {
-            if (string.IsNullOrEmpty(ViewModel.ImageUrl))
-                return;
-
-            avatarBitmapDisposable = ImageUtils.GetImageFromUrl(ViewModel.ImageUrl)
-                                               .ObserveOn(SynchronizationContext.Current)
-                                               .Subscribe(bitmap =>
-                                               {
-                                                   avatarView.SetImageBitmap(bitmap);
-                                                   avatarContainer.Visibility = ViewStates.Visible;
-                                               }, onError: DoNothing);
-        }
+        private Bitmap userImageFromBytes(byte[] imageBytes)
+            => BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
 
         private void setupToolbar()
         {
@@ -76,21 +79,13 @@ namespace Toggl.Giskard.Activities
 
         private void onNavigateBack(object sender, Toolbar.NavigationClickEventArgs e)
         {
-            ViewModel.BackCommand.Execute();
+            ViewModel.GoBack();
         }
 
         public override void Finish()
         {
             base.Finish();
             OverridePendingTransition(Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            if (disposing == false) return;
-
-            avatarBitmapDisposable?.Dispose();
         }
     }
 }
