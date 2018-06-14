@@ -381,4 +381,22 @@ account is not set up</value>
     <data name="SelectCountry">
         <value>Select country...</value>
     </data>
+    <data name="RatingViewPositiveCTATitle">
+        <value>Awesome!</value>
+    </data>    
+    <data name="RatingViewNegativeCTATitle">
+        <value>Ok, no worries</value>
+    </data>
+    <data name="RatingViewPositiveCTADescription">
+        <value>Would you mind rating Toggl in the App Store? Your review really makes a difference.</value>
+    </data>
+    <data name="RatingViewNegativeCTADescription">
+        <value>Would you mind giving us some feedback? It’ll really help us improve Toggl.</value>
+    </data>
+    <data name="RatingViewPositiveCTAButtonTitle">
+        <value>Rate the app</value>
+    </data>
+    <data name="RatingViewNegativeCTAButtonTitle">
+        <value>Tell us what’s wrong</value>
+    </data>
 </root>

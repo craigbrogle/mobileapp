@@ -13,25 +13,19 @@ namespace Toggl.Daneel
 	partial class RatingView
 	{
 		[Outlet]
-		UIKit.UIView CardView { get; set; }
+		UIKit.UIButton CtaButton { get; set; }
 
 		[Outlet]
-		UIKit.UIButton CTAButton { get; set; }
+		UIKit.UILabel CtaDescription { get; set; }
 
 		[Outlet]
-		UIKit.UILabel CTADescription { get; set; }
+		UIKit.UILabel CtaTitle { get; set; }
 
 		[Outlet]
-		UIKit.UILabel CTATitle { get; set; }
-
-		[Outlet]
-		UIKit.UIView CTAView { get; set; }
+		UIKit.UIView CtaView { get; set; }
 
 		[Outlet]
 		UIKit.UIButton DismissButton { get; set; }
-
-		[Outlet]
-		UIKit.NSLayoutConstraint HeightConstraint { get; set; }
 
 		[Outlet]
 		UIKit.UILabel NotReallyLabel { get; set; }
@@ -53,24 +47,29 @@ namespace Toggl.Daneel
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (CardView != null) {
-				CardView.Dispose ();
-				CardView = null;
+			if (CtaButton != null) {
+				CtaButton.Dispose ();
+				CtaButton = null;
 			}
 
-			if (HeightConstraint != null) {
-				HeightConstraint.Dispose ();
-				HeightConstraint = null;
+			if (CtaDescription != null) {
+				CtaDescription.Dispose ();
+				CtaDescription = null;
 			}
 
-			if (QuestionView != null) {
-				QuestionView.Dispose ();
-				QuestionView = null;
+			if (CtaTitle != null) {
+				CtaTitle.Dispose ();
+				CtaTitle = null;
 			}
 
-			if (CTAView != null) {
-				CTAView.Dispose ();
-				CTAView = null;
+			if (CtaView != null) {
+				CtaView.Dispose ();
+				CtaView = null;
+			}
+
+			if (DismissButton != null) {
+				DismissButton.Dispose ();
+				DismissButton = null;
 			}
 
 			if (NotReallyLabel != null) {
@@ -81,6 +80,11 @@ namespace Toggl.Daneel
 			if (NotReallyView != null) {
 				NotReallyView.Dispose ();
 				NotReallyView = null;
+			}
+
+			if (QuestionView != null) {
+				QuestionView.Dispose ();
+				QuestionView = null;
 			}
 
 			if (TitleLabel != null) {
@@ -96,26 +100,6 @@ namespace Toggl.Daneel
 			if (YesView != null) {
 				YesView.Dispose ();
 				YesView = null;
-			}
-
-			if (CTATitle != null) {
-				CTATitle.Dispose ();
-				CTATitle = null;
-			}
-
-			if (CTADescription != null) {
-				CTADescription.Dispose ();
-				CTADescription = null;
-			}
-
-			if (CTAButton != null) {
-				CTAButton.Dispose ();
-				CTAButton = null;
-			}
-
-			if (DismissButton != null) {
-				DismissButton.Dispose ();
-				DismissButton = null;
 			}
 		}
 	}

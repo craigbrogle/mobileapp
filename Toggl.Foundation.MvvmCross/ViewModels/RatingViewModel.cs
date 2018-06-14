@@ -14,6 +14,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public bool GotImpression { get; private set; }
 
+        public string CTATitle { get; private set; }
+
+        public string CTADescription { get; private set; }
+
+        public string CTAButtonTitle { get; set; }
+
         public MvxCommand<bool> RegisterImpressionCommand { get; set; }
         public MvxCommand LeaveReviewCommand { get; set; }
         public MvxCommand DismissViewCommand { get; set; }
@@ -41,6 +47,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void registerImpression(bool isPositive)
         {
             GotImpression = true;
+            if (isPositive)
+            {
+                CTATitle = Resources.RatingViewPositiveCTATitle;
+                CTADescription = Resources.RatingViewPositiveCTADescription;
+                CTAButtonTitle = Resources.RatingViewPositiveCTAButtonTitle;
+            }
+            else
+            {
+                CTATitle = Resources.RatingViewNegativeCTATitle;
+                CTADescription = Resources.RatingViewNegativeCTADescription;
+                CTAButtonTitle = Resources.RatingViewNegativeCTAButtonTitle;
+            }
         }
 
         private void leaveReview()

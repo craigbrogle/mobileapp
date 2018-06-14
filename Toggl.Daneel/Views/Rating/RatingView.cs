@@ -1,11 +1,12 @@
+using System;
 using CoreGraphics;
 using Foundation;
 using MvvmCross.Binding.BindingContext;
-using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Binding.iOS;
+using MvvmCross.Binding.iOS.Views;
 using MvvmCross.Core.ViewModels;
 using ObjCRuntime;
-using System;
+using Toggl.Daneel.Converters;
 using Toggl.Daneel.Extensions;
 using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.ViewModels;
@@ -33,6 +34,16 @@ namespace Toggl.Daneel
         {
             base.MovedToSuperview();
 
+            var descriptionStringAttributes = new UIStringAttributes
+            {
+                ParagraphStyle = new NSMutableParagraphStyle
+                {
+                    MaximumLineHeight = 22,
+                    MinimumLineHeight = 22,
+                    Alignment = UITextAlignment.Center
+                }
+            };
+            var descriptionStringConverter = new StringToAttributedStringValueConverter(descriptionStringAttributes);
             var inverseBoolConverter = new BoolToConstantValueConverter<bool>(false, true);
             var boolToHeightConverter = new BoolToConstantValueConverter<nfloat>(289, 262);
             var bindingSet = this.CreateBindingSet<RatingView, RatingViewModel>();
@@ -41,65 +52,75 @@ namespace Toggl.Daneel
             var heightConstraint = HeightAnchor.ConstraintEqualTo(1);
             heightConstraint.Active = true;
 
-            //bindingSet.Bind(QuestionView)
-            //          .For(v => v.BindVisibility())
-            //          .To(vm => vm.GotImpression);
+            //Text
+            bindingSet.Bind(CtaTitle).To(vm => vm.CTATitle);
 
-            //bindingSet.Bind(CTAView)
-            //.For(v => v.BindVisibility())
-            //.To(vm => vm.GotImpression)
-            //.WithConversion(inverseBoolConverter);
+            bindingSet.Bind(CtaDescription)
+                      .For(v => v.AttributedText)
+                      .To(vm => vm.CTADescription)
+                      .WithConversion(descriptionStringConverter);
+            
+            bindingSet.Bind(CtaButton)
+                      .For(v => v.BindTitle())
+                      .To(vm => vm.CTAButtonTitle);
 
-            bindingSet.Bind(heightConstraint)
-                      .For(v => v.BindConstant())
+            //Visibility
+            bindingSet.Bind(QuestionView)
+                      .For(v => v.BindVisibilityWithFade())
                       .To(vm => vm.GotImpression)
-                      .WithConversion(boolToHeightConverter);
+                      .WithConversion(inverseBoolConverter);
+
+            bindingSet.Bind(CtaView)
+                      .For(v => v.BindVisibilityWithFade())
+                      .To(vm => vm.GotImpression);
+
+            //Commands
+            bindingSet.Bind(CtaButton)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.LeaveReviewCommand);
 
             bindingSet.Bind(YesView)
                       .For(v => v.BindTap())
                       .To(vm => vm.RegisterImpressionCommand)
                       .CommandParameter(true);
 
+            bindingSet.Bind(NotReallyView)
+                      .For(v => v.BindTap())
+                      .To(vm => vm.RegisterImpressionCommand)
+                      .CommandParameter(false);
+
+            //Size
+            bindingSet.Bind(heightConstraint)
+                      .For(v => v.BindAnimatedConstant())
+                      .To(vm => vm.GotImpression)
+                      .WithConversion(boolToHeightConverter);
+
             bindingSet.Apply();
-
-            //YesView.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            //{
-            //    ImpressionTappedCommand?.Execute(true);
-            //}));
-
-            //NotReallyView.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            //{
-            //    ImpressionTappedCommand?.Execute(false);
-            //}));
-
-            //CTAButton.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            //{
-            //    CTATappedCommand?.Execute();
-            //}));
-
-            //DismissButton.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            //{
-            //    DismissTappedCommand?.Execute();
-            //}));
         }
 
         public override void LayoutSubviews()
         {
             base.LayoutSubviews();
 
-            var cardViewShadowPath = UIBezierPath.FromRect(CardView.Bounds);
-            CardView.Layer.ShadowPath?.Dispose();
-            CardView.Layer.ShadowPath = cardViewShadowPath.CGPath;
+            SetupAsCard(QuestionView);
+            SetupAsCard(CtaView);
 
-            CardView.Layer.CornerRadius = 8;
-            CardView.Layer.ShadowRadius = 4;
-            CardView.Layer.ShadowOpacity = 0.1f;
-            CardView.Layer.MasksToBounds = false;
-            CardView.Layer.ShadowOffset = new CGSize(0, 2);
-            CardView.Layer.ShadowColor = UIColor.Black.CGColor;
+            CtaButton.Layer.CornerRadius = 8;
+            CtaView.Layer.MasksToBounds = false;
+        }
 
-            CTAButton.Layer.CornerRadius = 8;
-            CTAButton.Layer.MasksToBounds = false;
+        private void SetupAsCard(UIView view)
+        {
+            var shadowPath = UIBezierPath.FromRect(view.Bounds);
+            view.Layer.ShadowPath?.Dispose();
+            view.Layer.ShadowPath = shadowPath.CGPath;
+
+            view.Layer.CornerRadius = 8;
+            view.Layer.ShadowRadius = 4;
+            view.Layer.ShadowOpacity = 0.1f;
+            view.Layer.MasksToBounds = false;
+            view.Layer.ShadowOffset = new CGSize(0, 2);
+            view.Layer.ShadowColor = UIColor.Black.CGColor;
         }
     }
 }

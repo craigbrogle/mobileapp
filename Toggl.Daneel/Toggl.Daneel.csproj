@@ -1008,6 +1008,7 @@
     <Compile Include="Services\RemoteConfigService.cs" />
     <Compile Include="Extensions\ImageExtension.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
+    <Compile Include="Converters\StringToAttributedStringValueConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
