@@ -27,16 +27,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private const string feedbackRecipient = "support@toggl.com";
         private readonly CompositeDisposable disposeBag = new CompositeDisposable();
 
+        private readonly UserAgent userAgent;
+        private readonly IMailService mailService;
         private readonly ITogglDataSource dataSource;
         private readonly IDialogService dialogService;
+        private readonly IUserPreferences userPreferences;
+        private readonly IFeedbackService feedbackService;
+        private readonly IAnalyticsService analyticsService;
         private readonly IPlatformConstants platformConstants;
+        private readonly IOnboardingStorage onboardingStorage;
         private readonly IInteractorFactory interactorFactory;
         private readonly IMvxNavigationService navigationService;
-        private readonly IUserPreferences userPreferences;
-        private readonly IOnboardingStorage onboardingStorage;
-        private readonly IMailService mailService;
-        private readonly UserAgent userAgent;
-        private readonly IAnalyticsService analyticsService;
 
         private long workspaceId;
 
@@ -114,34 +115,37 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IMailService mailService,
             ITogglDataSource dataSource,
             IDialogService dialogService,
+            IUserPreferences userPreferences,
+            IFeedbackService feedbackService,
+            IAnalyticsService analyticsService,
             IInteractorFactory interactorFactory,
             IPlatformConstants platformConstants,
-            IUserPreferences userPreferences,
             IOnboardingStorage onboardingStorage,
-            IMvxNavigationService navigationService,
-            IAnalyticsService analyticsService)
+            IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(userAgent, nameof(userAgent));
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(mailService, nameof(mailService));
             Ensure.Argument.IsNotNull(dialogService, nameof(dialogService));
             Ensure.Argument.IsNotNull(userPreferences, nameof(userPreferences));
+            Ensure.Argument.IsNotNull(feedbackService, nameof(feedbackService));
+            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(interactorFactory, nameof(interactorFactory));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(platformConstants, nameof(platformConstants));
-            Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
 
             this.userAgent = userAgent;
             this.dataSource = dataSource;
             this.mailService = mailService;
             this.dialogService = dialogService;
+            this.userPreferences = userPreferences;
+            this.feedbackService = feedbackService;
+            this.analyticsService = analyticsService;
             this.interactorFactory = interactorFactory;
             this.navigationService = navigationService;
             this.platformConstants = platformConstants;
-            this.userPreferences = userPreferences;
             this.onboardingStorage = onboardingStorage;
-            this.analyticsService = analyticsService;
 
             disposeBag.Add(dataSource.SyncManager
                 .ProgressObservable
@@ -244,36 +248,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             dataSource.SyncManager.PushSync();
         }
 
-        private async Task submitFeedback()
-        {
-            var version = userAgent.ToString();
-            var phone = platformConstants.PhoneModel;
-            var os = platformConstants.OperatingSystem;
-
-            var messageBuilder = new StringBuilder();
-            messageBuilder.Append("\n\n"); // 2 leading newlines, so user user can type something above this info
-            messageBuilder.Append($"Version: {version}\n");
-            if (phone != null)
-            {
-                messageBuilder.Append($"Phone: {phone}\n");
-            }
-            messageBuilder.Append($"OS: {os}");
-
-            var mailResult = await mailService.Send(
-                feedbackRecipient,
-                platformConstants.FeedbackEmailSubject,
-                messageBuilder.ToString()
-            );
-
-            if (mailResult.Success || string.IsNullOrEmpty(mailResult.ErrorTitle))
-                return;
-
-            await dialogService.Alert(
-                mailResult.ErrorTitle,
-                mailResult.ErrorMessage,
-                Resources.Ok
-            );
-        }
+        private Task submitFeedback()
+            => feedbackService.SubmitFeedback();
 
         public void editSubscription() => throw new NotImplementedException();
 

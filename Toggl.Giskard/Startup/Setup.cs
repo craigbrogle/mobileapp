@@ -81,8 +81,12 @@ namespace Toggl.Giskard
 
             var appVersion = Version.Parse(version);
             var userAgent = new UserAgent(clientName, version);
+            var mailService = new MailService(ApplicationContext);
+            var dialogService = new DialogService();
+            var platformConstants = new PlatformConstants();
             var keyValueStorage = new SharedPreferencesStorage(sharedPreferences);
             var settingsStorage = new SettingsStorage(appVersion, keyValueStorage);
+            var feedbackService = new FeedbackService(userAgent, mailService, dialogService, platformConstants);
 
             var foundation =
                 TogglFoundation
@@ -90,19 +94,20 @@ namespace Toggl.Giskard
                     .WithDatabase(database)
                     .WithScheduler(scheduler)
                     .WithTimeService(timeService)
+                    .WithMailService(mailService)
                     .WithApiEnvironment(environment)
                     .WithGoogleService<GoogleService>()
                     .WithLicenseProvider<LicenseProvider>()
                     .WithAnalyticsService(analyticsService)
-                    .WithPlatformConstants<PlatformConstants>()
-                    .WithMailService(new MailService(ApplicationContext))
+                    .WithPlatformConstants(platformConstants)
                     .WithApiFactory(new ApiFactory(environment, userAgent))
                     .WithBackgroundService(new BackgroundService(timeService))
                     .WithSuggestionProviderContainer(suggestionProviderContainer)
                     .WithApplicationShortcutCreator(new ApplicationShortcutCreator(ApplicationContext))
 
                     .StartRegisteringPlatformServices()
-                    .WithDialogService<DialogService>()
+                    .WithDialogService(dialogService)
+                    .WithFeedbackService(feedbackService)
                     .WithBrowserService<BrowserService>()
                     .WithKeyValueStorage(keyValueStorage)
                     .WithUserPreferences(settingsStorage)

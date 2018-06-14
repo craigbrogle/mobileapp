@@ -75,7 +75,7 @@ namespace Toggl.Daneel
                       .To(vm => vm.GotImpression);
 
             //Commands
-            bindingSet.Bind(CtaButton).To(vm => vm.LeaveReviewCommand);
+            bindingSet.Bind(CtaButton).To(vm => vm.PerformMainAction);
             bindingSet.Bind(DismissButton).To(vm => vm.DismissViewCommand);
 
             bindingSet.Bind(YesView)

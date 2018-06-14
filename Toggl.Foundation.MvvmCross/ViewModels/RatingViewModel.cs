@@ -3,6 +3,7 @@ using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Multivac;
 
@@ -12,8 +13,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class RatingViewModel : MvxViewModel
     {
         private readonly ITogglDataSource dataSource;
+        private readonly IFeedbackService feedbackService;
         private readonly IAnalyticsService analyticsService;
         private readonly IMvxNavigationService navigationService;
+
+        private bool? impressionIsPositive;
 
         public bool GotImpression { get; private set; }
 
@@ -21,30 +25,33 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public string CTADescription { get; private set; }
 
-        public string CTAButtonTitle { get; set; }
+        public string CTAButtonTitle { get; private set; }
 
-        public MvxCommand<bool> RegisterImpressionCommand { get; set; }
-        public MvxCommand LeaveReviewCommand { get; set; }
-        public MvxCommand DismissViewCommand { get; set; }
+        public IMvxCommand<bool> RegisterImpressionCommand { get; private set; }
+        public IMvxAsyncCommand PerformMainAction { get; private set; }
+        public IMvxCommand DismissViewCommand { get; private set; }
 
         public RatingViewModel(
             ITogglDataSource dataSource,
+            IFeedbackService feedbackService,
             IAnalyticsService analyticsService,
             IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
+            Ensure.Argument.IsNotNull(feedbackService, nameof(feedbackService));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
 
             this.dataSource = dataSource;
+            this.feedbackService = feedbackService;
             this.analyticsService = analyticsService;
             this.navigationService = navigationService;
 
             GotImpression = false;
 
-            RegisterImpressionCommand = new MvxCommand<bool>(registerImpression);
-            LeaveReviewCommand = new MvxCommand(leaveReview);
             DismissViewCommand = new MvxCommand(dismiss);
+            PerformMainAction = new MvxAsyncCommand(performMainAction);
+            RegisterImpressionCommand = new MvxCommand<bool>(registerImpression);
         }
 
         public async override Task Initialize()
@@ -55,6 +62,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void registerImpression(bool isPositive)
         {
             GotImpression = true;
+            impressionIsPositive = isPositive;
             if (isPositive)
             {
                 CTATitle = Resources.RatingViewPositiveCTATitle;
@@ -69,9 +77,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        private void leaveReview()
+        private async Task performMainAction()
         {
-            GotImpression = false;
+            if (impressionIsPositive == null)
+                return;
+
+            if (impressionIsPositive.Value)
+            {
+                System.Console.WriteLine("Not implemented");
+            }
+            else
+            {
+                await feedbackService.SubmitFeedback();
+            }
         }
 
         private void dismiss()
