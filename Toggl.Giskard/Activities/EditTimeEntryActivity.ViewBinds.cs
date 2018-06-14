@@ -34,7 +34,7 @@ namespace Toggl.Giskard.Activities
         private void setupBindings() 
         {
             this.Bind(startTimeArea.Tapped(), _ => ViewModel.SelectTimeCommand.Execute(StartTime));
-            this.Bind(stopTimeArea.Tapped(), _ => ViewModel.SelectTimeCommand.Execute(StopTime));
+            this.Bind(stopTimeArea.Tapped(), _ => ViewModel.StopTimeEntryCommand.Execute(StopTime));
             this.Bind(durationArea.Tapped(), _ => ViewModel.SelectTimeCommand.Execute(Duration));
         }
     }

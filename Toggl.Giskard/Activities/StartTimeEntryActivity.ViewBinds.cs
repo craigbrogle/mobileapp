@@ -12,7 +12,7 @@ namespace Toggl.Giskard.Activities
 
         private void initializeViews()
         {
-            durationLabel = FindViewById(StartTimeEntryDurationText);
+            durationLabel = FindViewById<TextView>(StartTimeEntryDurationText);
         }
 
         private void setupBindings() 

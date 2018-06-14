@@ -163,7 +163,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand StopCommand { get; }
 
-        public IMvxAsyncCommand<string> StopTimeEntryCommand { get; }
+        public IMvxAsyncCommand<SelectTimeOrigin> StopTimeEntryCommand { get; }
 
         public IMvxAsyncCommand DeleteCommand { get; }
 
@@ -217,7 +217,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             CloseCommand = new MvxAsyncCommand(closeWithConfirmation);
 
             StopCommand = new MvxCommand(stopTimeEntry, () => IsTimeEntryRunning);
-            StopTimeEntryCommand = new MvxAsyncCommand<string>(onStopTimeEntryCommand);
+            StopTimeEntryCommand = new MvxAsyncCommand<SelectTimeOrigin>(onStopTimeEntryCommand);
 
             SelectStartTimeCommand = new MvxAsyncCommand(selectStartTime);
             SelectStopTimeCommand = new MvxAsyncCommand(selectStopTime);
@@ -424,7 +424,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTime = timeService.CurrentDateTime;
         }
 
-        private async Task onStopTimeEntryCommand(string bindingParameter)
+        private async Task onStopTimeEntryCommand(SelectTimeOrigin origin)
         {
             if (IsTimeEntryRunning)
             {
@@ -432,7 +432,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            await SelectTimeCommand.ExecuteAsync(bindingParameter);
+            await SelectTimeCommand.ExecuteAsync(origin);
         }
 
         private async Task selectProject()
