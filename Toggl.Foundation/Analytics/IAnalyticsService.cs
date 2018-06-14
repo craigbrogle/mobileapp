@@ -51,6 +51,8 @@ namespace Toggl.Foundation.Analytics
       
         IAnalyticsEvent<EditViewTapSource> EditViewTapped { get; }
 
+        void Track(ITrackableEvent trackableEvent);
+
         void Track(string eventName, Dictionary<string, string> parameters = null);
 
         void Track(Exception exception);
