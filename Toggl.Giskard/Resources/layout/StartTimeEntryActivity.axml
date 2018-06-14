@@ -28,7 +28,7 @@
             android:layout_alignParentTop="true" />
         <TextView
             android:id="@+id/StartTimeEntryDurationText"
-            local:MvxBind="Text TimeSpanToDuration(DisplayedTime); Click SelectTimeCommand, CommandParameter='Duration'"
+            local:MvxBind="Text TimeSpanToDuration(DisplayedTime)"
             tools:text="999:00:00"
             android:textSize="20sp"
             android:textColor="#328fff"

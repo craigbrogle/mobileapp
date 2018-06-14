@@ -262,7 +262,6 @@
                 android:layout_below="@id/EditBillableRow" />
             <RelativeLayout
                 android:id="@+id/EditTimeLeftPart"
-                local:MvxBind="Click SelectTimeCommand, CommandParameter='StartTime'"
                 android:background="?attr/selectableItemBackground"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
@@ -303,7 +302,6 @@
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/EditTimeRightPart"
-                local:MvxBind="Click StopTimeEntryCommand, CommandParameter='StopTime'"
                 android:background="?attr/selectableItemBackground"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
@@ -371,7 +369,6 @@
                 android:layout_below="@id/EditBillableRow" />
             <LinearLayout
                 android:id="@+id/EditDuration"
-                local:MvxBind="Click SelectTimeCommand, CommandParameter='Duration'"
                 android:orientation="vertical"
                 android:background="?attr/selectableItemBackground"
                 android:layout_height="72dp"
