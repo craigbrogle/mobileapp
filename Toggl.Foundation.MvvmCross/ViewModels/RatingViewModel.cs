@@ -5,6 +5,7 @@ using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
+using Toggl.Foundation.Services;
 using Toggl.Multivac;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -13,6 +14,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class RatingViewModel : MvxViewModel
     {
         private readonly ITogglDataSource dataSource;
+        private readonly IRatingService ratingService;
         private readonly IFeedbackService feedbackService;
         private readonly IAnalyticsService analyticsService;
         private readonly IMvxNavigationService navigationService;
@@ -33,16 +35,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public RatingViewModel(
             ITogglDataSource dataSource,
+            IRatingService ratingService,
             IFeedbackService feedbackService,
             IAnalyticsService analyticsService,
             IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
+            Ensure.Argument.IsNotNull(ratingService, nameof(ratingService));
             Ensure.Argument.IsNotNull(feedbackService, nameof(feedbackService));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
 
             this.dataSource = dataSource;
+            this.ratingService = ratingService;
             this.feedbackService = feedbackService;
             this.analyticsService = analyticsService;
             this.navigationService = navigationService;
@@ -84,7 +89,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (impressionIsPositive.Value)
             {
-                System.Console.WriteLine("Not implemented");
+                ratingService.AskForRating();
             }
             else
             {

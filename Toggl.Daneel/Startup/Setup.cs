@@ -100,6 +100,7 @@ namespace Toggl.Daneel
                     .WithTimeService(timeService)
                     .WithApiEnvironment(environment)
                     .WithGoogleService<GoogleService>()
+                    .WithRatingService<RatingService>()
                     .WithLicenseProvider<LicenseProvider>()
                     .WithAnalyticsService(analyticsService)
                     .WithPlatformConstants(platformConstants)

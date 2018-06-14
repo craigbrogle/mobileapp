@@ -1009,6 +1009,7 @@
     <Compile Include="Extensions\ImageExtension.cs" />
     <Compile Include="Extensions\UIExtensions.cs" />
     <Compile Include="Converters\StringToAttributedStringValueConverter.cs" />
+    <Compile Include="Services\RatingService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">

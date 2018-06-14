@@ -22,6 +22,7 @@ namespace Toggl.Foundation
         public IScheduler Scheduler { get; }
         public IMailService MailService { get; }
         public IGoogleService GoogleService { get; }
+        public IRatingService RatingService { get; }
         public ApiEnvironment ApiEnvironment { get; }
         public ILicenseProvider LicenseProvider { get; }
         public IAnalyticsService AnalyticsService { get; }
@@ -46,6 +47,7 @@ namespace Toggl.Foundation
             TimeService = builder.TimeService;
             MailService = builder.MailService;
             GoogleService = builder.GoogleService;
+            RatingService = builder.RatingService;
             ApiEnvironment = builder.ApiEnvironment;
             LicenseProvider = builder.LicenseProvider;
             ShortcutCreator = builder.ShortcutCreator;
@@ -65,6 +67,7 @@ namespace Toggl.Foundation
             public ITimeService TimeService { get; internal set; }
             public IScheduler Scheduler { get; internal set; }
             public IMailService MailService { get; internal set; }
+            public IRatingService RatingService { get; internal set; }
             public IGoogleService GoogleService { get; internal set; }
             public ApiEnvironment ApiEnvironment { get; internal set; }
 
@@ -166,6 +169,12 @@ namespace Toggl.Foundation
                 return this;
             }
 
+            public Builder WithRatingService(IRatingService ratingService)
+            {
+                RatingService = ratingService;
+                return this;
+            }
+
             public Builder WithDatabase<TDatabase>()
                 where TDatabase : ITogglDatabase, new()
                 => WithDatabase(new TDatabase());
@@ -214,6 +223,10 @@ namespace Toggl.Foundation
                 where TRemoteConfigService : IRemoteConfigService, new()
                 => WithRemoteConfigService(new TRemoteConfigService());
 
+            public Builder WithRatingService<TRatingService>()
+                where TRatingService : IRatingService, new()
+                => WithRatingService(new TRatingService());
+
             public TogglFoundation Build()
                 => new TogglFoundation(this);
 
@@ -227,6 +240,7 @@ namespace Toggl.Foundation
                 Ensure.Argument.IsNotNull(TimeService, nameof(TimeService));
                 Ensure.Argument.IsNotNull(MailService, nameof(MailService));
                 Ensure.Argument.IsNotNull(GoogleService, nameof(GoogleService));
+                Ensure.Argument.IsNotNull(RatingService, nameof(RatingService));
                 Ensure.Argument.IsNotNull(LicenseProvider, nameof(LicenseProvider));
                 Ensure.Argument.IsNotNull(ShortcutCreator, nameof(ShortcutCreator));
                 Ensure.Argument.IsNotNull(AnalyticsService, nameof(AnalyticsService));

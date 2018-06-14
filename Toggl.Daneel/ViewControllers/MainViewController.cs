@@ -354,6 +354,8 @@ namespace Toggl.Daneel.ViewControllers
         {
             RatingViewVisible = false;
             ratingView.RemoveFromSuperview();
+            ratingView.Dispose();
+            ratingView = null;
 
             //We have to scroll a little to update the header size.
             //Using LayoutSubviews(), SetNeedsLayout(), LayoutIfNeeded() etc. does not work.

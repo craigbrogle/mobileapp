@@ -72,6 +72,7 @@ namespace Toggl.Foundation.MvvmCross
             Mvx.RegisterSingleton(foundation.ApiFactory);
             Mvx.RegisterSingleton(foundation.TimeService);
             Mvx.RegisterSingleton(foundation.MailService);
+            Mvx.RegisterSingleton(foundation.RatingService);
             Mvx.RegisterSingleton(foundation.ShortcutCreator);
             Mvx.RegisterSingleton(foundation.LicenseProvider);
             Mvx.RegisterSingleton(foundation.FeedbackService);

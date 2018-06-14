@@ -25,6 +25,7 @@ namespace Toggl.Foundation.MvvmCross
         public IScheduler Scheduler { get; }
         public IMailService MailService { get; }
         public IGoogleService GoogleService { get; }
+        public IRatingService RatingService { get; }
         public ApiEnvironment ApiEnvironment { get; }
         public ILicenseProvider LicenseProvider { get; }
         public IAnalyticsService AnalyticsService { get; }
@@ -67,6 +68,7 @@ namespace Toggl.Foundation.MvvmCross
             ApiFactory = builder.Foundation.ApiFactory;
             TimeService = builder.Foundation.TimeService;
             MailService = builder.Foundation.MailService;
+            RatingService = builder.Foundation.RatingService;
             GoogleService = builder.Foundation.GoogleService;
             ApiEnvironment = builder.Foundation.ApiEnvironment;
             LicenseProvider = builder.Foundation.LicenseProvider;
