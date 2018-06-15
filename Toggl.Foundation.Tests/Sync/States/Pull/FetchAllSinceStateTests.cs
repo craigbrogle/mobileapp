@@ -177,7 +177,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Pull
             }
 
             [Fact, LogIfTooSlow]
-            public async Task FetchesTwoMonthsOfTimeEntriesData()
+            public async Task FetchesTwoMonthsOfTimeEntriesDataIncludingTwoDaysAfterNow()
             {
                 var sinceParameters = Substitute.For<ISinceParameterRepository>();
                 sinceParameters.Get<IDatabaseTimeEntry>().Returns(now.AddMonths(-8));
@@ -188,7 +188,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Pull
                 var min = TimeSpan.FromDays(59);
 
                 await api.TimeEntries.Received().GetAll(
-                    Arg.Is<DateTimeOffset>(start => min <= now - start && now - start <= max), Arg.Is(now));
+                    Arg.Is<DateTimeOffset>(start => min <= now - start && now - start <= max), Arg.Is(now.AddDays(2)));
             }
         }
     }
