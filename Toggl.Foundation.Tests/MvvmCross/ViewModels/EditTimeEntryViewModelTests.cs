@@ -974,7 +974,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 string projectColor = null,
                 string clientName = null,
                 long? taskId = null,
-                string taskName = null)
+                string taskName = null,
+                bool active = true)
             {
                 long timeEntryId = 10;
                 prepareTimeEntry(timeEntryId);
@@ -1006,7 +1007,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             private IThreadSafeProject prepareProject(
-                long projectId, string projectName, string projectColor, string clientName, long workspaceId)
+                long projectId, string projectName, string projectColor, string clientName, long workspaceId, bool active = true)
             {
                 var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(projectId);
@@ -1014,6 +1015,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 project.Color.Returns(projectColor);
                 project.Client.Name.Returns(clientName);
                 project.WorkspaceId.Returns(workspaceId);
+                project.Active.Returns(active);
                 DataSource.Projects.GetById(Arg.Is(projectId))
                     .Returns(Observable.Return(project));
                 return project;

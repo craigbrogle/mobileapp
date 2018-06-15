@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Autocomplete.Suggestions
@@ -35,8 +36,8 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
             if (timeEntry.Project == null) return;
             HasProject = true;
             ProjectId = timeEntry.Project.Id;
-            ProjectName = timeEntry.Project.Name;
-            ProjectColor = timeEntry.Project.Color;
+            ProjectName = timeEntry.Project.DisplayName();
+            ProjectColor = timeEntry.Project.DisplayColor();
 
             if (timeEntry.Project.Client != null)
                 ClientName = timeEntry.Project.Client.Name;

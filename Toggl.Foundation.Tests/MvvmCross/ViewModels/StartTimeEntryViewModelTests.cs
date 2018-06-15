@@ -1317,6 +1317,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Project.Color.Returns(ProjectColor);
                     Project.Workspace.Returns(Workspace);
                     Project.WorkspaceId.Returns(WorkspaceId);
+                    Project.Active.Returns(true);
 
                     Task = Substitute.For<IThreadSafeTask>();
                     Task.Id.Returns(TaskId);
