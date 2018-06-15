@@ -1,11 +1,20 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Autocomplete;
 
 namespace Toggl.Foundation.MvvmCross.Extensions
 {
+    public struct StartTimeEntryStateDTO
+    {
+        public TextFieldInfo TextFieldInfo { get; set; }
+        public DateTimeOffset StartTime { get; set; }
+        public bool IsBillable { get; set; }
+        public long[] TagIdsToReload { get; set; }
+    }
+
     public static class BundleExtensions
     {
         public static void SavePropertiesFrom(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
@@ -43,7 +52,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
             bundle.Data[nameof(viewModel.IsBillable)] = viewModel.IsBillable.ToString();
         }
 
-        public static void ReloadPropertiesInto(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
+        public static StartTimeEntryStateDTO? GetStateToReloadInto(this IMvxBundle bundle, StartTimeEntryViewModel viewModel)
         {
             if (bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Text)}", out var text) &&
 
@@ -79,7 +88,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                           bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectColor)}", out var projectColor) &&
                           bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.ProjectName)}", out var projectName)))
                     {
-                        return;
+                        return null;
                     }
 
                     if (hasTask)
@@ -88,7 +97,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                               int.TryParse(taskIdString, out var taskId) &&
                               bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.TaskName)}", out var taskName)))
                         {
-                            return;
+                            return null;
                         }
                         textFieldInfo = textFieldInfo.WithProjectAndTaskInfo(workspaceId, projectId, projectName, projectColor, taskId, taskName);
                     }
@@ -98,20 +107,27 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                     }
                 }
 
+                var tagIdsToReload = new long[] { };
                 if (hasTags)
                 {
                     if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString)))
                     {
-                        return;
+                        return null;
                     }
                     var tagIds = tagsIdsString.Split(';').Select(str => long.Parse(str)).ToArray();
-                    viewModel.TagIdsToReload = tagIds;
+                    tagIdsToReload = tagIds;
                 }
 
-                viewModel.TextFieldInfo = textFieldInfo;
-                viewModel.StartTime = startTime;
-                viewModel.IsBillable = isBillable;
+                return new StartTimeEntryStateDTO
+                {
+                    TextFieldInfo = textFieldInfo,
+                    StartTime = startTime,
+                    IsBillable = isBillable,
+                    TagIdsToReload = tagIdsToReload
+                };
             }
+
+            return null;
         }
     }
 }

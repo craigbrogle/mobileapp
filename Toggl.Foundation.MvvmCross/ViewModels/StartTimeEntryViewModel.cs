@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
 using MvvmCross.Core.ViewModels;
@@ -92,8 +93,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         }
 
         public long[] TagIds => TextFieldInfo.Tags.Select(t => t.TagId).Distinct().ToArray();
-
-        public long[] TagIdsToReload { get; set; } = new long[] { };
 
         public long? ProjectId => TextFieldInfo.ProjectId;
 
@@ -302,8 +301,20 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         protected override async void ReloadFromBundle(IMvxBundle state)
         {
             base.ReloadFromBundle(state);
-            state.ReloadPropertiesInto(this);
-            await reloadTags(TagIdsToReload);
+
+            var stateToReload = state.GetStateToReloadInto(this);
+
+            if (!stateToReload.HasValue) return;
+
+            TextFieldInfo = stateToReload.Value.TextFieldInfo;
+            StartTime = stateToReload.Value.StartTime;
+            IsBillable = stateToReload.Value.IsBillable;
+            var tagIdsToReload = stateToReload.Value.TagIdsToReload;
+
+            if (tagIdsToReload.Any())
+            {
+                await reloadTags(tagIdsToReload);
+            }
         }
 
         private void onPreferencesChanged(IThreadSafePreferences preferences)
