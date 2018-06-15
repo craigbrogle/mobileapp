@@ -87,7 +87,7 @@ namespace Toggl.Daneel.ViewControllers
             bindingSet.Bind(CountryNotSelectedImageView)
                       .For(v => v.BindAnimatedVisibility())
                       .To(vm => vm.IsCountryErrorVisible);
-            
+
             bindingSet.Apply();
 
             prepareViews();
@@ -133,6 +133,24 @@ namespace Toggl.Daneel.ViewControllers
                 EmailTextField.ResignFirstResponder();
                 PasswordTextField.ResignFirstResponder();
             }));
+
+            SignupShakeTriggerButton.TouchUpInside += (sender, e) =>
+            {
+                if (!ViewModel.Email.IsValid)
+                {
+                    EmailTextField.Shake();
+                }
+                if (!ViewModel.Password.IsValid)
+                {
+                    PasswordTextField.Shake();
+                }
+                if (!ViewModel.IsCountryValid)
+                {
+                    SelectCountryButton.Shake();
+                    CountryNotSelectedImageView.Shake();
+                    CountryDropDownCaretImageView.Shake();
+                }
+            };
 
             PasswordTextField.ResignFirstResponder();
 

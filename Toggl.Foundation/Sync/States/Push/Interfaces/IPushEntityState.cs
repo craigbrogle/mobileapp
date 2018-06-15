@@ -3,7 +3,7 @@ using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Sync.States.Push.Interfaces
 {
-    public interface IPushEntityState<T>
+    public interface IPushEntityState<T> : ISyncState<T>
         where T : IThreadSafeModel
     {
         StateResult<(Exception, T)> ServerError { get; }

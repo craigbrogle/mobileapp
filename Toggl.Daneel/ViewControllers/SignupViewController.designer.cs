@@ -16,6 +16,9 @@ namespace Toggl.Daneel.ViewControllers
 		Toggl.Daneel.Views.ActivityIndicatorView ActivityIndicator { get; set; }
 
 		[Outlet]
+		UIKit.UIImageView CountryDropDownCaretImageView { get; set; }
+
+		[Outlet]
 		UIKit.UIImageView CountryNotSelectedImageView { get; set; }
 
 		[Outlet]
@@ -43,6 +46,9 @@ namespace Toggl.Daneel.ViewControllers
 		UIKit.UIButton SignupButton { get; set; }
 
 		[Outlet]
+		UIKit.UIButton SignupShakeTriggerButton { get; set; }
+
+		[Outlet]
 		UIKit.NSLayoutConstraint TopConstraint { get; set; }
 		
 		void ReleaseDesignerOutlets ()
@@ -55,6 +61,11 @@ namespace Toggl.Daneel.ViewControllers
 			if (CountryNotSelectedImageView != null) {
 				CountryNotSelectedImageView.Dispose ();
 				CountryNotSelectedImageView = null;
+			}
+
+			if (CountryDropDownCaretImageView != null) {
+				CountryDropDownCaretImageView.Dispose ();
+				CountryDropDownCaretImageView = null;
 			}
 
 			if (EmailTextField != null) {
@@ -95,6 +106,11 @@ namespace Toggl.Daneel.ViewControllers
 			if (SignupButton != null) {
 				SignupButton.Dispose ();
 				SignupButton = null;
+			}
+
+			if (SignupShakeTriggerButton != null) {
+				SignupShakeTriggerButton.Dispose ();
+				SignupShakeTriggerButton = null;
 			}
 
 			if (TopConstraint != null) {

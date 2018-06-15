@@ -9,6 +9,9 @@ namespace Toggl.Giskard.ViewHolders
 {
     public sealed class WorkspaceSelectionViewHolder : BaseRecyclerViewHolder<SelectableWorkspaceViewModel>
     {
+        public static WorkspaceSelectionViewHolder Create(View itemView)
+            => new WorkspaceSelectionViewHolder(itemView);
+
         private ImageView checkedImage;
         private TextView workspaceName;
 

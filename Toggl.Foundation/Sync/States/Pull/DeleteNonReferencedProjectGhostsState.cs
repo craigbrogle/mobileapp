@@ -9,7 +9,7 @@ using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.Sync.States.Pull
 {
-    public sealed class DeleteNonReferencedProjectGhostsState
+    public sealed class DeleteNonReferencedProjectGhostsState : ISyncState
     {
         private readonly IProjectsSource projectsDataSource;
 

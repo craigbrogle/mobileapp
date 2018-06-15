@@ -19,7 +19,7 @@ namespace Toggl.Foundation.DataSources
     public sealed class TogglDataSource : ITogglDataSource
     {
         private readonly ITogglDatabase database;
-        private readonly IApiErrorHandlingService apiErrorHandlingService;
+        private readonly IErrorHandlingService errorHandlingService;
         private readonly IBackgroundService backgroundService;
         private readonly IApplicationShortcutCreator shortcutCreator;
 
@@ -34,7 +34,7 @@ namespace Toggl.Foundation.DataSources
             ITogglApi api,
             ITogglDatabase database,
             ITimeService timeService,
-            IApiErrorHandlingService apiErrorHandlingService,
+            IErrorHandlingService errorHandlingService,
             IBackgroundService backgroundService,
             Func<ITogglDataSource, ISyncManager> createSyncManager,
             TimeSpan minimumTimeInBackgroundForFullSync,
@@ -43,13 +43,13 @@ namespace Toggl.Foundation.DataSources
             Ensure.Argument.IsNotNull(api, nameof(api));
             Ensure.Argument.IsNotNull(database, nameof(database));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
-            Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
+            Ensure.Argument.IsNotNull(errorHandlingService, nameof(errorHandlingService));
             Ensure.Argument.IsNotNull(backgroundService, nameof(backgroundService));
             Ensure.Argument.IsNotNull(createSyncManager, nameof(createSyncManager));
             Ensure.Argument.IsNotNull(shortcutCreator, nameof(shortcutCreator));
 
             this.database = database;
-            this.apiErrorHandlingService = apiErrorHandlingService;
+            this.errorHandlingService = errorHandlingService;
             this.backgroundService = backgroundService;
             this.shortcutCreator = shortcutCreator;
 
@@ -132,8 +132,9 @@ namespace Toggl.Foundation.DataSources
 
         private void onSyncError(Exception exception)
         {
-            if (apiErrorHandlingService.TryHandleDeprecationError(exception)
-                || apiErrorHandlingService.TryHandleUnauthorizedError(exception))
+            if (errorHandlingService.TryHandleDeprecationError(exception)
+                || errorHandlingService.TryHandleUnauthorizedError(exception)
+                || errorHandlingService.TryHandleNoWorkspaceError(exception))
             {
                 stopSyncingOnSignal();
                 return;

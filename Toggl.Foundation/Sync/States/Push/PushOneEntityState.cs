@@ -6,7 +6,7 @@ using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.Sync.States.Push
 {
-    internal sealed class PushOneEntityState<T>
+    internal sealed class PushOneEntityState<T> : ISyncState<T>
         where T : class, IDatabaseSyncable, IThreadSafeModel
     {
         public StateResult<T> CreateEntity { get; } = new StateResult<T>();
@@ -14,7 +14,7 @@ namespace Toggl.Foundation.Sync.States.Push
         public StateResult<T> DeleteEntity { get; } = new StateResult<T>();
 
         public StateResult<T> UpdateEntity { get; } = new StateResult<T>();
-        
+
         public StateResult<T> DeleteEntityLocally { get; } = new StateResult<T>();
 
         public IObservable<ITransition> Start(T entityToPush)

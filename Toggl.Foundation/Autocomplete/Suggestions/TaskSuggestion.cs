@@ -1,4 +1,5 @@
-﻿using Toggl.Foundation.Models.Interfaces;
+﻿using Toggl.Foundation.Extensions;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Autocomplete.Suggestions
 {
@@ -20,8 +21,8 @@ namespace Toggl.Foundation.Autocomplete.Suggestions
             Name = task.Name;
             ProjectId = task.ProjectId;
             WorkspaceId = task.WorkspaceId;
-            ProjectName = task.Project?.Name ?? "";
-            ProjectColor = task.Project?.Color ?? "";
+            ProjectName = task.Project?.DisplayName() ?? "";
+            ProjectColor = task.Project?.DisplayColor() ?? "";
         }
 
         public override int GetHashCode()

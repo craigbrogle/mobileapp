@@ -9,8 +9,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class TermsOfServiceViewModel : MvxViewModelResult<bool>
     {
-        private const string privacyPolicyUrl = "https://toggl.com/legal/privacy";
-        private const string termsOfServiceUrl = "https://toggl.com/legal/terms";
+        private const string privacyPolicyUrl = "https://toggl.com/legal/privacy/";
+        private const string termsOfServiceUrl = "https://toggl.com/legal/terms/";
 
         private readonly IBrowserService browserService;
         private readonly IMvxNavigationService navigationService;

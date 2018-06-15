@@ -66,7 +66,7 @@ namespace Toggl.Foundation.Tests.Sync
                         observer.OnCompleted();
                     });
 
-                    Transitions.ConfigureTransition(lastResult, transition);
+                    Transitions.ConfigureTransition(lastResult, new TestSyncState(transition));
 
                     lastResult = nextResult;
                 }
@@ -77,7 +77,7 @@ namespace Toggl.Foundation.Tests.Sync
             protected void PrepareFailingTransition(StateResult lastResult)
             {
                 Func<IObservable<ITransition>> failingTransition = () => Observable.Throw<ITransition>(new TestException());
-                Transitions.ConfigureTransition(lastResult, failingTransition);
+                Transitions.ConfigureTransition(lastResult, new TestSyncState(failingTransition));
             }
         }
 
@@ -233,7 +233,7 @@ namespace Toggl.Foundation.Tests.Sync
                 Reset();
                 var someResult = new StateResult();
                 var lastResult = PrepareTransitions(someResult, n);
-                Transitions.ConfigureTransition(lastResult, () => Observable.Never<ITransition>());
+                Transitions.ConfigureTransition(lastResult, new TestSyncState(Observable.Never<ITransition>));
 
                 var observable = stateMachineFinised();
                 StateMachine.Start(someResult.Transition());

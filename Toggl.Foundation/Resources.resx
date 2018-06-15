@@ -399,4 +399,7 @@ account is not set up</value>
     <data name="RatingViewNegativeCTAButtonTitle">
         <value>Tell us what’s wrong</value>
     </data>
+    <data name="ArchivedProjectDecorator">
+        <value>(archived)</value>
+    </data>
 </root>

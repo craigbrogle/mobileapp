@@ -30,7 +30,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         protected IOnboardingStorage OnboardingStorage { get; } = Substitute.For<IOnboardingStorage>();
         protected IRemoteConfigService RemoteConfigService { get; } = Substitute.For<IRemoteConfigService>();
         protected IPasswordManagerService PasswordManagerService { get; } = Substitute.For<IPasswordManagerService>();
-        protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
+        protected IErrorHandlingService ErrorHandlingService { get; } = Substitute.For<IErrorHandlingService>();
         protected ISuggestionProviderContainer SuggestionProviderContainer { get; } = Substitute.For<ISuggestionProviderContainer>();
         protected IAutocompleteProvider AutocompleteProvider { get; } = Substitute.For<IAutocompleteProvider>();
 

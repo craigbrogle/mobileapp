@@ -46,7 +46,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
         private readonly IUserPreferences userPreferences = Substitute.For<IUserPreferences>();
         private readonly IOnboardingStorage onboardingStorage = Substitute.For<IOnboardingStorage>();
         private readonly IMvxNavigationService navigationService = Substitute.For<IMvxNavigationService>();
-        private readonly IApiErrorHandlingService apiErrorHandlingService = Substitute.For<IApiErrorHandlingService>();
+        private readonly IErrorHandlingService errorHandlingService = Substitute.For<IErrorHandlingService>();
         private readonly IAccessRestrictionStorage accessRestrictionStorage = Substitute.For<IAccessRestrictionStorage>();
 
         public FoundationExtensionsTests()
@@ -60,7 +60,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithUserPreferences(userPreferences)
                     .WithOnboardingStorage(onboardingStorage)
                     .WithNavigationService(navigationService)
-                    .WithApiErrorHandlingService(apiErrorHandlingService)
+                    .WithErrorHandlingService(errorHandlingService)
                     .WithAccessRestrictionStorage(accessRestrictionStorage)
                     .Build();
         }
@@ -87,7 +87,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             var actualFeedbackService = useFeedbackService ? Substitute.For<IFeedbackService>() : null;
             var actualOnboardingStorage = useOnboardingStorage ? Substitute.For<IOnboardingStorage>() : null;
             var actualNavigationService = useNavigationService ? Substitute.For<IMvxNavigationService>() : null;
-            var actualApiErrorHandlingService = useApiErrorHandlingService ? Substitute.For<IApiErrorHandlingService>() : null;
+            var actualApiErrorHandlingService = useApiErrorHandlingService ? Substitute.For<IErrorHandlingService>() : null;
             var actualAccessRestrictionStorage = useAccessRestrictionStorage ? Substitute.For<IAccessRestrictionStorage>() : null;
 
             Action tryingToConstructWithEmptyParameters = () =>
@@ -99,7 +99,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithUserPreferences(actualUserPreferences)
                     .WithOnboardingStorage(actualOnboardingStorage)
                     .WithNavigationService(actualNavigationService)
-                    .WithApiErrorHandlingService(actualApiErrorHandlingService)
+                    .WithErrorHandlingService(actualApiErrorHandlingService)
                     .WithAccessRestrictionStorage(actualAccessRestrictionStorage)
                     .Build();
 
@@ -118,7 +118,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             var actualUserPreferences = Substitute.For<IUserPreferences>();
             var actualOnboardingStorage = Substitute.For<IOnboardingStorage>();
             var actualNavigationService = Substitute.For<IMvxNavigationService>();
-            var actualApiErrorHandlingService = Substitute.For<IApiErrorHandlingService>();
+            var actualApiErrorHandlingService = Substitute.For<IErrorHandlingService>();
             var actualAccessRestrictionStorage = Substitute.For<IAccessRestrictionStorage>();
 
             Action tryingToConstructWithEmptyParameters = () =>
@@ -130,7 +130,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithUserPreferences(actualUserPreferences)
                     .WithOnboardingStorage(actualOnboardingStorage)
                     .WithNavigationService(actualNavigationService)
-                    .WithApiErrorHandlingService(actualApiErrorHandlingService)
+                    .WithErrorHandlingService(actualApiErrorHandlingService)
                     .WithAccessRestrictionStorage(actualAccessRestrictionStorage)
                     .Build();
 

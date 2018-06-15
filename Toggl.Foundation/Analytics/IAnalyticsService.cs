@@ -56,6 +56,8 @@ namespace Toggl.Foundation.Analytics
         IAnalyticsEvent OfflineModeDetected { get; }
 
         IAnalyticsEvent<int> ProjectGhostsCreated { get; }
+      
+        IAnalyticsEvent<EditViewTapSource> EditViewTapped { get; }
 
         void Track(string eventName, Dictionary<string, string> parameters = null);
 

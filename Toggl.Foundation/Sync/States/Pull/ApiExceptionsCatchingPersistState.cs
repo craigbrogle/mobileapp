@@ -5,7 +5,7 @@ using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.Sync.States.Pull
 {
-    internal sealed class ApiExceptionsCatchingPersistState<T>
+    internal sealed class ApiExceptionsCatchingPersistState<T> : ISyncState<IFetchObservables>
         where T : IPersistState
     {
         public T UnsafeState { get; }

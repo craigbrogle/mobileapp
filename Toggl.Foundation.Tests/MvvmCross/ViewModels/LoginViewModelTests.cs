@@ -38,7 +38,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     OnboardingStorage,
                     NavigationService,
                     PasswordManagerService,
-                    ApiErrorHandlingService);
+                    ErrorHandlingService);
         }
 
         public sealed class TheConstructor : LoginViewModelTest
@@ -58,7 +58,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = userNavigationService ? NavigationService : null;
                 var passwordManagerService = usePasswordManagerService ? PasswordManagerService : null;
-                var apiErrorHandlingService = useApiErrorHandlingService ? ApiErrorHandlingService : null;
+                var apiErrorHandlingService = useApiErrorHandlingService ? ErrorHandlingService : null;
 
                 Action tryingToConstructWithEmptyParameters =
                     () => new LoginViewModel(loginManager,
@@ -296,14 +296,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 }
 
                 [Fact, LogIfTooSlow]
-                public void DoesNothingWhenApiErrorHandlingServiceHandlesTheException()
+                public void DoesNothingWhenErrorHandlingServiceHandlesTheException()
                 {
                     ViewModel.Email = ValidEmail;
                     ViewModel.Password = ValidPassword;
                     var exception = new Exception();
                     LoginManager.Login(Arg.Any<Email>(), Arg.Any<Password>())
                         .Returns(Observable.Throw<ITogglDataSource>(exception));
-                    ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<Exception>())
+                    ErrorHandlingService.TryHandleDeprecationError(Arg.Any<Exception>())
                         .Returns(true);
 
                     ViewModel.LoginCommand.Execute();

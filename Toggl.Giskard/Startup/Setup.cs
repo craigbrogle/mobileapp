@@ -115,7 +115,7 @@ namespace Toggl.Giskard
                     .WithNavigationService(navigationService)
                     .WithAccessRestrictionStorage(settingsStorage)
                     .WithPasswordManagerService<OnePasswordService>()
-                    .WithApiErrorHandlingService(new ApiErrorHandlingService(navigationService, settingsStorage))
+                    .WithErrorHandlingService(new ErrorHandlingService(navigationService, settingsStorage))
                     .Build();
 
             foundation.RevokeNewUserIfNeeded().Initialize();

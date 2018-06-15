@@ -24,6 +24,7 @@ using Xunit;
 using ThreadingTask = System.Threading.Tasks.Task;
 using static Toggl.Foundation.Helper.Constants;
 using Toggl.Multivac;
+using Toggl.Foundation.Extensions;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -473,6 +474,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected string Task = "Some task";
             protected string Client = "Some client";
             protected string ProjectColor = "0000AF";
+            protected bool Active = true;
             protected DateTimeOffset StartTime = new DateTimeOffset(2018, 01, 02, 03, 04, 05, TimeSpan.Zero);
             protected DateTimeOffset Now = new DateTimeOffset(2018, 01, 02, 06, 04, 05, TimeSpan.Zero);
 
@@ -483,6 +485,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 timeEntry.Description.Returns(Description);
                 timeEntry.Project.Name.Returns(Project);
                 timeEntry.Project.Color.Returns(ProjectColor);
+                timeEntry.Project.Active.Returns(Active);
                 timeEntry.Task.Name.Returns(Task);
                 timeEntry.Project.Client.Name.Returns(Client);
                 timeEntry.Start.Returns(StartTime);

@@ -7,7 +7,7 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Sync.States
 {
-    internal class DeleteOldEntriesState
+    internal class DeleteOldEntriesState : ISyncState
     {
         private const byte daysInWeek = 7;
         private const byte weeksToQuery = 8;
@@ -33,7 +33,7 @@ namespace Toggl.Foundation.Sync.States
                 .GetAll(suitableForDeletion)
                 .SelectMany(dataSource.DeleteAll)
                 .Select(_ => FinishedDeleting.Transition());
-                
+
         private bool suitableForDeletion(IDatabaseTimeEntry timeEntry)
             => calculateDelta(timeEntry) > thresholdPeriod
             && isSynced(timeEntry);

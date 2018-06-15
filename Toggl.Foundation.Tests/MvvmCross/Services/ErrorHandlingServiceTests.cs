@@ -14,24 +14,24 @@ using Xunit;
 
 namespace Toggl.Foundation.Tests.MvvmCross.Services
 {
-    public sealed class ApiErrorHandlingServiceTests
+    public sealed class ErrorHandlingServiceTests
     {
-        public abstract class BaseApiErrorHandlingServiceTests
+        public abstract class BaseErrorHandlingServiceTests
         {
             protected readonly IMvxNavigationService NavigationService;
             protected readonly IAccessRestrictionStorage AccessRestrictionStorage;
-            protected readonly IApiErrorHandlingService ApiErrorHandlingService;
+            protected readonly IErrorHandlingService ErrorHandlingService;
             protected readonly IDatabaseUser User;
 
-            public BaseApiErrorHandlingServiceTests()
+            public BaseErrorHandlingServiceTests()
             {
                 User = Substitute.For<IDatabaseUser>();
                 var token = Guid.NewGuid().ToString();
                 User.ApiToken.Returns(token);
                 NavigationService = Substitute.For<IMvxNavigationService>();
                 AccessRestrictionStorage = Substitute.For<IAccessRestrictionStorage>();
-                ApiErrorHandlingService =
-                    new ApiErrorHandlingService(NavigationService, AccessRestrictionStorage);
+                ErrorHandlingService =
+                    new ErrorHandlingService(NavigationService, AccessRestrictionStorage);
             }
         }
 
@@ -45,21 +45,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
                 var accessRestrictionStorage = useAccessRestrictionStorage ? Substitute.For<IAccessRestrictionStorage>() : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new ApiErrorHandlingService(navigationService, accessRestrictionStorage);
+                    () => new ErrorHandlingService(navigationService, accessRestrictionStorage);
 
                 tryingToConstructWithEmptyParameters
                     .Should().Throw<ArgumentNullException>();
             }
         }
 
-        public sealed class TheApiDeprecatedException : BaseApiErrorHandlingServiceTests
+        public sealed class TheApiDeprecatedException : BaseErrorHandlingServiceTests
         {
             private ApiDeprecatedException exception => new ApiDeprecatedException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
 
             [Fact, LogIfTooSlow]
             public void ReturnsTrueForApiDeprecatedException()
             {
-                var result = ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                var result = ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 result.Should().BeTrue();
             }
@@ -67,7 +67,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void RestricsAccessForApiDeprecatedException()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 AccessRestrictionStorage.Received().SetApiOutdated();
             }
@@ -75,20 +75,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void NavigatesToOutdatedAppViewModelForApiDeprecatedException()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 NavigationService.Received().Navigate<OutdatedAppViewModel>();
             }
         }
 
-        public sealed class TheClientDeprecatedException : BaseApiErrorHandlingServiceTests
+        public sealed class TheClientDeprecatedException : BaseErrorHandlingServiceTests
         {
             private ClientDeprecatedException exception => new ClientDeprecatedException(Substitute.For<IRequest>(), Substitute.For<IResponse>());
 
             [Fact, LogIfTooSlow]
             public void ReturnsTrueForClientDeprecatedException()
             {
-                var result = ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                var result = ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 result.Should().BeTrue();
             }
@@ -96,7 +96,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void RestricsAccessForClientDeprecatedException()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 AccessRestrictionStorage.Received().SetClientOutdated();
             }
@@ -104,20 +104,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void NavigatesToOutdatedAppViewModelForClientDeprecatedException()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 NavigationService.Received().Navigate<OutdatedAppViewModel>();
             }
         }
 
-        public sealed class TheOtherExceptionsThanDeprecationExceptions : BaseApiErrorHandlingServiceTests
+        public sealed class TheOtherExceptionsThanDeprecationExceptions : BaseErrorHandlingServiceTests
         {
             private Exception exception => new Exception();
 
             [Fact, LogIfTooSlow]
             public void ReturnsFalseForDifferentExceptions()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 NavigationService.DidNotReceive().Navigate<OutdatedAppViewModel>();
             }
@@ -125,7 +125,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void DoesNotRestrictAccessForDifferentExceptions()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 AccessRestrictionStorage.DidNotReceive().SetApiOutdated();
                 AccessRestrictionStorage.DidNotReceive().SetClientOutdated();
@@ -134,13 +134,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void DoesNotNavigateForDifferentExceptions()
             {
-                ApiErrorHandlingService.TryHandleDeprecationError(exception);
+                ErrorHandlingService.TryHandleDeprecationError(exception);
 
                 NavigationService.DidNotReceive().Navigate<OutdatedAppViewModel>();
             }
         }
 
-        public sealed class TheUnauthorizedException : BaseApiErrorHandlingServiceTests
+        public sealed class TheUnauthorizedException : BaseErrorHandlingServiceTests
         {
             private UnauthorizedException exception => new UnauthorizedException(createRequest(), Substitute.For<IResponse>());
 
@@ -155,7 +155,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void ReturnsTrueForClientDeprecatedException()
             {
-                var result = ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
+                var result = ErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 result.Should().BeTrue();
             }
@@ -163,7 +163,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void RestricsAccessForClientDeprecatedException()
             {
-                ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
+                ErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 AccessRestrictionStorage.Received().SetUnauthorizedAccess(Arg.Is(User.ApiToken));
             }
@@ -171,7 +171,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void NavigatesToOutdatedAppViewModelForClientDeprecatedException()
             {
-                ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
+                ErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 NavigationService.Received().Navigate<TokenResetViewModel>();
             }
@@ -183,7 +183,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
                 request.Headers.Returns(new HttpHeader[0]);
                 var exceptionWithoutApiToken = new UnauthorizedException(request, Substitute.For<IResponse>());
 
-                var handled = ApiErrorHandlingService.TryHandleUnauthorizedError(exceptionWithoutApiToken);
+                var handled = ErrorHandlingService.TryHandleUnauthorizedError(exceptionWithoutApiToken);
 
                 handled.Should().BeTrue();
                 NavigationService.DidNotReceive().Navigate<TokenResetViewModel>();
@@ -191,14 +191,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             }
         }
 
-        public sealed class TheOtherExceptionsThanUnauthorizedException : BaseApiErrorHandlingServiceTests
+        public sealed class TheOtherExceptionsThanUnauthorizedException : BaseErrorHandlingServiceTests
         {
             private Exception exception => new Exception();
 
             [Fact, LogIfTooSlow]
             public void ReturnsFalseForDifferentExceptions()
             {
-                ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
+                ErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 NavigationService.DidNotReceive().Navigate<TokenResetViewModel>();
             }
@@ -206,7 +206,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void DoesNotRestrictAccessForDifferentExceptions()
             {
-                ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
+                ErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 AccessRestrictionStorage.DidNotReceive().SetUnauthorizedAccess(Arg.Any<string>());
             }
@@ -214,7 +214,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.Services
             [Fact, LogIfTooSlow]
             public void DoesNotNavigateForDifferentExceptions()
             {
-                ApiErrorHandlingService.TryHandleUnauthorizedError(exception);
+                ErrorHandlingService.TryHandleUnauthorizedError(exception);
 
                 NavigationService.DidNotReceive().Navigate<TokenResetViewModel>();
             }

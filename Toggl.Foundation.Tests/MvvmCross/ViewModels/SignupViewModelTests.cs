@@ -41,7 +41,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     AnalyticsService,
                     OnboardingStorage,
                     NavigationService,
-                    ApiErrorHandlingService);
+                    ErrorHandlingService);
 
             protected override void AdditionalSetup()
             {
@@ -71,7 +71,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var analyticsSerivce = useAnalyticsService ? AnalyticsService : null;
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = userNavigationService ? NavigationService : null;
-                var apiErrorHandlingService = useApiErrorHandlingService ? ApiErrorHandlingService : null;
+                var apiErrorHandlingService = useApiErrorHandlingService ? ErrorHandlingService : null;
 
                 Action tryingToConstructWithEmptyParameters =
                     () => new SignupViewModel(
@@ -185,6 +185,24 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.PickCountryCommand.ExecuteAsync();
 
                 ViewModel.IsCountryErrorVisible.Should().BeFalse();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsCountryValidShouldBeFalseWhenNetworkFailed()
+            {
+                Api.Location.Get().Returns(Observable.Throw<ILocation>(new Exception()));
+
+                await ViewModel.Initialize();
+
+                ViewModel.IsCountryValid.Should().BeFalse();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsCountryValidShouldBeTrueWhenApiSucceeds()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.IsCountryValid.Should().BeTrue();
             }
         }
 

@@ -119,6 +119,7 @@ namespace Toggl.Daneel
                     .WithNavigationService(navigationService)
                     .WithAccessRestrictionStorage(settingsStorage)
                     .WithPasswordManagerService<OnePasswordService>()
+                    .WithErrorHandlingService(new ErrorHandlingService(navigationService, settingsStorage))
                     .WithApiErrorHandlingService(new ApiErrorHandlingService(navigationService, settingsStorage))
                     .WithFeedbackService(new FeedbackService(userAgent, mailService, dialogService, platformConstants))
                     .Build();

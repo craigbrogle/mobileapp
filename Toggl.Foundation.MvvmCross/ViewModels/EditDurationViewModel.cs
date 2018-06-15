@@ -17,7 +17,7 @@ using static Toggl.Foundation.Helper.Constants;
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
     [Preserve(AllMembers = true)]
-    public sealed class EditDurationViewModel : MvxViewModel<DurationParameter, DurationParameter>
+    public sealed class EditDurationViewModel : MvxViewModel<EditDurationParameters, DurationParameter>
     {
         private readonly ITimeService timeService;
         private readonly IMvxNavigationService navigationService;
@@ -44,6 +44,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public DateTimeOffset StartTime { get; private set; }
 
         public DateTimeOffset StopTime { get; private set; }
+
+        public bool IsDurationInitiallyFocused { get; private set; }
 
         [DependsOn(nameof(StartTime), nameof(StopTime))]
         public TimeSpan Duration
@@ -145,9 +147,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopEditingTimeCommand = new MvxCommand(stopEditingTime);
         }
 
-        public override void Prepare(DurationParameter parameter)
+        public override void Prepare(EditDurationParameters parameter)
         {
-            defaultResult = parameter;
+            defaultResult = parameter.DurationParam;
             IsRunning = defaultResult.Duration.HasValue == false;
 
             if (IsRunning)
@@ -156,13 +158,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                            .Subscribe(currentTime => StopTime = currentTime);
             }
 
-            StartTime = parameter.Start;
-            StopTime = parameter.Duration.HasValue
-                ? StartTime + parameter.Duration.Value
+            StartTime = parameter.DurationParam.Start;
+            StopTime = parameter.DurationParam.Duration.HasValue
+                ? StartTime + parameter.DurationParam.Duration.Value
                 : timeService.CurrentDateTime;
 
             MinimumDateTime = StartTime.DateTime;
             MaximumDateTime = StopTime.DateTime;
+            IsDurationInitiallyFocused = parameter.IsDurationInitiallyFocused;
         }
 
         public override async Task Initialize()

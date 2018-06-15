@@ -9,7 +9,7 @@ using Toggl.Ultrawave;
 
 namespace Toggl.Foundation.Sync.States.Pull
 {
-    internal sealed class FetchAllSinceState
+    internal sealed class FetchAllSinceState : ISyncState
     {
         private readonly ITogglDatabase database;
         private readonly ITogglApi api;
