@@ -144,7 +144,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public bool IsBillable { get; set; } = false;
+        public bool IsBillable { get; private set; } = false;
 
         public bool IsBillableAvailable { get; private set; } = false;
 
@@ -160,7 +160,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public bool ShouldShowNoProjectsInfoMessage
             => IsSuggestingProjects && !hasAnyProjects;
 
-        public DateTimeOffset StartTime { get; set; }
+        public DateTimeOffset StartTime { get; private set; }
 
         public TimeSpan? Duration { get; private set; }
 
