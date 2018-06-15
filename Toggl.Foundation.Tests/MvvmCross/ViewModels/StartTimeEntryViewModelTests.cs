@@ -597,6 +597,16 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.IsDirty.Should().BeTrue();
             }
+
+            [Fact, LogIfTooSlow]
+            public void TracksBillableTap()
+            {
+                ViewModel.ToggleBillableCommand.Execute();
+
+                AnalyticsService.Received()
+                                .StartViewTapped
+                                .Track(StartViewTapSource.Billable);
+            }
         }
 
         public sealed class TheToggleProjectSuggestionsCommand : StartTimeEntryViewModelTest
@@ -768,6 +778,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.ToggleProjectSuggestionsCommand.Execute();
 
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Project);
                 AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             }
         }
@@ -872,6 +883,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.ToggleTagSuggestionsCommand.Execute();
 
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Tags);
                 AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             }
         }
@@ -990,6 +1002,22 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.IsDirty.Should().BeTrue();
             }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartTimeTap()
+            {
+                var now = DateTimeOffset.UtcNow;
+                var parameters = StartTimeEntryParameters.ForTimerMode(now);
+                var returnParameter = DurationParameter.WithStartAndDuration(now, TimeSpan.FromMinutes(1));
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
+                    .Returns(Task.FromResult(returnParameter));
+                ViewModel.Prepare(parameters);
+
+                await ViewModel.ChangeTimeCommand.ExecuteAsync();
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartTime);
+            }
         }
 
         public sealed class TheSetStartDateCommand : StartTimeEntryViewModelTest
@@ -1093,6 +1121,20 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.SetStartDateCommand.ExecuteAsync();
 
                 ViewModel.IsDirty.Should().BeTrue();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartDateTap()
+            {
+                TimeService.CurrentDateTime.Returns(now);
+                NavigationService
+                    .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(Arg.Any<DateTimePickerParameters>())
+                    .Returns(now);
+                ViewModel.Prepare(prepareParameters);
+
+                await ViewModel.SetStartDateCommand.ExecuteAsync();
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.StartDate);
             }
         }
 
@@ -1264,6 +1306,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Project.Color.Returns(ProjectColor);
                     Project.Workspace.Returns(Workspace);
                     Project.WorkspaceId.Returns(WorkspaceId);
+                    Project.Active.Returns(true);
 
                     Task = Substitute.For<IThreadSafeTask>();
                     Task.Id.Returns(TaskId);
@@ -1297,6 +1340,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         .First();
 
                     ViewModel.SelectSuggestionCommand.Execute(projectSuggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickEmptyStateProjectSuggestion);
                     AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.TableCellButton);
                 }
 
@@ -1308,6 +1353,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         .First();
 
                     ViewModel.SelectSuggestionCommand.Execute(tagSuggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickEmptyStateTagSuggestion);
                     AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.TableCellButton);
                 }
             }
@@ -1472,6 +1519,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.TextFieldInfo.Text.Should().Be(Description);
                 }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenTimeEntrySuggestionSelected()
+                {
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickTimeEntrySuggestion);
+                }
             }
 
             public sealed class WhenSelectingATaskSuggestion : ProjectTaskSuggestion<TaskSuggestion>
@@ -1489,6 +1544,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     ViewModel.SelectSuggestionCommand.Execute(Suggestion);
 
                     ViewModel.TextFieldInfo.TaskId.Should().Be(TaskId);
+                }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenTaskSuggestionSelected()
+                {
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickTaskSuggestion);
                 }
             }
 
@@ -1526,6 +1589,18 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     ViewModel.IsBillable.Should().BeFalse();
                     ViewModel.IsBillableAvailable.Should().Be(isBillableAvailable);
                 }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenProjectSuggestionSelected()
+                {
+                    DialogService
+                        .Confirm(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+                        .Returns(Observable.Return(false));
+
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickProjectSuggestion);
+                }
             }
 
             public sealed class WhenSelectingATagSuggestion : SelectSuggestionTest<TagSuggestion>
@@ -1553,6 +1628,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     ViewModel.SelectSuggestionCommand.Execute(Suggestion);
 
                     ViewModel.TextFieldInfo.Tags.Should().Contain(Suggestion);
+                }
+
+                [Fact, LogIfTooSlow]
+                public void TracksWhenTagSuggestionSelected()
+                {
+                    ViewModel.SelectSuggestionCommand.Execute(Suggestion);
+
+                    AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.PickTagSuggestion);
                 }
             }
 
@@ -1659,6 +1742,22 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.StartTime.Should().Be(expected);
             }
 
+            [Fact, LogIfTooSlow]
+            public async Task TracksDurationTap()
+            {
+                var now = DateTimeOffset.UtcNow;
+                var parameters = StartTimeEntryParameters.ForTimerMode(now);
+                var returnParameters = new SelectTimeResultsParameters(now, null);
+                NavigationService
+                    .Navigate<SelectTimeViewModel, SelectTimeParameters, SelectTimeResultsParameters>(Arg.Any<SelectTimeParameters>())
+                    .Returns(Task.FromResult(returnParameters));
+                ViewModel.Prepare(parameters);
+
+                await ViewModel.SelectTimeCommand.ExecuteAsync("Duration");
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Duration);
+            }
+
             private Task callCommandCorrectly(int? hoursToAddToStopTime = null)
             {
                 var commandTask = ViewModel.SelectTimeCommand.ExecuteAsync(bindingParameter);
@@ -1666,6 +1765,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var stopTime = hoursToAddToStopTime.HasValue ? now.AddHours(hoursToAddToStopTime.Value) : (DateTimeOffset?)null;
                 tcs.SetResult(new SelectTimeResultsParameters(now, stopTime));
                 return commandTask;
+            }
+        }
+
+        public sealed class TheDurationTappedCommand : StartTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void TracksDurationTap()
+            {
+                ViewModel.DurationTapped.Execute();
+
+                AnalyticsService.StartViewTapped.Received().Track(StartViewTapSource.Duration);
             }
         }
 

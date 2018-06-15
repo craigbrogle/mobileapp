@@ -584,7 +584,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsBillable = !IsBillable;
         }
 
-        private StartViewTapSource getTapSourceFromBindingParameter(string bindingParameter)
+        private StartViewTapSource? getTapSourceFromBindingParameter(string bindingParameter)
         {
             switch (bindingParameter)
             {
@@ -595,14 +595,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 case "Duration":
                     return StartViewTapSource.Duration;
                 default:
-                    throw new ArgumentException("Binding parameter is incorrect.");
+                    return null;
             }
         }
 
         private async Task selectTime(string bindingString)
         {
-            var tapSource = getTapSourceFromBindingParameter(bindingString);
-            analyticsService.StartViewTapped.Track(tapSource);
+            if (getTapSourceFromBindingParameter(bindingString) is StartViewTapSource tapSource)
+                analyticsService.StartViewTapped.Track(tapSource);
 
             IsEditingTime = true;
 
