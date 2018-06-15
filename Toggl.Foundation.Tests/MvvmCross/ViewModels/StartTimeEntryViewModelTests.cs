@@ -20,13 +20,14 @@ using Toggl.Foundation.Tests.Mocks;
 using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Exceptions;
 using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models.Interfaces;
 using Xunit;
+using static Toggl.Foundation.MvvmCross.Parameters.SelectTimeParameters.Origin;
 using static Toggl.Foundation.Helper.Constants;
 using static Toggl.Multivac.Extensions.FunctionalExtensions;
 using static Toggl.Multivac.Extensions.StringExtensions;
 using ITimeEntryPrototype = Toggl.Foundation.Models.ITimeEntryPrototype;
 using TextFieldInfo = Toggl.Foundation.Autocomplete.TextFieldInfo;
-using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -1573,7 +1574,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheSelectTimeCommand : StartTimeEntryViewModelTest
         {
-            private const string bindingParameter = "Duration";
+            private const SelectTimeParameters.Origin bindingParameter = Duration;
             private readonly TaskCompletionSource<SelectTimeResultsParameters> tcs = new TaskCompletionSource<SelectTimeResultsParameters>();
 
             public TheSelectTimeCommand()

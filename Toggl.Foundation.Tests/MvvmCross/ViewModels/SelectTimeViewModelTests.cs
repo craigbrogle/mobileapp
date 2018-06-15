@@ -13,6 +13,7 @@ using Toggl.Multivac;
 using Toggl.Foundation.Tests.Generators;
 using Toggl.Foundation.Helper;
 using Xunit;
+using static Toggl.Foundation.MvvmCross.Parameters.SelectTimeParameters.Origin;
 
 namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 {
@@ -31,7 +32,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var timeFormat = TimeFormat.FromLocalizedTimeFormat("H:mm");
 
                 return SelectTimeParameters
-                    .CreateFromBindingString("StartTime", start, stop)
+                    .CreateFromSelectTimeOrigin(StartTime, start, stop)
                     .WithFormats(dateFormat, timeFormat);
             }
         }
