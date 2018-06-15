@@ -339,13 +339,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             private readonly int projectsNotSyncedCount = 0;
 
             [Fact]
-            public async Task GroupsProjectSegmentsWithPercentageLessThanTenPercent()
+            public async Task DoesNotGroupProjectSegmentsWithPercentageGreaterThanOrEqualFivePercent()
             {
                 ChartSegment[] segments =
                 {
                     new ChartSegment("Project 1", "Client 1", 2, 2, 0, "#ffffff"),
-                    new ChartSegment("Project 2", "Client 2", 7, 7, 0, "#ffffff"),
-                    new ChartSegment("Project 3", "Client 3", 12, 12, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 2, 2, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 17, 17, 0, "#ffffff"),
                     new ChartSegment("Project 4", "Client 4", 23, 23, 0, "#ffffff"),
                     new ChartSegment("Project 5", "Client 5", 56, 56, 0, "#ffffff")
                 };
@@ -364,49 +364,127 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.GroupedSegments
                     .Where(project => project.ProjectName != Resources.Other)
                     .Select(segment => segment.Percentage)
-                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(10));
+                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(5));
             }
 
             [Fact]
-            public async Task DoesNotGroupOtherProjectsWhenThereIsJustOneProjectWithLessThanTenPercent()
+            public async Task GroupsProjectSegmentsWithPercentageLesserThanOnePercent()
             {
                 ChartSegment[] segments =
                 {
-                    new ChartSegment("Project 1", "Client 1", 7, 7, 0, "#ffffff"),
-                    new ChartSegment("Project 2", "Client 2", 23, 23, 0, "#ffffff"),
-                    new ChartSegment("Project 3", "Client 3", 70, 70, 0, "#ffffff")
+                    new ChartSegment("Project 1", "Client 1", 0.9f, 2, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 0.3f, 3, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 7.8f, 4, 0, "#ffffff"),
+                    new ChartSegment("Project 4", "Client 4", 12, 12, 0, "#ffffff"),
+                    new ChartSegment("Project 5", "Client 5", 23, 23, 0, "#ffffff"),
+                    new ChartSegment("Project 6", "Client 6", 56, 56, 0, "#ffffff")
                 };
 
                 TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
                 ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
                     .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
-                ViewModel.Prepare(WorkspaceId);
 
                 await Initialize();
 
-                ViewModel.GroupedSegments.Should().HaveCount(3);
-                ViewModel.GroupedSegments.Should().NotContain(segment => segment.ProjectName == Resources.Other);
+                ViewModel.Segments.Should().HaveCount(6);
+                ViewModel.GroupedSegments.Should().HaveCount(5);
+                ViewModel.GroupedSegments.Should().Contain(segment =>
+                    segment.ProjectName == Resources.Other &&
+                    segment.Percentage == segments[0].Percentage + segments[1].Percentage);
+                ViewModel.GroupedSegments
+                    .Where(project => project.ProjectName != Resources.Other)
+                    .Select(segment => segment.Percentage)
+                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(5));
             }
 
             [Fact]
-            public async Task DoesNotGroupOtherProjectsWhenAllProjectsHaveLessThanTenPercent()
+            public async Task GroupsOtherProjectsToAtLeastOnePercentRegardlessOfActualPercentage()
             {
                 ChartSegment[] segments =
                 {
-                    new ChartSegment("Project 1", "Client 1", 1, 1, 0, "#ffffff"),
-                    new ChartSegment("Project 2", "Client 2", 3, 3, 0, "#ffffff"),
-                    new ChartSegment("Project 3", "Client 3", 9, 9, 0, "#ffffff")
+                    new ChartSegment("Project 1", "Client 1", 0.2f, 2, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 0.3f, 3, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 8.5f, 4, 0, "#ffffff"),
+                    new ChartSegment("Project 4", "Client 4", 12, 12, 0, "#ffffff"),
+                    new ChartSegment("Project 5", "Client 5", 23, 23, 0, "#ffffff"),
+                    new ChartSegment("Project 6", "Client 6", 56, 56, 0, "#ffffff")
                 };
 
                 TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
                 ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
                     .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
-                ViewModel.Prepare(WorkspaceId);
 
                 await Initialize();
 
-                ViewModel.GroupedSegments.Should().HaveCount(3);
-                ViewModel.GroupedSegments.Should().NotContain(segment => segment.ProjectName == Resources.Other);
+                ViewModel.Segments.Should().HaveCount(6);
+                ViewModel.GroupedSegments.Should().HaveCount(5);
+                ViewModel.GroupedSegments.Should().Contain(segment =>
+                    segment.ProjectName == Resources.Other &&
+                    segment.Percentage == 1f);
+                ViewModel.GroupedSegments
+                    .Where(project => project.ProjectName != Resources.Other)
+                    .Select(segment => segment.Percentage)
+                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(5));
+            }
+
+            [Fact]
+            public async Task GroupsProjectSegmentsWithPercentageBetweenOneAndFiveIntoOtherIfTotalOfOtherLessThanFivePercent()
+            {
+                ChartSegment[] segments =
+                {
+                    new ChartSegment("Project 1", "Client 1", 0.9f, 2, 0, "#ffffff"),
+                    new ChartSegment("Project 2", "Client 2", 0.9f, 3, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 2.5f, 4, 0, "#ffffff"),
+                    new ChartSegment("Project 4", "Client 4", 4, 12, 0, "#ffffff"),
+                    new ChartSegment("Project 5", "Client 5", 31.7f, 23, 0, "#ffffff"),
+                    new ChartSegment("Project 6", "Client 6", 60, 56, 0, "#ffffff")
+                };
+
+                TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
+                ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
+
+                await Initialize();
+
+                ViewModel.Segments.Should().HaveCount(6);
+                ViewModel.GroupedSegments.Should().HaveCount(4);
+                ViewModel.GroupedSegments.Should().Contain(segment =>
+                    segment.ProjectName == Resources.Other &&
+                    segment.Percentage == segments[0].Percentage + segments[1].Percentage + segments[2].Percentage);
+                ViewModel.GroupedSegments
+                    .Where(project => project.ProjectName != Resources.Other)
+                    .Select(segment => segment.Percentage)
+                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(4));
+            }
+
+            [Fact]
+            public async Task SetsOtherProjectWithOneSegmentToThatSegmentButWithOnePercentIfLessThanOnePercent()
+            {
+                ChartSegment[] segments =
+                {
+                    new ChartSegment("Project 1", "Client 1", 0.2f, 2, 0, "#666666"),
+                    new ChartSegment("Project 2", "Client 2", 8.8f, 4, 0, "#ffffff"),
+                    new ChartSegment("Project 3", "Client 3", 12, 12, 0, "#ffffff"),
+                    new ChartSegment("Project 4", "Client 4", 23, 23, 0, "#ffffff"),
+                    new ChartSegment("Project 5", "Client 5", 56, 56, 0, "#ffffff")
+                };
+
+                TimeService.CurrentDateTime.Returns(new DateTimeOffset(2018, 05, 15, 12, 00, 00, TimeSpan.Zero));
+                ReportsProvider.GetProjectSummary(WorkspaceId, Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>())
+                    .Returns(Observable.Return(new ProjectSummaryReport(segments, projectsNotSyncedCount)));
+
+                await Initialize();
+
+                ViewModel.Segments.Should().HaveCount(5);
+                ViewModel.GroupedSegments.Should().HaveCount(5);
+                ViewModel.GroupedSegments.Should().Contain(segment =>
+                    segment.ProjectName == "Project 1" &&
+                    segment.Percentage == 1f &&
+                    segment.Color == "#666666");
+                ViewModel.GroupedSegments
+                    .Where(project => project.ProjectName != "Project 1")
+                    .Select(segment => segment.Percentage)
+                    .ForEach(percentage => percentage.Should().BeGreaterOrEqualTo(5));
             }
         }
     }
