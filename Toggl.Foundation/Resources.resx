@@ -381,4 +381,7 @@ account is not set up</value>
     <data name="SelectCountry">
         <value>Select country...</value>
     </data>
+    <data name="ArchivedProjectDecorator">
+        <value>(archived)</value>
+    </data>
 </root>

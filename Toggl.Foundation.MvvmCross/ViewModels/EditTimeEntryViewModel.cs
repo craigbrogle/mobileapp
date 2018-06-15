@@ -18,6 +18,7 @@ using Toggl.PrimeRadiant.Settings;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.Models.Interfaces;
 using static Toggl.Foundation.Helper.Constants;
+using Toggl.Foundation.Extensions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -465,9 +466,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var project = await dataSource.Projects.GetById(projectId.Value);
             clearTagsIfNeeded(workspaceId, project.WorkspaceId);
-            Project = project.Name;
+            Project = project.DisplayName();
             Client = project.Client?.Name;
-            ProjectColor = project.Color;
+            ProjectColor = project.DisplayColor();
             workspaceId = project.WorkspaceId;
 
             Task = taskId.HasValue ? (await dataSource.Tasks.GetById(taskId.Value)).Name : "";
