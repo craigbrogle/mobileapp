@@ -27,7 +27,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class ReportsViewModel : MvxViewModel<long>
     {
-        private const float minimumPieChartSegmentPercentage = 10f;
+        
 
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
@@ -254,26 +254,85 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             updateCurrentDateRangeString();
         }
 
+        private const float minimumPieChartSegmentPercentageToBeOnItsOwn = 5f;
+        private const float maximumPieChartSegmentPercentageToEndUpInOther = 1f;
+        private const float minimumOtherChartSegmentDisplayPercentage = 1f;
+
         private IReadOnlyList<ChartSegment> groupSegments()
         {
-            var otherProjects = segments.Where(segment => segment.Percentage < minimumPieChartSegmentPercentage).ToList();
-            if (otherProjects.Count <= 1 || otherProjects.Count == segments.Count)
+            var aboveStandAloneThreasholdSegments = segments
+                .Where(segment => segment.Percentage >= minimumPieChartSegmentPercentageToBeOnItsOwn)
+                .ToList();
+            
+            var otherProjectsCandidates = segments
+                .Where(segment => segment.Percentage < minimumPieChartSegmentPercentageToBeOnItsOwn)
+                .ToList();
+
+            var finalOtherProjects = otherProjectsCandidates.Where(segment => segment.Percentage < maximumPieChartSegmentPercentageToEndUpInOther).ToList();
+
+            otherProjectsCandidates = otherProjectsCandidates.Except(finalOtherProjects)
+                .OrderBy(segment => segment.Percentage)
+                .ToList();
+
+            foreach (var segment in otherProjectsCandidates)
+            {
+                if (percentageOf(finalOtherProjects) + segment.Percentage <= 5)
+                {
+                    finalOtherProjects.Add(segment);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (!finalOtherProjects.Any())
+            {
                 return segments;
+            }
 
-            var otherSegment = new ChartSegment(
-                Resources.Other,
-                string.Empty,
-                otherProjects.Sum(project => project.Percentage),
-                otherProjects.Sum(project => (float)project.TrackedTime.TotalSeconds),
-                otherProjects.Sum(project => project.BillableSeconds),
-                Color.Reports.OtherProjectsSegmentBackground.ToHexString(),
-                DurationFormat);
+            var leftOutOfOther = otherProjectsCandidates.Except(finalOtherProjects).ToList();
+            aboveStandAloneThreasholdSegments.AddRange(leftOutOfOther);
+            aboveStandAloneThreasholdSegments = aboveStandAloneThreasholdSegments.OrderBy(segment => segment.Percentage).ToList();
 
-            return segments
-                .Where(segment => segment.Percentage >= minimumPieChartSegmentPercentage)
-                .Append(otherSegment)
+
+            ChartSegment lastSegment;
+
+            if (finalOtherProjects.Count == 1)
+            {
+                var singleSmallSegment = finalOtherProjects.First();
+                lastSegment = new ChartSegment(
+                    singleSmallSegment.ProjectName,
+                    string.Empty,
+                    singleSmallSegment.Percentage >= minimumOtherChartSegmentDisplayPercentage ? singleSmallSegment.Percentage : minimumOtherChartSegmentDisplayPercentage,
+                    finalOtherProjects.Sum(segment => (float)segment.TrackedTime.TotalSeconds),
+                    finalOtherProjects.Sum(segment => segment.BillableSeconds),
+                    singleSmallSegment.Color,
+                    DurationFormat);
+            } else {
+                var otherPercentage = percentageOf(finalOtherProjects);
+                lastSegment = new ChartSegment(
+                    Resources.Other,
+                    string.Empty,
+                    otherPercentage >= minimumOtherChartSegmentDisplayPercentage ? otherPercentage : minimumOtherChartSegmentDisplayPercentage,
+                    finalOtherProjects.Sum(segment => (float)segment.TrackedTime.TotalSeconds),
+                    finalOtherProjects.Sum(segment => segment.BillableSeconds),
+                    Color.Reports.OtherProjectsSegmentBackground.ToHexString(),
+                    DurationFormat);
+            }
+
+            return aboveStandAloneThreasholdSegments
+                .Append(lastSegment)
                 .ToList()
                 .AsReadOnly();
+        }
+
+        private float percentageOf(List<ChartSegment> list)
+        {
+            if (list.Any())
+                return list.Select(segment => segment.Percentage).Sum();
+
+            return 0f;
         }
     }
 }
