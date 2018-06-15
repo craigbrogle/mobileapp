@@ -29,6 +29,8 @@ namespace Toggl.PrimeRadiant.Settings
 
         private const string onboardingPrefix = "Onboarding_";
 
+        private const string ratingViewOutcomeKey = "RatingViewOutcome";
+
         private readonly Version version;
         private readonly IKeyValueStorage keyValueStorage;
 
@@ -195,6 +197,20 @@ namespace Toggl.PrimeRadiant.Settings
         {
             hasEditedTimeEntrySubject.OnNext(true);
             keyValueStorage.SetBool(hasEditedTimeEntryKey, true);
+        }
+
+        public void SetRatingViewOutcome(RatingViewOutcome outcome)
+        {
+            keyValueStorage.SetInt(ratingViewOutcomeKey, (int)outcome);
+        }
+
+        public RatingViewOutcome? RatingViewOutcome()
+        {
+            var defaultIntValue = -1;
+            var intValue = keyValueStorage.GetInt(ratingViewOutcomeKey, defaultIntValue);
+            if (intValue == defaultIntValue)
+                return null;
+            return (RatingViewOutcome)intValue;
         }
 
         public bool WasDismissed(IDismissable dismissable) => keyValueStorage.GetBool(onboardingPrefix + dismissable.Key);

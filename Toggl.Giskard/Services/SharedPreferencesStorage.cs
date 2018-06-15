@@ -34,6 +34,16 @@ namespace Toggl.Giskard.Services
             editor.Commit();
         }
 
+        public void SetInt(string key, int value)
+        {
+            var editor = sharedPreferences.Edit();
+            editor.PutInt(key, value);
+            editor.Commit();
+        }
+
+        public int GetInt(string key, int defaultValue)
+        => sharedPreferences.GetInt(key, defaultValue);
+
         public void Remove(string key)
         {
             var editor = sharedPreferences.Edit();

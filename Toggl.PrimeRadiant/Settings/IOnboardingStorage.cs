@@ -35,6 +35,9 @@ namespace Toggl.PrimeRadiant.Settings
         bool WasDismissed(IDismissable dismissable);
         void Dismiss(IDismissable dismissable);
 
+        void SetRatingViewOutcome(RatingViewOutcome outcome);
+        RatingViewOutcome? RatingViewOutcome();
+
         void Reset();
     }
 }

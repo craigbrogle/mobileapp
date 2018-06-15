@@ -10,6 +10,10 @@
 
         void SetString(string key, string value);
 
+        void SetInt(string key, int value);
+
+        int GetInt(string key, int defaultValue);
+
         void Remove(string key);
 
         void RemoveAllWithPrefix(string prefix);

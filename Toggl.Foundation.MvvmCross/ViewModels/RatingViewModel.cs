@@ -7,6 +7,8 @@ using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
+using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Settings;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -17,6 +19,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IRatingService ratingService;
         private readonly IFeedbackService feedbackService;
         private readonly IAnalyticsService analyticsService;
+        private readonly IOnboardingStorage onboardingStorage;
         private readonly IMvxNavigationService navigationService;
 
         private bool? impressionIsPositive;
@@ -38,18 +41,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IRatingService ratingService,
             IFeedbackService feedbackService,
             IAnalyticsService analyticsService,
+            IOnboardingStorage onboardingStorage,
             IMvxNavigationService navigationService)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(ratingService, nameof(ratingService));
             Ensure.Argument.IsNotNull(feedbackService, nameof(feedbackService));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
+            Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
 
             this.dataSource = dataSource;
             this.ratingService = ratingService;
             this.feedbackService = feedbackService;
             this.analyticsService = analyticsService;
+            this.onboardingStorage = onboardingStorage;
             this.navigationService = navigationService;
 
             GotImpression = false;
@@ -57,11 +63,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             DismissViewCommand = new MvxCommand(dismiss);
             PerformMainAction = new MvxAsyncCommand(performMainAction);
             RegisterImpressionCommand = new MvxCommand<bool>(registerImpression);
-        }
-
-        public async override Task Initialize()
-        {
-            await base.Initialize();
         }
 
         private void registerImpression(bool isPositive)
@@ -74,12 +75,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 CTATitle = Resources.RatingViewPositiveCTATitle;
                 CTADescription = Resources.RatingViewPositiveCTADescription;
                 CTAButtonTitle = Resources.RatingViewPositiveCTAButtonTitle;
+                onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.PositiveImpression);
             }
             else
             {
                 CTATitle = Resources.RatingViewNegativeCTATitle;
                 CTADescription = Resources.RatingViewNegativeCTADescription;
                 CTAButtonTitle = Resources.RatingViewNegativeCTAButtonTitle;
+                onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.NegativeImpression);
             }
         }
 
@@ -87,17 +90,20 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (impressionIsPositive == null)
                 return;
+            
             if (impressionIsPositive.Value)
             {
                 ratingService.AskForRating();
                 //We can't really know whether the user actually rated
                 //We only know that we presented the iOS rating view
                 analyticsService.UserFinishedRatingViewSecondStep.Track(RatingViewSecondStepOutcome.AppWasRated);
+                onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.AppWasRated);
             }
             else
             {
                 await feedbackService.SubmitFeedback();
                 analyticsService.UserFinishedRatingViewSecondStep.Track(RatingViewSecondStepOutcome.FeedbackWasLeft);
+                onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.FeedbackWasLeft);
             }
         }
 
@@ -107,10 +113,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (impressionIsPositive.HasValue)
             {
-                var outcome = impressionIsPositive.Value
-                    ? RatingViewSecondStepOutcome.AppWasNotRated
-                    : RatingViewSecondStepOutcome.FeedbackWasNotLeft;
-                analyticsService.UserFinishedRatingViewSecondStep.Track(outcome);
+                if (impressionIsPositive.Value)
+                {
+                    onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.AppWasNotRated);
+                    analyticsService.UserFinishedRatingViewSecondStep.Track(RatingViewSecondStepOutcome.AppWasNotRated);
+                }
+                else
+                {
+                    onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.FeedbackWasNotLeft);
+                    analyticsService.UserFinishedRatingViewSecondStep.Track(RatingViewSecondStepOutcome.FeedbackWasNotLeft);
+                }
             }
         }
     }

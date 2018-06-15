@@ -29,6 +29,7 @@ using Toggl.Foundation.Suggestions;
 using Toggl.Foundation.Sync;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Foundation.Services;
+using Toggl.PrimeRadiant;
 
 [assembly: MvxNavigation(typeof(MainViewModel), ApplicationUrls.Main.Regex)]
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -259,8 +260,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (shouldBevisible)
             {
+                var previousRatingOutcome = onboardingStorage.RatingViewOutcome();
+                if (previousRatingOutcome != null) return;
+
                 navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
                 analyticsService.RatingViewWasShown.Track();
+                onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.NoInteraction);
                 timeService.RunAfterDelay(ratingViewTimeout, () =>
                 {
                     navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
