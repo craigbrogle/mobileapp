@@ -29,6 +29,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
         private readonly ITimeService timeService = Substitute.For<ITimeService>();
         private readonly IMailService mailService = Substitute.For<IMailService>();
         private readonly ITogglDatabase database = Substitute.For<ITogglDatabase>();
+        private readonly IRatingService ratingService = Substitute.For<IRatingService>();
         private readonly IGoogleService googleService = Substitute.For<IGoogleService>();
         private readonly ILicenseProvider licenseProvider = Substitute.For<ILicenseProvider>();
         private readonly IAnalyticsService analyticsService = Substitute.For<IAnalyticsService>();
@@ -41,6 +42,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
         private readonly IDialogService dialogService = Substitute.For<IDialogService>();
         private readonly IBrowserService browserService = Substitute.For<IBrowserService>();
         private readonly IKeyValueStorage keyValueStorage = Substitute.For<IKeyValueStorage>();
+        private readonly IFeedbackService feedbackService = Substitute.For<IFeedbackService>();
         private readonly IUserPreferences userPreferences = Substitute.For<IUserPreferences>();
         private readonly IOnboardingStorage onboardingStorage = Substitute.For<IOnboardingStorage>();
         private readonly IMvxNavigationService navigationService = Substitute.For<IMvxNavigationService>();
@@ -54,6 +56,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithDialogService(dialogService)
                     .WithBrowserService(browserService)
                     .WithKeyValueStorage(keyValueStorage)
+                    .WithFeedbackService(feedbackService)
                     .WithUserPreferences(userPreferences)
                     .WithOnboardingStorage(onboardingStorage)
                     .WithNavigationService(navigationService)
@@ -63,13 +66,14 @@ namespace Toggl.Foundation.Tests.MvvmCross
         }
 
         [Theory, LogIfTooSlow]
-        [ClassData(typeof(NineParameterConstructorTestData))]
+        [ClassData(typeof(TenParameterConstructorTestData))]
         public void ThrowsIfAnyOfTheParametersIsNull(
             bool useFoundation,
             bool useDialogService,
             bool useBrowserService,
             bool useKeyValueStorage,
             bool useUserPreferences,
+            bool useFeedbackService,
             bool useOnboardingStorage,
             bool useNavigationService,
             bool useApiErrorHandlingService,
@@ -80,6 +84,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             var actualBrowserService = useBrowserService ? Substitute.For<IBrowserService>() : null;
             var actualKeyValueStorage = useKeyValueStorage ? Substitute.For<IKeyValueStorage>() : null;
             var actualUserPreferences = useUserPreferences ? Substitute.For<IUserPreferences>() : null;
+            var actualFeedbackService = useFeedbackService ? Substitute.For<IFeedbackService>() : null;
             var actualOnboardingStorage = useOnboardingStorage ? Substitute.For<IOnboardingStorage>() : null;
             var actualNavigationService = useNavigationService ? Substitute.For<IMvxNavigationService>() : null;
             var actualApiErrorHandlingService = useApiErrorHandlingService ? Substitute.For<IApiErrorHandlingService>() : null;
@@ -90,6 +95,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithDialogService(actualDialogService)
                     .WithBrowserService(actualBrowserService)
                     .WithKeyValueStorage(actualKeyValueStorage)
+                    .WithFeedbackService(actualFeedbackService)
                     .WithUserPreferences(actualUserPreferences)
                     .WithOnboardingStorage(actualOnboardingStorage)
                     .WithNavigationService(actualNavigationService)
@@ -108,6 +114,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
             var actualDialogService = Substitute.For<IDialogService>();
             var actualBrowserService = Substitute.For<IBrowserService>();
             var actualKeyValueStorage = Substitute.For<IKeyValueStorage>();
+            var actualFeedbackService = Substitute.For<IFeedbackService>();
             var actualUserPreferences = Substitute.For<IUserPreferences>();
             var actualOnboardingStorage = Substitute.For<IOnboardingStorage>();
             var actualNavigationService = Substitute.For<IMvxNavigationService>();
@@ -118,6 +125,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                 foundation.StartRegisteringPlatformServices()
                     .WithDialogService(actualDialogService)
                     .WithBrowserService(actualBrowserService)
+                    .WithFeedbackService(actualFeedbackService)
                     .WithKeyValueStorage(actualKeyValueStorage)
                     .WithUserPreferences(actualUserPreferences)
                     .WithOnboardingStorage(actualOnboardingStorage)
@@ -150,6 +158,7 @@ namespace Toggl.Foundation.Tests.MvvmCross
                     .WithApiFactory(apiFactory)
                     .WithTimeService(timeService)
                     .WithMailService(mailService)
+                    .WithRatingService(ratingService)
                     .WithGoogleService(googleService)
                     .WithLicenseProvider(licenseProvider)
                     .WithAnalyticsService(analyticsService)

@@ -43,9 +43,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Scheduler,
                     DataSource,
                     TimeService,
+                    RatingService,
                     UserPreferences,
-                    OnboardingStorage,
+                    FeedbackService,
                     AnalyticsService,
+                    OnboardingStorage,
                     InteractorFactory,
                     NavigationService,
                     RemoteConfigService,
@@ -72,14 +74,16 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         public sealed class TheConstructor : MainViewModelTest
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(TenParameterConstructorTestData))]
+            [ClassData(typeof(TwelveParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
                 bool useScheduler,
                 bool useDataSource,
                 bool useTimeService,
+                bool useRatingService,
                 bool useUserPreferences,
-                bool useOnboardingStorage,
+                bool useFeedbackService,
                 bool useAnalyticsService,
+                bool useOnboardingStorage,
                 bool useInteractorFactory,
                 bool useNavigationService,
                 bool useRemoteConfigService,
@@ -88,7 +92,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var scheduler = useScheduler ? Scheduler : null;
                 var dataSource = useDataSource ? DataSource : null;
                 var timeService = useTimeService ? TimeService : null;
+                var ratingService = useRatingService ? RatingService : null;
                 var userPreferences = useUserPreferences ? UserPreferences : null;
+                var feedbackService = useFeedbackService ? FeedbackService : null;
                 var analyticsService = useAnalyticsService ? AnalyticsService : null;
                 var navigationService = useNavigationService ? NavigationService : null;
                 var interactorFactory = useInteractorFactory ? InteractorFactory : null;
@@ -101,9 +107,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         scheduler,
                         dataSource,
                         timeService,
+                        ratingService,
                         userPreferences,
-                        onboardingStorage,
+                        feedbackService,
                         analyticsService,
+                        onboardingStorage,
                         interactorFactory,
                         navigationService,
                         remoteConfigService,

@@ -19,7 +19,7 @@ namespace Toggl.Foundation.Tests
         public class TheCreateMethod
         {
             [Theory, LogIfTooSlow]
-            [ClassData(typeof(FifteenParameterConstructorTestData))]
+            [ClassData(typeof(SixteenParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
                 bool userAgent,
                 bool useVersion,
@@ -28,6 +28,7 @@ namespace Toggl.Foundation.Tests
                 bool useApiFactory,
                 bool useTimeService,
                 bool useMailService,
+                bool useRatingService,
                 bool useGoogleService,
                 bool useLicenseProvider,
                 bool useAnalyticsService,
@@ -44,6 +45,7 @@ namespace Toggl.Foundation.Tests
                 var apiFactory = useApiFactory ? Substitute.For<IApiFactory>() : null;
                 var timeService = useTimeService ? Substitute.For<ITimeService>() : null;
                 var mailService = useMailService ? Substitute.For<IMailService>() : null;
+                var ratinService = useRatingService ? Substitute.For<IRatingService>() : null;
                 var googleService = useGoogleService ? Substitute.For<IGoogleService>() : null;
                 var licenseProvider = useLicenseProvider ? Substitute.For<ILicenseProvider>() : null;
                 var analyticsService = useAnalyticsService ? Substitute.For<IAnalyticsService>() : null;
@@ -61,6 +63,7 @@ namespace Toggl.Foundation.Tests
                         .WithApiFactory(apiFactory)
                         .WithTimeService(timeService)
                         .WithMailService(mailService)
+                        .WithRatingService(ratinService)
                         .WithGoogleService(googleService)
                         .WithLicenseProvider(licenseProvider)
                         .WithAnalyticsService(analyticsService)
@@ -84,6 +87,7 @@ namespace Toggl.Foundation.Tests
                 var database = Substitute.For<ITogglDatabase>();
                 var timeService = Substitute.For<ITimeService>();
                 var mailService = Substitute.For<IMailService>();
+                var ratingService = Substitute.For<IRatingService>();
                 var googleService = Substitute.For<IGoogleService>();
                 var licenseProvider = Substitute.For<ILicenseProvider>();
                 var analyticsService = Substitute.For<IAnalyticsService>();
@@ -101,6 +105,7 @@ namespace Toggl.Foundation.Tests
                         .WithApiFactory(apiFactory)
                         .WithTimeService(timeService)
                         .WithMailService(mailService)
+                        .WithRatingService(ratingService)
                         .WithGoogleService(googleService)
                         .WithLicenseProvider(licenseProvider)
                         .WithAnalyticsService(analyticsService)
