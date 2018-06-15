@@ -389,7 +389,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             analyticsService.EditViewTapped.Track(tapSource);
 
             var parameters = SelectTimeParameters
-                .CreateFromSelectTimeOrigin(origin, StartTime, StopTime)
+                .CreateFromOrigin(origin, StartTime, StopTime)
                 .WithFormats(DateFormat, TimeFormat);
 
             var data = await navigationService
