@@ -385,7 +385,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task selectTime(SelectTimeOrigin origin)
         {
-            var tapSource = getTapSourceFromBindingParameter(origin);
+            var tapSource = getTapSourceFromSelectTimeOrigin(origin);
             analyticsService.EditViewTapped.Track(tapSource);
 
             var parameters = SelectTimeParameters
@@ -403,7 +403,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             StopTime = data.Stop;
         }
 
-        private EditViewTapSource getTapSourceFromBindingParameter(SelectTimeOrigin origin)
+        private EditViewTapSource getTapSourceFromSelectTimeOrigin(SelectTimeOrigin origin)
         {
             switch (origin)
             {

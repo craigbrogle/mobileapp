@@ -570,7 +570,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var stopTime = Duration.HasValue ? (DateTimeOffset?)StartTime + Duration.Value : null;
 
-            var parameters = SelectTimeParameters.CreateFromSelectTimeOrigin(origin, StartTime, stopTime)
+            var parameters = SelectTimeParameters.CreateFromOrigin(origin, StartTime, stopTime)
                 .WithFormats(dateFormat, timeFormat);
 
             var result = await navigationService

@@ -28,7 +28,7 @@ namespace Toggl.Foundation.MvvmCross.Parameters
         public int StartingTabIndex { get; private set; }
         public bool ShouldStartOnCalendar { get; private set; }
 
-        public static SelectTimeParameters CreateFromSelectTimeOrigin(Origin origin, DateTimeOffset start, DateTimeOffset? stop = null)
+        public static SelectTimeParameters CreateFromOrigin(Origin origin, DateTimeOffset start, DateTimeOffset? stop = null)
         {
             var allowedParameters = new Dictionary<Origin, (int, bool)>
             {

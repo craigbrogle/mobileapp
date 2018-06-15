@@ -1574,7 +1574,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheSelectTimeCommand : StartTimeEntryViewModelTest
         {
-            private const SelectTimeParameters.Origin bindingParameter = Duration;
+            private const SelectTimeParameters.Origin origin = Duration;
             private readonly TaskCompletionSource<SelectTimeResultsParameters> tcs = new TaskCompletionSource<SelectTimeResultsParameters>();
 
             public TheSelectTimeCommand()
@@ -1587,7 +1587,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public void SetsIsEditingTimeToTrueWhenItStarts()
             {
-                ViewModel.SelectTimeCommand.ExecuteAsync(bindingParameter);
+                ViewModel.SelectTimeCommand.ExecuteAsync(origin);
 
                 ViewModel.IsEditingTime.Should().BeTrue();
             }
@@ -1663,7 +1663,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private Task callCommandCorrectly(int? hoursToAddToStopTime = null)
             {
-                var commandTask = ViewModel.SelectTimeCommand.ExecuteAsync(bindingParameter);
+                var commandTask = ViewModel.SelectTimeCommand.ExecuteAsync(origin);
                 var now = DateTimeOffset.Now;
                 var stopTime = hoursToAddToStopTime.HasValue ? now.AddHours(hoursToAddToStopTime.Value) : (DateTimeOffset?)null;
                 tcs.SetResult(new SelectTimeResultsParameters(now, stopTime));

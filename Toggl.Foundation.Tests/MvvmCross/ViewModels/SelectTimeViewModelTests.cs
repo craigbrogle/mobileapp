@@ -32,7 +32,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var timeFormat = TimeFormat.FromLocalizedTimeFormat("H:mm");
 
                 return SelectTimeParameters
-                    .CreateFromSelectTimeOrigin(StartTime, start, stop)
+                    .CreateFromOrigin(StartTime, start, stop)
                     .WithFormats(dateFormat, timeFormat);
             }
         }
