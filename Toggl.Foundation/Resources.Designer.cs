@@ -713,6 +713,12 @@ namespace Toggl.Foundation {
             }
         }
         
+        public static string About {
+            get {
+                return ResourceManager.GetString("About", resourceCulture);
+            }
+        }
+        
         public static string Licenses {
             get {
                 return ResourceManager.GetString("Licenses", resourceCulture);
@@ -794,60 +800,6 @@ namespace Toggl.Foundation {
         public static string RatingViewNegativeCTAButtonTitle {
             get {
                 return ResourceManager.GetString("RatingViewNegativeCTAButtonTitle", resourceCulture);
-            }
-        }
-  
-        public static string About {
-            get {
-                return ResourceManager.GetString("About", resourceCulture);
-            }
-        }
-        
-        public static string Licenses {
-            get {
-                return ResourceManager.GetString("Licenses", resourceCulture);
-            }
-        }
-        
-        public static string Save {
-            get {
-                return ResourceManager.GetString("Save", resourceCulture);
-            }
-        }
-        
-        public static string Done {
-            get {
-                return ResourceManager.GetString("Done", resourceCulture);
-            }
-        }
-        
-        public static string SignUpCountryRequired {
-            get {
-                return ResourceManager.GetString("SignUpCountryRequired", resourceCulture);
-            }
-        }
-        
-        public static string CountriesJson {
-            get {
-                return ResourceManager.GetString("CountriesJson", resourceCulture);
-            }
-        }
-        
-        public static string GetPasswordResetLink {
-            get {
-                return ResourceManager.GetString("GetPasswordResetLink", resourceCulture);
-            }
-        }
-        
-        public static string TermsOfServiceDialogMessage {
-            get {
-                return ResourceManager.GetString("TermsOfServiceDialogMessage", resourceCulture);
-            }
-        }
-        
-        public static string SelectCountry {
-            get {
-                return ResourceManager.GetString("SelectCountry", resourceCulture);
             }
         }
         

@@ -220,18 +220,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await changeDefaultWorkspace(selectedWorkspaceId);
         }
 
-        private async Task changeDefaultWorkspace(long selectedWorkspaceId)
-        {
-            if (selectedWorkspaceId == workspaceId) return;
-
-            var workspace = await interactorFactory.GetWorkspaceById(selectedWorkspaceId).Execute();
-            workspaceId = selectedWorkspaceId;
-            WorkspaceName = workspace.Name;
-
-            await dataSource.User.UpdateWorkspace(workspaceId);
-            dataSource.SyncManager.PushSync();
-        }
-
         public Task SubmitFeedback()
             => feedbackService.SubmitFeedback();
 

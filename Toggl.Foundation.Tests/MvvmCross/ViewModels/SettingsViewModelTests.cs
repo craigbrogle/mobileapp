@@ -489,47 +489,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheSubmitFeedbackMethod : SettingsViewModelTest
         {
-            [Property]
-            public void SendsAnEmailToTogglSupport(
-                NonEmptyString nonEmptyString0, NonEmptyString nonEmptyString1)
-            {
-                var phoneModel = nonEmptyString0.Get;
-                var os = nonEmptyString1.Get;
-                PlatformConstants.PhoneModel.Returns(phoneModel);
-                PlatformConstants.OperatingSystem.Returns(os);
-
-                ViewModel.SubmitFeedback();
-
-                MailService
-                    .Received()
-                    .Send(
-                        "support@toggl.com",
-                        Arg.Any<string>(),
-                        Arg.Any<string>())
-                    .Wait();
-            }
-
-            [Property]
-            public void SendsAnEmailWithTheProperSubject(
-                NonEmptyString nonEmptyString)
-            {
-                var subject = nonEmptyString.Get;
-                PlatformConstants.FeedbackEmailSubject.Returns(subject);
-
-                ViewModel.SubmitFeedback().Wait();
-
-                MailService.Received()
-                    .Send(
-                        Arg.Any<string>(),
-                        subject,
-                        Arg.Any<string>())
-                   .Wait();
-            }
-
             [Fact, LogIfTooSlow]
             public async Task CallsTheFeedbackService()
             {
-                await ViewModel.SubmitFeedbackCommand.ExecuteAsync();
+                await ViewModel.SubmitFeedback();
 
                 await FeedbackService.Received().SubmitFeedback();
             }
