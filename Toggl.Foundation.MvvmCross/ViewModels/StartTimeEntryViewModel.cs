@@ -178,6 +178,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxCommand ToggleBillableCommand { get; }
 
+        public IMvxCommand DurationTapped { get; }
+
         public IMvxAsyncCommand CreateCommand { get; }
 
         public IMvxCommand ToggleTagSuggestionsCommand { get; }
@@ -234,6 +236,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             ToggleProjectSuggestionsCommand = new MvxCommand(toggleProjectSuggestions);
             SelectSuggestionCommand = new MvxAsyncCommand<AutocompleteSuggestion>(selectSuggestion);
             ToggleTaskSuggestionsCommand = new MvxCommand<ProjectSuggestion>(toggleTaskSuggestions);
+            DurationTapped = new MvxCommand(durationTapped);
         }
 
         public void Init()
@@ -303,11 +306,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                     if (querySymbolSuggestion.Symbol == QuerySymbols.ProjectsString)
                     {
+                        analyticsService.StartViewTapped.Track(StartViewTapSource.PickEmptyStateProjectSuggestion);
                         analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.TableCellButton);
                     }
 
                     if (querySymbolSuggestion.Symbol == QuerySymbols.TagsString)
                     {
+                        analyticsService.StartViewTapped.Track(StartViewTapSource.PickEmptyStateTagSuggestion);
                         analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.TableCellButton);
                     }
 
@@ -315,6 +320,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     break;
 
                 case TimeEntrySuggestion timeEntrySuggestion:
+
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickTimeEntrySuggestion);
 
                     TextFieldInfo = TextFieldInfo.WithTextAndCursor(
                         timeEntrySuggestion.Description,
@@ -347,6 +354,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 case ProjectSuggestion projectSuggestion:
 
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickProjectSuggestion);
+
                     if (TextFieldInfo.WorkspaceId == projectSuggestion.WorkspaceId)
                     {
                         setProject(projectSuggestion);
@@ -367,6 +376,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 case TaskSuggestion taskSuggestion:
 
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickTaskSuggestion);
+
                     if (TextFieldInfo.WorkspaceId == taskSuggestion.WorkspaceId)
                     {
                         setTask(taskSuggestion);
@@ -386,6 +397,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     break;
 
                 case TagSuggestion tagSuggestion:
+
+                    analyticsService.StartViewTapped.Track(StartViewTapSource.PickTagSuggestion);
 
                     TextFieldInfo = TextFieldInfo
                         .RemoveTagQueryFromDescriptionIfNeeded()
@@ -493,6 +506,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(currentTime => DisplayedTime = currentTime - StartTime);
         }
 
+        private void durationTapped()
+        {
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Duration);
+        }
+
         private void toggleTagSuggestions()
         {
             if (IsSuggestingTags)
@@ -502,6 +520,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Tags);
             analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
             appendSymbol(QuerySymbols.TagsString);
@@ -517,6 +536,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Project);
             analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
 
@@ -560,11 +580,30 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void toggleBillable()
         {
+            analyticsService.StartViewTapped.Track(StartViewTapSource.Billable);
             IsBillable = !IsBillable;
+        }
+
+        private StartViewTapSource? getTapSourceFromBindingParameter(string bindingParameter)
+        {
+            switch (bindingParameter)
+            {
+                case "StartTime":
+                    return StartViewTapSource.StartTime;
+                case "StartDate":
+                    return StartViewTapSource.StartDate;
+                case "Duration":
+                    return StartViewTapSource.Duration;
+                default:
+                    return null;
+            }
         }
 
         private async Task selectTime(string bindingString)
         {
+            if (getTapSourceFromBindingParameter(bindingString) is StartViewTapSource tapSource)
+                analyticsService.StartViewTapped.Track(tapSource);
+
             IsEditingTime = true;
 
             var stopTime = Duration.HasValue ? (DateTimeOffset?)StartTime + Duration.Value : null;
@@ -591,6 +630,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task changeTime()
         {
+            analyticsService.StartViewTapped.Track(StartViewTapSource.StartTime);
+
             IsEditingTime = true;
 
             var currentDuration = DurationParameter.WithStartAndDuration(StartTime, Duration);
@@ -607,6 +648,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task setStartDate()
         {
+            analyticsService.StartViewTapped.Track(StartViewTapSource.StartDate);
+
             var parameters = isRunning
                 ? DateTimePickerParameters.ForStartDateOfRunningTimeEntry(StartTime, timeService.CurrentDateTime)
                 : DateTimePickerParameters.ForStartDateOfStoppedTimeEntry(StartTime);

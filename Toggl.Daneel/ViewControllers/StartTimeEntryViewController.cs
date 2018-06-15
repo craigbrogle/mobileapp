@@ -244,6 +244,9 @@ namespace Toggl.Daneel.ViewControllers
         {
             var tapRecognizer = new UITapGestureRecognizer(() =>
             {
+                if(!TimeLabel.Hidden)
+                    ViewModel.DurationTapped.Execute();
+
                 switchTimeLabelAndInput();
 
                 if (!TimeInput.Hidden)

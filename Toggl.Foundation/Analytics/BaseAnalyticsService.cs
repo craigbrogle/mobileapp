@@ -81,6 +81,9 @@ namespace Toggl.Foundation.Analytics
         [AnalyticsEvent("NumberOfCreatedGhosts")]
         public IAnalyticsEvent<int> ProjectGhostsCreated { get; protected set; }
 
+        [AnalyticsEvent("TapSource")]
+        public IAnalyticsEvent<StartViewTapSource> StartViewTapped { get; protected set; }
+
         public abstract void Track(string eventName, Dictionary<string, string> parameters = null);
 
         public abstract void Track(Exception exception);
