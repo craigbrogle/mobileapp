@@ -170,6 +170,16 @@ namespace Toggl.Foundation.Tests.MvvmCross
 
                 await NavigationService.Received().Navigate<MainViewModel>();
             }
+
+            [Fact, LogIfTooSlow]
+            public void SetsFirstOpenedTime()
+            {
+                TimeService.CurrentDateTime.Returns(new DateTimeOffset(2020, 1, 2, 3, 4, 5, TimeSpan.Zero));
+
+                AppStart.Start();
+
+                OnboardingStorage.Received().SetFirstOpened(TimeService.CurrentDateTime);
+            }
         }
     }
 }

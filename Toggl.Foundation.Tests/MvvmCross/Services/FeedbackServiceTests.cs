@@ -1,101 +1,126 @@
-﻿//using System;
-//namespace Toggl.Foundation.Tests.MvvmCross.Services
-//{
-//    public sealed class FeedbackServiceTests
-//    {
-//        public sealed class TheSubmitFeedbackCommand : SettingsViewModelTest
-//        {
-//            [Property]
-//            public void SendsAnEmailToTogglSupport(
-//                NonEmptyString nonEmptyString0, NonEmptyString nonEmptyString1)
-//            {
-//                var phoneModel = nonEmptyString0.Get;
-//                var os = nonEmptyString1.Get;
-//                PlatformConstants.PhoneModel.Returns(phoneModel);
-//                PlatformConstants.OperatingSystem.Returns(os);
+﻿using System.Reactive.Linq;
+using System.Threading.Tasks;
+using FsCheck;
+using FsCheck.Xunit;
+using NSubstitute;
+using Toggl.Foundation.MvvmCross.Services;
+using Toggl.Foundation.Services;
+using Toggl.Ultrawave.Network;
+using Xunit;
 
-//                ViewModel.SubmitFeedbackCommand.Execute();
+namespace Toggl.Foundation.Tests.MvvmCross.Services
+{
+    public sealed class FeedbackServiceTests
+    {
+        public sealed class TheSubmitFeedbackCommand : BaseMvvmCrossTests
+        {
+            private readonly IPlatformConstants platformConstants = Substitute.For<IPlatformConstants>();
+            private readonly UserAgent userAgent = new UserAgent("Test", "0.1");
+            private readonly IMailService mailService = Substitute.For<IMailService>();
+            private readonly IDialogService dialogService = Substitute.For<IDialogService>();
 
-//                MailService
-//                    .Received()
-//                    .Send(
-//                        "support@toggl.com",
-//                        Arg.Any<string>(),
-//                        Arg.Any<string>())
-//                    .Wait();
-//            }
+            private readonly IFeedbackService feedbackService;
 
-//            [Property]
-//            public void SendsAnEmailWithTheProperSubject(
-//                NonEmptyString nonEmptyString)
-//            {
-//                var subject = nonEmptyString.Get;
-//                PlatformConstants.FeedbackEmailSubject.Returns(subject);
+            public TheSubmitFeedbackCommand()
+            {
+                feedbackService = new FeedbackService(
+                    userAgent,
+                    mailService,
+                    dialogService,
+                    platformConstants);
+            }
 
-//                ViewModel.SubmitFeedbackCommand.ExecuteAsync().Wait();
+            [Property]
+            public void SendsAnEmailToTogglSupport(
+                NonEmptyString nonEmptyString0, NonEmptyString nonEmptyString1)
+            {
+                var phoneModel = nonEmptyString0.Get;
+                var os = nonEmptyString1.Get;
+                platformConstants.PhoneModel.Returns(phoneModel);
+                platformConstants.OperatingSystem.Returns(os);
 
-//                MailService.Received()
-//                    .Send(
-//                        Arg.Any<string>(),
-//                        subject,
-//                        Arg.Any<string>())
-//                   .Wait();
-//            }
+                feedbackService.SubmitFeedback().Wait();
 
-//            [Fact, LogIfTooSlow]
-//            public async Task SendsAnEmailWithAppVersionPhoneModelAndOsVersion()
-//            {
-//                PlatformConstants.PhoneModel.Returns("iPhone Y");
-//                PlatformConstants.OperatingSystem.Returns("iOS 4.2.0");
-//                var expectedMessage = $"\n\nVersion: {UserAgent.ToString()}\nPhone: {PlatformConstants.PhoneModel}\nOS: {PlatformConstants.OperatingSystem}";
+                mailService
+                    .Received()
+                    .Send(
+                        "support@toggl.com",
+                        Arg.Any<string>(),
+                        Arg.Any<string>())
+                    .Wait();
+            }
 
-//                await ViewModel.SubmitFeedbackCommand.ExecuteAsync();
+            [Property]
+            public void SendsAnEmailWithTheProperSubject(
+                NonEmptyString nonEmptyString)
+            {
+                var subject = nonEmptyString.Get;
+                platformConstants.FeedbackEmailSubject.Returns(subject);
 
-//                await MailService.Received().Send(
-//                    Arg.Any<string>(),
-//                    Arg.Any<string>(),
-//                    expectedMessage);
-//            }
+                feedbackService.SubmitFeedback().Wait();
 
-//            [Property]
-//            public void AlertsUserWhenMailServiceReturnsAnError(
-//                NonEmptyString nonEmptyString0, NonEmptyString nonEmptyString1)
-//            {
-//                var errorTitle = nonEmptyString0.Get;
-//                var errorMessage = nonEmptyString1.Get;
-//                var result = new MailResult(false, errorTitle, errorMessage);
-//                MailService
-//                    .Send(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
-//                    .Returns(Task.FromResult(result));
+                mailService.Received()
+                    .Send(
+                        Arg.Any<string>(),
+                        subject,
+                        Arg.Any<string>())
+                   .Wait();
+            }
 
-//                ViewModel.SubmitFeedbackCommand.Execute();
+            [Fact, LogIfTooSlow]
+            public async Task SendsAnEmailWithAppVersionPhoneModelAndOsVersion()
+            {
+                platformConstants.PhoneModel.Returns("iPhone Y");
+                platformConstants.OperatingSystem.Returns("iOS 4.2.0");
+                var expectedMessage = $"\n\nVersion: {userAgent.ToString()}\nPhone: {platformConstants.PhoneModel}\nOS: {platformConstants.OperatingSystem}";
 
-//                DialogService
-//                    .Received()
-//                    .Alert(errorTitle, errorMessage, Resources.Ok)
-//                    .Wait();
-//            }
+                await feedbackService.SubmitFeedback();
 
-//            [Theory, LogIfTooSlow]
-//            [InlineData(true, "")]
-//            [InlineData(true, "Error")]
-//            [InlineData(true, null)]
-//            [InlineData(false, "")]
-//            [InlineData(false, null)]
-//            public async Task DoesNotAlertUserWhenMailServiceReturnsSuccessOrDoesNotHaveErrorTitle(
-//                bool success, string errorTitle)
-//            {
-//                var result = new MailResult(success, errorTitle, "");
-//                MailService
-//                    .Send(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
-//                    .Returns(Task.FromResult(result));
+                await mailService.Received().Send(
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    expectedMessage);
+            }
 
-//                await ViewModel.SubmitFeedbackCommand.ExecuteAsync();
+            [Property]
+            public void AlertsUserWhenMailServiceReturnsAnError(
+                NonEmptyString nonEmptyString0, NonEmptyString nonEmptyString1)
+            {
+                var errorTitle = nonEmptyString0.Get;
+                var errorMessage = nonEmptyString1.Get;
+                var result = new MailResult(false, errorTitle, errorMessage);
+                mailService
+                    .Send(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+                    .Returns(Task.FromResult(result));
 
-//                await DialogService
-//                    .DidNotReceive()
-//                    .Alert(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-//            }
-//        }
-//    }
-//}
+                feedbackService.SubmitFeedback().Wait();
+
+                dialogService
+                    .Received()
+                    .Alert(errorTitle, errorMessage, Resources.Ok)
+                    .Wait();
+            }
+
+            [Theory, LogIfTooSlow]
+            [InlineData(true, "")]
+            [InlineData(true, "Error")]
+            [InlineData(true, null)]
+            [InlineData(false, "")]
+            [InlineData(false, null)]
+            public async Task DoesNotAlertUserWhenMailServiceReturnsSuccessOrDoesNotHaveErrorTitle(
+                bool success, string errorTitle)
+            {
+                var result = new MailResult(success, errorTitle, "");
+                mailService
+                    .Send(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+                    .Returns(Task.FromResult(result));
+
+                await feedbackService.SubmitFeedback();
+
+                await dialogService
+                    .DidNotReceive()
+                    .Alert(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+            }
+        }
+    }
+}

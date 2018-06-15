@@ -24,16 +24,18 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private bool? impressionIsPositive;
 
-        public bool GotImpression { get; private set; }
+        public bool GotImpression { get; private set; } = false;
 
-        public string CTATitle { get; private set; }
+        public string CtaTitle { get; private set; } = "";
 
-        public string CTADescription { get; private set; }
+        public string CtaDescription { get; private set; } = "";
 
-        public string CTAButtonTitle { get; private set; }
+        public string CtaButtonTitle { get; private set; } = "";
 
         public IMvxCommand<bool> RegisterImpressionCommand { get; private set; }
+
         public IMvxAsyncCommand PerformMainAction { get; private set; }
+
         public IMvxCommand DismissViewCommand { get; private set; }
 
         public RatingViewModel(
@@ -58,8 +60,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.onboardingStorage = onboardingStorage;
             this.navigationService = navigationService;
 
-            GotImpression = false;
-
             DismissViewCommand = new MvxCommand(dismiss);
             PerformMainAction = new MvxAsyncCommand(performMainAction);
             RegisterImpressionCommand = new MvxCommand<bool>(registerImpression);
@@ -72,16 +72,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             analyticsService.UserFinishedRatingViewFirstStep.Track(isPositive);
             if (isPositive)
             {
-                CTATitle = Resources.RatingViewPositiveCTATitle;
-                CTADescription = Resources.RatingViewPositiveCTADescription;
-                CTAButtonTitle = Resources.RatingViewPositiveCTAButtonTitle;
+                CtaTitle = Resources.RatingViewPositiveCTATitle;
+                CtaDescription = Resources.RatingViewPositiveCTADescription;
+                CtaButtonTitle = Resources.RatingViewPositiveCTAButtonTitle;
                 onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.PositiveImpression);
             }
             else
             {
-                CTATitle = Resources.RatingViewNegativeCTATitle;
-                CTADescription = Resources.RatingViewNegativeCTADescription;
-                CTAButtonTitle = Resources.RatingViewNegativeCTAButtonTitle;
+                CtaTitle = Resources.RatingViewNegativeCTATitle;
+                CtaDescription = Resources.RatingViewNegativeCTADescription;
+                CtaButtonTitle = Resources.RatingViewNegativeCTAButtonTitle;
                 onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.NegativeImpression);
             }
         }
@@ -109,7 +109,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void dismiss()
         {
-            navigationService.ChangePresentation(new ToggleRatingViewVisibilityHint());
+            navigationService.ChangePresentation(
+                new ToggleRatingViewVisibilityHint(forceHide: true)
+            );
 
             if (impressionIsPositive.HasValue)
             {

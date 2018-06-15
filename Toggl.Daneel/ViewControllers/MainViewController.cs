@@ -90,8 +90,6 @@ namespace Toggl.Daneel.ViewControllers
         private readonly UIView ratingViewContainer = new UIView { TranslatesAutoresizingMaskIntoConstraints = false };
         private readonly SuggestionsView suggestionsView = new SuggestionsView{ TranslatesAutoresizingMaskIntoConstraints = false };
 
-        public bool RatingViewVisible { get; private set; }
-
         public MainViewController()
             : base(nameof(MainViewController), null)
         {
@@ -342,7 +340,6 @@ namespace Toggl.Daneel.ViewControllers
         RatingView ratingView;
         public void ShowRatingView()
         {
-            RatingViewVisible = true;
             ratingView = RatingView.Create();
             ratingView.TranslatesAutoresizingMaskIntoConstraints = false;
             ratingView.DataContext = ViewModel.RatingViewModel;
@@ -352,7 +349,6 @@ namespace Toggl.Daneel.ViewControllers
 
         public void HideRatingView()
         {
-            RatingViewVisible = false;
             ratingView.RemoveFromSuperview();
             ratingView.Dispose();
             ratingView = null;

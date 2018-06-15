@@ -53,16 +53,16 @@ namespace Toggl.Daneel
             heightConstraint.Active = true;
 
             //Text
-            bindingSet.Bind(CtaTitle).To(vm => vm.CTATitle);
+            bindingSet.Bind(CtaTitle).To(vm => vm.CtaTitle);
 
             bindingSet.Bind(CtaDescription)
                       .For(v => v.AttributedText)
-                      .To(vm => vm.CTADescription)
+                      .To(vm => vm.CtaDescription)
                       .WithConversion(descriptionStringConverter);
             
             bindingSet.Bind(CtaButton)
                       .For(v => v.BindTitle())
-                      .To(vm => vm.CTAButtonTitle);
+                      .To(vm => vm.CtaButtonTitle);
 
             //Visibility
             bindingSet.Bind(QuestionView)
