@@ -110,7 +110,7 @@ namespace Toggl.Foundation.MvvmCross.Extensions
                 var tagIdsToReload = new long[] { };
                 if (hasTags)
                 {
-                    if (!(bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString)))
+                    if (!bundle.Data.TryGetValue($"{nameof(TextFieldInfo)}.{nameof(TextFieldInfo.Tags)}", out var tagsIdsString))
                     {
                         return null;
                     }
