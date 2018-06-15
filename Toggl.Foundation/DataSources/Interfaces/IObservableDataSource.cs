@@ -4,7 +4,7 @@ using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.DataSources.Interfaces
 {
-    public interface IObservableDataSource<TThreadsafe, TDatabase>
+    public interface IObservableDataSource<TThreadsafe, out TDatabase>
         : IDataSource<TThreadsafe, TDatabase>
         where TDatabase : IDatabaseSyncable
         where TThreadsafe : IThreadSafeModel, TDatabase

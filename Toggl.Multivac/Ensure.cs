@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Toggl.Multivac
 {
@@ -24,6 +25,20 @@ namespace Toggl.Multivac
                 throw new ArgumentException("String cannot be empty.", argumentName);
             }
 
+            public static void IsNotNullOrEmpty(string value, string argumentName)
+            {
+                if (!string.IsNullOrEmpty(value)) return;
+
+                throw new ArgumentException("String cannot be null or empty.", argumentName);
+            }
+
+            public static void IsNotZero(long value, string argumentName)
+            {
+                if (value != 0) return;
+
+                throw new ArgumentException("Long cannot be zero.", argumentName);
+            }
+
             public static void IsAbsoluteUri(Uri uri, string argumentName)
             {
                 IsNotNull(uri, argumentName);
@@ -31,6 +46,13 @@ namespace Toggl.Multivac
                 if (uri.IsAbsoluteUri) return;
 
                 throw new ArgumentException("Uri must be absolute.", argumentName);
+            }
+
+            public static void IsADefinedEnumValue<T>(T value, string argumentName) where T : struct
+            {
+                if (Enum.IsDefined(typeof(T), value)) return;
+
+                throw new ArgumentException("Invalid enum value.", argumentName);
             }
         }
     }

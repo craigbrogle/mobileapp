@@ -14,7 +14,7 @@ namespace Toggl.Foundation.Tests.Sync.States
         {
             Action startWithNull = () => createState().Start(null).SingleAsync().Wait();
 
-            startWithNull.ShouldThrow<ArgumentNullException>();
+            startWithNull.Should().Throw<ArgumentNullException>();
         }
 
         [Fact, LogIfTooSlow]

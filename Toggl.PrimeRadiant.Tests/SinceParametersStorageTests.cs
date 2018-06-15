@@ -63,7 +63,7 @@ namespace Toggl.PrimeRadiant.Tests
             {
                 Action get = () => Get(unsupported);
 
-                get.ShouldThrow<ArgumentException>();
+                get.Should().Throw<ArgumentException>();
             }
 
             [Theory]
@@ -72,7 +72,7 @@ namespace Toggl.PrimeRadiant.Tests
             {
                 Action get = () => Get(unsupported);
 
-                get.ShouldNotThrow();
+                get.Should().NotThrow();
             }
 
             [Theory]
@@ -115,7 +115,7 @@ namespace Toggl.PrimeRadiant.Tests
             {
                 Action get = () => Set(unsupported, someDate);
 
-                get.ShouldThrow<ArgumentException>();
+                get.Should().Throw<ArgumentException>();
             }
 
             [Theory]
@@ -124,7 +124,7 @@ namespace Toggl.PrimeRadiant.Tests
             {
                 Action get = () => Set(unsupported, someDate);
 
-                get.ShouldNotThrow();
+                get.Should().NotThrow();
             }
 
             [Theory]

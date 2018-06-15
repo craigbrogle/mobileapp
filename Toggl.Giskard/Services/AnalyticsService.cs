@@ -25,7 +25,7 @@ namespace Toggl.Giskard.Services
             #endif
         }
 
-        protected override void NativeTrackEvent(string eventName, Dictionary<string, string> parameters)
+        public override void Track(string eventName, Dictionary<string, string> parameters)
         {
             #if USE_ANALYTICS
             var bundle = bundleFromParameters(parameters);
@@ -34,9 +34,9 @@ namespace Toggl.Giskard.Services
             #endif
         }
 
-        protected override void NativeTrackException(Exception exception)
+        public override void Track(Exception exception)
         {
-            NativeTrackEvent(exceptionEventName, new Dictionary<string, string>
+            Track(exceptionEventName, new Dictionary<string, string>
             {
                 [exceptionTypeParameter] = exception.GetType().FullName,
                 [exceptionMessageParameter] = exception.Message

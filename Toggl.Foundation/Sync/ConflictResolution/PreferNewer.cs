@@ -33,7 +33,8 @@ namespace Toggl.Foundation.Sync.ConflictResolution
             if (localEntity == null)
                 return Create;
 
-            if (localEntity.SyncStatus == SyncStatus.InSync)
+            if (localEntity.SyncStatus == SyncStatus.InSync
+                || localEntity.SyncStatus == SyncStatus.RefetchingNeeded)
                 return Update;
 
             var receivedDataIsOutdated = localEntity.At.Add(MarginOfError) > serverEntity.At;

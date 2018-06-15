@@ -4,9 +4,9 @@ namespace Toggl.Foundation.DTOs
 {
     public struct EditPreferencesDTO
     {
-        public DateFormat? DateFormat { get; set; }
-        public DurationFormat? DurationFormat { get; set; }
-        public TimeFormat? TimeOfDayFormat { get; set; }
-        public bool? CollapseTimeEntries { get; set; }
+        public New<DateFormat> DateFormat { get; set; }
+        public New<DurationFormat> DurationFormat { get; set; }
+        public New<TimeFormat> TimeOfDayFormat { get; set; }
+        public New<bool> CollapseTimeEntries { get; set; }
     }
 }

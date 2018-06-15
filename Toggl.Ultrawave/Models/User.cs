@@ -12,7 +12,7 @@ namespace Toggl.Ultrawave.Models
 
         public string ApiToken { get; set; }
         
-        public long DefaultWorkspaceId { get; set; }
+        public long? DefaultWorkspaceId { get; set; }
 
         [JsonConverter(typeof(EmailConverter))]
         public Email Email { get; set; }

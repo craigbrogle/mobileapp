@@ -38,15 +38,15 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async Task ReturnsTagsForAllWorkspaces()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var otherWorkspace = await WorkspaceHelper.CreateFor(user);
+                var otherWorkspace = await togglApi.Workspaces.Create(Guid.NewGuid().ToString());
 
-                await pushTags(togglApi, tags1, user.DefaultWorkspaceId);
+                await pushTags(togglApi, tags1, user.DefaultWorkspaceId.Value);
                 await pushTags(togglApi, tags2, otherWorkspace.Id);
 
                 var returnedTags = await CallEndpointWith(togglApi);
 
                 returnedTags.Should().HaveCount(tags1.Length + tags2.Length);
-                assertTags(returnedTags, tags1, user.DefaultWorkspaceId);
+                assertTags(returnedTags, tags1, user.DefaultWorkspaceId.Value);
                 assertTags(returnedTags, tags2, otherWorkspace.Id);
             }
 
@@ -67,7 +67,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 }
             }
         }
-        
+
 
         public sealed class TheGetAllSinceMethod : AuthenticatedGetSinceEndpointBaseTests<ITag>
         {
@@ -78,7 +78,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 => model.At;
 
             protected override ITag MakeUniqueModel(ITogglApi api, IUser user)
-                => new Tag { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId };
+                => new Tag { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value };
 
             protected override IObservable<ITag> PostModelToApi(ITogglApi api, ITag model)
                 => api.Tags.Create(model);
@@ -86,14 +86,14 @@ namespace Toggl.Ultrawave.Tests.Integration
             protected override Expression<Func<ITag, bool>> ModelWithSameAttributesAs(ITag model)
                 => t => isTheSameAs(model, t);
         }
-    
+
         public sealed class TheCreateMethod : AuthenticatedPostEndpointBaseTests<ITag>
         {
             protected override IObservable<ITag> CallEndpointWith(ITogglApi togglApi)
                 => Observable.Defer(async () =>
                 {
                     var user = await togglApi.User.Get();
-                    var tag = createNewTag(user.DefaultWorkspaceId);
+                    var tag = createNewTag(user.DefaultWorkspaceId.Value);
                     return CallEndpointWith(togglApi, tag);
                 });
 
@@ -105,7 +105,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglClient, user) = await SetupTestUser();
 
-                var tag = createNewTag(user.DefaultWorkspaceId);
+                var tag = createNewTag(user.DefaultWorkspaceId.Value);
                 var persistedTag = await CallEndpointWith(togglClient, tag);
 
                 persistedTag.Name.Should().Be(tag.Name);

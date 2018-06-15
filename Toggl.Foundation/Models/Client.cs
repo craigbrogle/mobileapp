@@ -1,99 +1,55 @@
 ﻿using System;
+using Toggl.Foundation.Models.Interfaces;
+using Toggl.Multivac;
+using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
+using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Models
 {
-    internal partial class Client
+    internal class Client : IThreadSafeClient
     {
-        internal sealed class Builder
+        public long Id { get; }
+        public long WorkspaceId { get; }
+        public string Name { get; }
+        public DateTimeOffset At { get; }
+        public SyncStatus SyncStatus { get; }
+        public string LastSyncErrorMessage { get; }
+        public bool IsDeleted { get; }
+        public DateTimeOffset? ServerDeletedAt { get; }
+        public IThreadSafeWorkspace Workspace { get; }
+        IDatabaseWorkspace IDatabaseClient.Workspace => Workspace;
+
+        private Client(IClient entity, SyncStatus syncStatus, string lastSyncErrorMessage, bool isDeleted = false, IThreadSafeWorkspace workspace = null)
+            : this(entity.Id, entity.WorkspaceId, entity.Name, entity.At, syncStatus, lastSyncErrorMessage, isDeleted, entity.ServerDeletedAt, workspace)
+        { }
+
+        public Client(long id, long workspaceId, string name, DateTimeOffset at, SyncStatus syncStatus, string lastSyncErrorMessage = "", bool isDeleted = false, DateTimeOffset? serverDeletedAt = null, IThreadSafeWorkspace workspace = null)
         {
-            private const string errorMessage = "You need to set the {0} before building a client";
-
-            public static Builder Create(long id) => new Builder(id);
-
-            public long Id { get; }
-
-            public string Name { get; private set; }
-
-            public SyncStatus SyncStatus { get; private set; }
-
-            public long? WorkspaceId { get; private set; }
-
-            public DateTimeOffset? At { get; private set; }
-
-            public DateTimeOffset? ServerDeletedAt { get; private set; }
-
-            public bool IsDeleted { get; private set; }
-
-            private Builder(long id)
-            {
-                Id = id;
-            }
-
-            public Client Build()
-            {
-                ensureValidity();
-                return new Client(this);
-            }
-
-            public Builder SetSyncStatus(SyncStatus syncStatus)
-            {
-                SyncStatus = syncStatus;
-                return this;
-            }
-
-            public Builder SetWorkspaceId(long workspaceId)
-            {
-                WorkspaceId = workspaceId;
-                return this;
-            }
-
-            public Builder SetName(string name)
-            {
-                Name = name;
-                return this;
-            }
-
-            public Builder SetAt(DateTimeOffset at)
-            {
-                At = at;
-                return this;
-            }
-
-            public Builder SetServerDeletedAt(DateTimeOffset? serverDeleteAt)
-            {
-                ServerDeletedAt = serverDeleteAt;
-                return this;
-            }
-
-            public Builder SetIsDeleted(bool isDeleted)
-            {
-                IsDeleted = isDeleted;
-                return this;
-            }
-
-            private void ensureValidity()
-            {
-                if (string.IsNullOrEmpty(Name))
-                    throw new InvalidOperationException(string.Format(errorMessage, "name"));
-
-                if (WorkspaceId == null || WorkspaceId == 0)
-                    throw new InvalidOperationException(string.Format(errorMessage, "workspace id"));
-
-                if (At == null)
-                    throw new InvalidOperationException(string.Format(errorMessage, "at"));
-            }
+            Id = id;
+            WorkspaceId = workspaceId;
+            Name = name;
+            At = at;
+            SyncStatus = syncStatus;
+            LastSyncErrorMessage = lastSyncErrorMessage;
+            IsDeleted = isDeleted;
+            ServerDeletedAt = serverDeletedAt;
+            Workspace = workspace;
         }
 
-        private Client(Builder builder)
+        public static Client From(IDatabaseClient entity)
         {
-            Id = builder.Id;
-            Name = builder.Name;
-            At = builder.At.Value;
-            IsDeleted = builder.IsDeleted;
-            SyncStatus = builder.SyncStatus;
-            WorkspaceId = builder.WorkspaceId.Value;
-            ServerDeletedAt = builder.ServerDeletedAt;
+            var workspace = entity.Workspace == null ? null : Models.Workspace.From(entity.Workspace);
+            return new Client(entity, entity.SyncStatus, entity.LastSyncErrorMessage, entity.IsDeleted, workspace);
         }
+
+        public static Client Clean(IClient entity)
+            => new Client(entity, SyncStatus.InSync, null);
+
+        public static Client Dirty(IClient entity)
+            => new Client(entity, SyncStatus.SyncNeeded, null);
+
+        public static Client Unsyncable(IClient entity, string errorMessage)
+            => new Client(entity, SyncStatus.SyncFailed, errorMessage);
     }
 }

@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using Toggl.Multivac.Extensions;
-using Toggl.Foundation.Models;
+using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
 using Toggl.Ultrawave;
 
-namespace Toggl.Foundation.Sync.States
+namespace Toggl.Foundation.Sync.States.Pull
 {
-    internal sealed class FetchAllSinceState
+    internal sealed class FetchAllSinceState : ISyncState
     {
         private readonly ITogglDatabase database;
         private readonly ITogglApi api;
         private readonly ITimeService timeService;
-        private const int SinceDateLimitMonths = 2;
+        private const int sinceDateLimitMonths = 2;
+        private const int fetchTimeEntriesForMonths = 2;
 
         public StateResult<IFetchObservables> FetchStarted { get; } = new StateResult<IFetchObservables>();
 
@@ -33,7 +35,7 @@ namespace Toggl.Foundation.Sync.States
                 api.User.Get(),
                 getSinceOrAll(since.Get<IDatabaseClient>(), api.Clients.GetAllSince, api.Clients.GetAll).ConnectedReplay(),
                 getSinceOrAll(since.Get<IDatabaseProject>(), api.Projects.GetAllSince, api.Projects.GetAll).ConnectedReplay(),
-                getSinceOrAll(since.Get<IDatabaseTimeEntry>(), api.TimeEntries.GetAllSince, api.TimeEntries.GetAll).ConnectedReplay(),
+                getSinceOrAll(since.Get<IDatabaseTimeEntry>(), api.TimeEntries.GetAllSince, fetchTwoMonthsOfTimeEntries).ConnectedReplay(),
                 getSinceOrAll(since.Get<IDatabaseTag>(), api.Tags.GetAllSince, api.Tags.GetAll).ConnectedReplay(),
                 getSinceOrAll(since.Get<IDatabaseTask>(), api.Tasks.GetAllSince, api.Tasks.GetAll).ConnectedReplay(),
                 api.Preferences.Get().ConnectedReplay()
@@ -45,11 +47,16 @@ namespace Toggl.Foundation.Sync.States
             return () => { };
         });
 
+        private IObservable<List<ITimeEntry>> fetchTwoMonthsOfTimeEntries()
+            => api.TimeEntries.GetAll(
+                start: timeService.CurrentDateTime.AddMonths(-fetchTimeEntriesForMonths),
+                end: timeService.CurrentDateTime);
+
         private IObservable<T> getSinceOrAll<T>(DateTimeOffset? threshold,
             Func<DateTimeOffset, IObservable<T>> since, Func<IObservable<T>> all)
             => threshold.HasValue && isWithinLimit(threshold.Value) ? since(threshold.Value) : all();
 
         private bool isWithinLimit(DateTimeOffset threshold)
-            => threshold > timeService.CurrentDateTime.AddMonths(-SinceDateLimitMonths);
+            => threshold > timeService.CurrentDateTime.AddMonths(-sinceDateLimitMonths);
     }
 }

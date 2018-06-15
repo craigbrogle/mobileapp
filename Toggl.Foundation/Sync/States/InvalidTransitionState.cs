@@ -4,7 +4,7 @@ using Toggl.Multivac;
 
 namespace Toggl.Foundation.Sync.States
 {
-    public sealed class InvalidTransitionState
+    public sealed class InvalidTransitionState : ISyncState
     {
         private readonly string message;
 

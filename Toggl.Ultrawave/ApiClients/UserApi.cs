@@ -98,7 +98,7 @@ namespace Toggl.Ultrawave.ApiClients
         [Preserve(AllMembers = true)]
         internal class WorkspaceParameters
         {
-            public string Name { get; } = null;
+            public string Name { get; set; } = null;
 
             public PricingPlans InitialPricingPlan { get; set; }
         }

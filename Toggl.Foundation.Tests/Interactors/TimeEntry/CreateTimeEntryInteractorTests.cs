@@ -172,7 +172,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 Action executeCommand =
                     () => CallInteractor(CreatePrototype(ValidTime, ValidDescription, true, ProjectId)).Wait();
 
-                executeCommand.ShouldThrow<Exception>();
+                executeCommand.Should().Throw<Exception>();
                 await DataSource.SyncManager.DidNotReceive().PushSync();
             }
         }
@@ -192,7 +192,7 @@ namespace Toggl.Foundation.Tests.Interactors
             {
                 await CallInteractor(CreatePrototype(ValidTime, ValidDescription, true, ProjectId));
 
-                AnalyticsService.Received().TrackStartedTimeEntry(TimeEntryStartOrigin.Continue);
+                AnalyticsService.Received().TimeEntryStarted.Track(TimeEntryStartOrigin.Continue);
             }
 
             [Fact, LogIfTooSlow]
@@ -235,7 +235,7 @@ namespace Toggl.Foundation.Tests.Interactors
             {
                 await CallInteractor(CreatePrototype(ValidTime, ValidDescription, true, ProjectId));
 
-                AnalyticsService.Received().TrackStartedTimeEntry(TimeEntryStartOrigin.Suggestion);
+                AnalyticsService.Received().TimeEntryStarted.Track(TimeEntryStartOrigin.Suggestion);
             }
 
             [Fact, LogIfTooSlow]
@@ -259,7 +259,7 @@ namespace Toggl.Foundation.Tests.Interactors
             {
                 await CallInteractor(CreatePrototype(ValidTime, ValidDescription, true, ProjectId));
 
-                AnalyticsService.Received().TrackStartedTimeEntry(TimeEntryStartOrigin.Timer);
+                AnalyticsService.Received().TimeEntryStarted.Track(TimeEntryStartOrigin.Timer);
             }
 
             [Fact, LogIfTooSlow]
@@ -268,7 +268,7 @@ namespace Toggl.Foundation.Tests.Interactors
                 var prototype = CreatePrototype(ValidTime, ValidDescription, true, ProjectId, duration: TimeSpan.FromMinutes(1));
                 await CallInteractor(prototype);
 
-                AnalyticsService.Received().TrackStartedTimeEntry(TimeEntryStartOrigin.Manual);
+                AnalyticsService.Received().TimeEntryStarted.Track(TimeEntryStartOrigin.Manual);
             }
 
             [Fact, LogIfTooSlow]

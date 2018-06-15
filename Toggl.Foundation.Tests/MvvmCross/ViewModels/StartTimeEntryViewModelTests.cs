@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -41,6 +42,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected const long ProjectId = 10;
             protected const long WorkspaceId = 40;
             protected const string TaskName = "Mobile App";
+            protected const string WorkspaceName = "The best workspace ever";
             protected const string ProjectName = "Toggl";
             protected const string ProjectColor = "#F41F19";
             protected const string Description = "Testing Toggl mobile apps";
@@ -61,7 +63,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                    Arg.Any<string>(),
                    Arg.Any<string>(),
                    Arg.Any<string>()
-               ).Returns(true);
+               ).Returns(Observable.Return(true));
             }
 
             protected override StartTimeEntryViewModel CreateViewModel()
@@ -116,7 +118,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         autocompleteProvider);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -188,11 +190,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData(false)]
             public async Task ChecksIfBillableIsAvailableForTheDefaultWorkspace(bool billableValue)
             {
-                var user = new MockUser { DefaultWorkspaceId = 10 };
-                DataSource.User.Current.Returns(Observable.Return(user));
-
+                var workspace = new MockWorkspace { Id = 10 };
                 InteractorFactory
-                    .IsBillableAvailableForWorkspace(10)
+                    .GetDefaultWorkspace()
+                    .Execute()
+                    .Returns(Observable.Return(workspace));
+                InteractorFactory
+                    .IsBillableAvailableForWorkspace(workspace.Id)
                     .Execute()
                     .Returns(Observable.Return(billableValue));
                 var parameter = new StartTimeEntryParameters(DateTimeOffset.UtcNow, "", null);
@@ -476,7 +480,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde @fgh", 10);
 
-                    AnalyticsService.Received().TrackStartOpensProjectSelector(ProjectTagSuggestionSource.TextField);
+                    AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.TextField);
                 }
             }
 
@@ -534,7 +538,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.TextFieldInfo = ViewModel.TextFieldInfo.WithTextAndCursor("abcde #fgh", 10);
 
-                    AnalyticsService.Received().TrackStartOpensTagSelector(ProjectTagSuggestionSource.TextField);
+                    AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.TextField);
                 }
             }
         }
@@ -635,9 +639,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 public async Task CreatesTagInUsersDefaultWorkspaceIfNoProjectIsSelected()
                 {
                     long workspaceId = 100;
+                    var workspace = new MockWorkspace { Id = workspaceId };
+                    InteractorFactory.GetDefaultWorkspace().Execute().Returns(Observable.Return(workspace));
                     var user = Substitute.For<IThreadSafeUser>();
                     user.DefaultWorkspaceId.Returns(workspaceId);
-                    DataSource.User.Current.Returns(Observable.Return(user));
+                    DataSource.User.Get().Returns(Observable.Return(user));
                     await ViewModel.Initialize();
 
                     await ViewModel.CreateCommand.ExecuteAsync();
@@ -696,7 +702,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 makeDirty();
                 DialogService.ConfirmDestructiveAction(ActionType.DiscardNewTimeEntry)
-                             .Returns(_ => Task.FromResult(false));
+                             .Returns(_ => Observable.Return(false));
 
                 await ViewModel.BackCommand.ExecuteAsync();
 
@@ -708,7 +714,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 makeDirty();
                 DialogService.ConfirmDestructiveAction(ActionType.DiscardNewTimeEntry)
-                             .Returns(_ => Task.FromResult(true));
+                             .Returns(_ => Observable.Return(true));
 
                 await ViewModel.BackCommand.ExecuteAsync();
 
@@ -720,7 +726,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 await ViewModel.BackCommand.ExecuteAsync();
 
-                AnalyticsService.DidNotReceive().TrackStartedTimeEntry(Arg.Any<TimeEntryStartOrigin>());
+                AnalyticsService.TimeEntryStarted.DidNotReceive().Track(Arg.Any<TimeEntryStartOrigin>());
             }
 
             private void makeDirty()
@@ -765,6 +771,26 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Returns(Observable.Return(suggestions));
             }
 
+            private List<ProjectSuggestion> createProjects(int count)
+                => Enumerable
+                    .Range(0, count)
+                    .Select(i =>
+                    {
+                        var workspace = Substitute.For<IThreadSafeWorkspace>();
+                        workspace.Id.Returns(WorkspaceId);
+                        workspace.Name.Returns(WorkspaceName);
+
+                        var project = Substitute.For<IThreadSafeProject>();
+                        project.Workspace.Returns(workspace);
+                        project.WorkspaceId.Returns(WorkspaceId);
+                        project.Id.Returns(ProjectId + i);
+                        project.Name.Returns($"{ProjectName}-{i}");
+                        project.Color.Returns(ProjectColor);
+                        return project;
+                    })
+                    .Apply(ProjectSuggestion.FromProjects)
+                    .ToList();
+
             [Fact, LogIfTooSlow]
             public void StartProjectSuggestionEvenIfTheProjectHasAlreadyBeenSelected()
             {
@@ -787,6 +813,42 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.ToggleProjectSuggestionsCommand.Execute();
 
                 ViewModel.IsSuggestingProjects.Should().BeTrue();
+            }
+
+            [Fact, LogIfTooSlow]
+            public void ShowsCorrectProjectSuggestionsAfterProjectHasAlreadyBeenSelected()
+            {
+                const int noProjectCount = 1;
+                var projects = createProjects(5);
+                var chosenProject = projects.First();
+                AutocompleteProvider.Query(Arg.Any<QueryInfo>()).Returns(Observable.Return(projects));
+                ViewModel.Prepare();
+                ViewModel.Prepare(DefaultParameter);
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty(WorkspaceId).WithTextAndCursor(Description, Description.Length);
+
+                ViewModel.ToggleProjectSuggestionsCommand.Execute();
+                ViewModel.SelectSuggestionCommand.Execute(chosenProject);
+                ViewModel.ToggleProjectSuggestionsCommand.Execute();
+
+                ViewModel.Suggestions.Should().HaveCount(1);
+                ViewModel.Suggestions.First().Should().HaveCount(projects.Count + noProjectCount);
+            }
+
+            [Fact, LogIfTooSlow]
+            public void ProjectSuggestionsAreClearedOnProjectSelection()
+            {
+                var projects = createProjects(5);
+                var chosenProject = projects.First();
+                AutocompleteProvider.Query(Arg.Any<QueryInfo>()).Returns(Observable.Return(projects));
+                ViewModel.Prepare();
+                ViewModel.Prepare(DefaultParameter);
+                ViewModel.TextFieldInfo = TextFieldInfo.Empty(WorkspaceId).WithTextAndCursor(Description, Description.Length);
+
+                ViewModel.ToggleProjectSuggestionsCommand.Execute();
+                ViewModel.SelectSuggestionCommand.Execute(chosenProject);
+
+                ViewModel.IsSuggestingProjects.Should().BeFalse();
+                ViewModel.Suggestions.Should().HaveCount(0);
             }
 
             [Fact, LogIfTooSlow]
@@ -863,7 +925,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.ToggleProjectSuggestionsCommand.Execute();
 
-                AnalyticsService.Received().TrackStartOpensProjectSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
+                AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             }
         }
 
@@ -967,7 +1029,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.ToggleTagSuggestionsCommand.Execute();
 
-                AnalyticsService.Received().TrackStartOpensTagSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
+                AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             }
         }
 
@@ -980,7 +1042,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ViewModel.Prepare(parameter);
 
@@ -997,7 +1059,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 var tcs = new TaskCompletionSource<DurationParameter>();
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(tcs.Task);
                 ViewModel.Prepare(parameter);
 
@@ -1021,7 +1083,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), TimeSpan.FromMinutes(30));
                 var tcs = new TaskCompletionSource<DurationParameter>();
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(tcs.Task);
                 ViewModel.Prepare(parameter);
 
@@ -1046,7 +1108,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.Prepare(parameter);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now, null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(Task.FromResult(parameterToReturn));
 
                 await ViewModel.ChangeTimeCommand.ExecuteAsync();
@@ -1061,7 +1123,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-2), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(Task.FromResult(parameterToReturn));
                 ViewModel.Prepare(parameter);
 
@@ -1077,7 +1139,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var parameter = new StartTimeEntryParameters(now, "", null);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now, TimeSpan.FromMinutes(10));
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(Task.FromResult(parameterToReturn));
                 ViewModel.Prepare(parameter);
 
@@ -1359,6 +1421,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Project.Color.Returns(ProjectColor);
                     Project.Workspace.Returns(Workspace);
                     Project.WorkspaceId.Returns(WorkspaceId);
+                    Project.Active.Returns(true);
 
                     Task = Substitute.For<IThreadSafeTask>();
                     Task.Id.Returns(TaskId);
@@ -1392,7 +1455,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         .First();
 
                     ViewModel.SelectSuggestionCommand.Execute(projectSuggestion);
-                    AnalyticsService.Received().TrackStartOpensProjectSelector(ProjectTagSuggestionSource.TableCellButton);
+                    AnalyticsService.StartEntrySelectProject.Received().Track(ProjectTagSuggestionSource.TableCellButton);
                 }
 
                 [Fact, LogIfTooSlow]
@@ -1403,7 +1466,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         .First();
 
                     ViewModel.SelectSuggestionCommand.Execute(tagSuggestion);
-                    AnalyticsService.Received().TrackStartOpensTagSelector(ProjectTagSuggestionSource.TableCellButton);
+                    AnalyticsService.StartEntrySelectTag.Received().Track(ProjectTagSuggestionSource.TableCellButton);
                 }
             }
 
@@ -1511,6 +1574,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task DoesNotShowConfirmDialogIfWorkspaceIsNotGoingToChange()
                 {
+                    var workspace = new MockWorkspace { Id = WorkspaceId };
+                    InteractorFactory.GetDefaultWorkspace().Execute().Returns(Observable.Return(workspace));
                     var user = Substitute.For<IThreadSafeUser>();
                     user.DefaultWorkspaceId.Returns(WorkspaceId);
                     DataSource.User.Current.Returns(Observable.Return(user));
@@ -1609,7 +1674,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     InteractorFactory.GetWorkspaceById(WorkspaceId).Execute().Returns(Observable.Return(Workspace));
                     InteractorFactory.IsBillableAvailableForProject(ProjectId).Execute()
-                        .Returns(Observable.Throw<bool>(new EntityNotFoundException(new Exception())));
+                        .Returns(Observable.Throw<bool>(new DatabaseOperationException<IDatabaseProject>(new Exception())));
                     InteractorFactory.IsBillableAvailableForWorkspace(WorkspaceId).Execute()
                         .Returns(Observable.Return(isBillableAvailable));
                     var noProjectSuggestion = ProjectSuggestion.NoProject(WorkspaceId, Workspace.Name);
@@ -1997,7 +2062,6 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .WithTextAndCursor(query, 1);
 
                 ViewModel.ShouldShowNoTagsInfoMessage.Should().BeFalse();
-
             }
 
             [Theory, LogIfTooSlow]

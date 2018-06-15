@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using Toggl.Foundation.DataSources.Interfaces;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac.Models;
 using Toggl.PrimeRadiant;
@@ -29,7 +30,25 @@ namespace Toggl.Foundation.DataSources
         public virtual IObservable<IEnumerable<TThreadsafe>> GetAll(Func<TDatabase, bool> predicate)
             => Repository.GetAll(predicate).Select(entities => entities.Select(Convert));
 
+        public virtual IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> DeleteAll(IEnumerable<TThreadsafe> entities)
+            => Repository.BatchUpdate(convertEntitiesForBatchUpdate(entities), safeAlwaysDelete)
+                         .ToThreadSafeResult(Convert);
+
         public virtual IObservable<Unit> Delete(long id)
             => Repository.Delete(id);
+
+        public virtual IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> BatchUpdate(IEnumerable<TThreadsafe> entities)
+            => Repository.BatchUpdate(
+                    convertEntitiesForBatchUpdate(entities),
+                    ResolveConflicts,
+                    RivalsResolver)
+                .ToThreadSafeResult(Convert);
+
+        private IEnumerable<(long, TDatabase)> convertEntitiesForBatchUpdate(
+            IEnumerable<TThreadsafe> entities)
+            => entities.Select(entity => (entity.Id, (TDatabase)entity));
+
+        private static ConflictResolutionMode safeAlwaysDelete(TDatabase old, TDatabase now)
+            => old == null ? ConflictResolutionMode.Ignore : ConflictResolutionMode.Delete;
     }
 }

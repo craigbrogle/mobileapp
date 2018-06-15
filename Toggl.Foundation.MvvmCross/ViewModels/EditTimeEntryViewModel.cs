@@ -13,10 +13,12 @@ using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Foundation.Models;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Models.Interfaces;
 using static Toggl.Foundation.Helper.Constants;
+using Toggl.Foundation.Extensions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -38,7 +40,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private IDisposable confirmDisposable;
         private IDisposable preferencesDisposable;
 
-        private IDatabaseTimeEntry originalTimeEntry;
+        private IThreadSafeTimeEntry originalTimeEntry;
 
         private long? projectId;
         private long? taskId;
@@ -167,13 +169,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         public IMvxAsyncCommand CloseCommand { get; }
 
-        public IMvxAsyncCommand EditDurationCommand { get; }
+        public IMvxAsyncCommand SelectDurationCommand { get; }
 
         public IMvxAsyncCommand<string> SelectTimeCommand { get; }
 
         public IMvxAsyncCommand SelectStartTimeCommand { get; }
 
-        public IMvxAsyncCommand SelectEndTimeCommand { get; }
+        public IMvxAsyncCommand SelectStopTimeCommand { get; }
 
         public IMvxAsyncCommand SelectStartDateCommand { get; }
 
@@ -182,6 +184,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IMvxAsyncCommand SelectTagsCommand { get; }
 
         public IMvxCommand ToggleBillableCommand { get; }
+
+        public IMvxCommand StartEditingDescriptionCommand { get; }
 
         public EditTimeEntryViewModel(
             ITimeService timeService,
@@ -211,20 +215,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             DeleteCommand = new MvxAsyncCommand(delete);
             ConfirmCommand = new MvxCommand(confirm);
             CloseCommand = new MvxAsyncCommand(closeWithConfirmation);
-            EditDurationCommand = new MvxAsyncCommand(editDuration);
+
             StopCommand = new MvxCommand(stopTimeEntry, () => IsTimeEntryRunning);
             StopTimeEntryCommand = new MvxAsyncCommand<string>(onStopTimeEntryCommand);
 
             SelectStartTimeCommand = new MvxAsyncCommand(selectStartTime);
-            SelectEndTimeCommand = new MvxAsyncCommand(selectEndTime);
+            SelectStopTimeCommand = new MvxAsyncCommand(selectStopTime);
             SelectStartDateCommand = new MvxAsyncCommand(selectStartDate);
+            SelectDurationCommand = new MvxAsyncCommand(selectDuration);
+            SelectTimeCommand = new MvxAsyncCommand<string>(selectTime);
 
             SelectProjectCommand = new MvxAsyncCommand(selectProject);
             SelectTagsCommand = new MvxAsyncCommand(selectTags);
             DismissSyncErrorMessageCommand = new MvxCommand(dismissSyncErrorMessageCommand);
             ToggleBillableCommand = new MvxCommand(toggleBillable);
-
-            SelectTimeCommand = new MvxAsyncCommand<string>(selectTime);
+            StartEditingDescriptionCommand = new MvxCommand(startEditingDescriptionCommand);
         }
 
         public override void Prepare(long parameter)
@@ -281,7 +286,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             {
                 await interactorFactory.DeleteTimeEntry(Id).Execute();
 
-                analyticsService.TrackDeletingTimeEntry();
+                analyticsService.DeleteTimeEntry.Track();
                 dataSource.SyncManager.PushSync();
                 await navigationService.Close(this);
             }
@@ -341,19 +346,47 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task selectStartTime()
         {
-            var parameters = DateTimePickerParameters.WithDates(
-                DateTimePickerMode.Time,
-                StartTime,
-                EarliestAllowedStartTime,
-                LatestAllowedStartTime);
+            analyticsService.EditViewTapped.Track(EditViewTapSource.StartTime);
+            await editDuration();
+        }
+
+        private async Task selectStopTime()
+        {
+            analyticsService.EditViewTapped.Track(EditViewTapSource.StopTime);
+            await editDuration();
+        }
+
+        private async Task selectStartDate()
+        {
+            analyticsService.EditViewTapped.Track(EditViewTapSource.StartDate);
+
+            var parameters = IsTimeEntryRunning
+                ? DateTimePickerParameters.ForStartDateOfRunningTimeEntry(StartTime, timeService.CurrentDateTime)
+                : DateTimePickerParameters.ForStartDateOfStoppedTimeEntry(StartTime);
+
+            var duration = Duration;
 
             StartTime = await navigationService
                 .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(parameters)
                 .ConfigureAwait(false);
+
+            if (IsTimeEntryRunning == false)
+            {
+                StopTime = StartTime + duration;
+            }
+        }
+
+        private async Task selectDuration()
+        {
+            analyticsService.EditViewTapped.Track(EditViewTapSource.Duration);
+            await editDuration(true);
         }
 
         private async Task selectTime(string bindingParameter)
         {
+            var tapSource = getTapSourceFromBindingParameter(bindingParameter);
+            analyticsService.EditViewTapped.Track(tapSource);
+
             var parameters =
                 SelectTimeParameters
                 .CreateFromBindingString(bindingParameter, StartTime, StopTime)
@@ -368,6 +401,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             StartTime = data.Start;
             StopTime = data.Stop;
+        }
+
+        private EditViewTapSource getTapSourceFromBindingParameter(string bindingParameter)
+        {
+            switch (bindingParameter)
+            {
+                case "StartTime":
+                case "StartDate":
+                    return EditViewTapSource.StartTime;
+                case "StopTime":
+                case "StopDate":
+                    return EditViewTapSource.StopTime;
+                case "Duration":
+                    return EditViewTapSource.Duration;
+                default:
+                    throw new ArgumentException("Binding parameter is incorrect.");
+            }
         }
 
         private void stopTimeEntry()
@@ -386,49 +436,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await SelectTimeCommand.ExecuteAsync(bindingParameter);
         }
 
-        private async Task selectEndTime()
-        {
-            if (IsTimeEntryRunning)
-            {
-                stopTimeEntry();
-                return;
-            }
-
-            var earliestAllowedTime = StartTime;
-            var latestAllowedTime = StartTime.Add(MaxTimeEntryDuration);
-
-            var parameters = DateTimePickerParameters.WithDates(
-                DateTimePickerMode.Time,
-                StopTime.Value,
-                earliestAllowedTime,
-                latestAllowedTime);
-
-            StopTime = await navigationService
-                .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(parameters)
-                .ConfigureAwait(false);
-        }
-
-        private async Task selectStartDate()
-        {
-            var parameters = IsTimeEntryRunning
-                ? DateTimePickerParameters.ForStartDateOfRunningTimeEntry(StartTime, timeService.CurrentDateTime)
-                : DateTimePickerParameters.ForStartDateOfStoppedTimeEntry(StartTime);
-
-            var duration = Duration;
-
-            StartTime = await navigationService
-                .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(parameters)
-                .ConfigureAwait(false);
-
-            if (IsTimeEntryRunning == false)
-            {
-                StopTime = StartTime + duration;
-            }
-        }
-
         private async Task selectProject()
         {
-            analyticsService.TrackEditOpensProjectSelector();
+            analyticsService.EditEntrySelectProject.Track();
+            analyticsService.EditViewTapped.Track(EditViewTapSource.Project);
 
             onboardingStorage.SelectsProject();
 
@@ -455,9 +466,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var project = await dataSource.Projects.GetById(projectId.Value);
             clearTagsIfNeeded(workspaceId, project.WorkspaceId);
-            Project = project.Name;
+            Project = project.DisplayName();
             Client = project.Client?.Name;
-            ProjectColor = project.Color;
+            ProjectColor = project.DisplayColor();
             workspaceId = project.WorkspaceId;
 
             Task = taskId.HasValue ? (await dataSource.Tasks.GetById(taskId.Value)).Name : "";
@@ -465,12 +476,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await updateFeaturesAvailability();
         }
 
-        private async Task editDuration()
+        private async Task editDuration(bool isDurationInitiallyFocused = false)
         {
             var duration = StopTime.HasValue ? Duration : (TimeSpan?)null;
             var currentDuration = DurationParameter.WithStartAndDuration(StartTime, duration);
+            var editDurationParam = new EditDurationParameters(currentDuration, isDurationInitiallyFocused);
             var selectedDuration = await navigationService
-                .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(currentDuration)
+                .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(editDurationParam)
                 .ConfigureAwait(false);
 
             StartTime = selectedDuration.Start;
@@ -482,7 +494,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task selectTags()
         {
-            analyticsService.TrackEditOpensTagSelector();
+            analyticsService.EditEntrySelectTag.Track();
+            analyticsService.EditViewTapped.Track(EditViewTapSource.Tags);
 
             var tagsToPass = tagIds.ToArray();
             var returnedTags = await navigationService
@@ -503,7 +516,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .Subscribe(onTags);
         }
 
-        private void onTags(IEnumerable<IDatabaseTag> tags)
+        private void onTags(IEnumerable<IThreadSafeTag> tags)
         {
             if (tags == null)
                 return;
@@ -520,7 +533,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private void toggleBillable()
         {
+            analyticsService.EditViewTapped.Track(EditViewTapSource.Billable);
             Billable = !Billable;
+        }
+
+        private void startEditingDescriptionCommand()
+        {
+            analyticsService.EditViewTapped.Track(EditViewTapSource.Description);
+            IsEditingDescription = true;
         }
 
         private void clearTagsIfNeeded(long currentWorkspaceId, long newWorkspaceId)
@@ -542,7 +562,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             return $"{tag.UnicodeSafeSubstring(0, maxTagLength)}...";
         }
 
-        private void onPreferencesChanged(IDatabasePreferences preferences)
+        private void onPreferencesChanged(IThreadSafePreferences preferences)
         {
             durationFormat = preferences.DurationFormat;
             DateFormat = preferences.DateFormat;

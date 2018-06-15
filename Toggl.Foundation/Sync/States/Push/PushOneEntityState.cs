@@ -6,18 +6,18 @@ using Toggl.PrimeRadiant;
 
 namespace Toggl.Foundation.Sync.States.Push
 {
-    internal sealed class PushOneEntityState<TThreadsafeModel>
-        where TThreadsafeModel : class, IDatabaseSyncable, IThreadSafeModel
+    internal sealed class PushOneEntityState<T> : ISyncState<T>
+        where T : class, IDatabaseSyncable, IThreadSafeModel
     {
-        public StateResult<TThreadsafeModel> CreateEntity { get; } = new StateResult<TThreadsafeModel>();
+        public StateResult<T> CreateEntity { get; } = new StateResult<T>();
 
-        public StateResult<TThreadsafeModel> DeleteEntity { get; } = new StateResult<TThreadsafeModel>();
+        public StateResult<T> DeleteEntity { get; } = new StateResult<T>();
 
-        public StateResult<TThreadsafeModel> UpdateEntity { get; } = new StateResult<TThreadsafeModel>();
-        
-        public StateResult<TThreadsafeModel> DeleteEntityLocally { get; } = new StateResult<TThreadsafeModel>();
+        public StateResult<T> UpdateEntity { get; } = new StateResult<T>();
 
-        public IObservable<ITransition> Start(TThreadsafeModel entityToPush)
+        public StateResult<T> DeleteEntityLocally { get; } = new StateResult<T>();
+
+        public IObservable<ITransition> Start(T entityToPush)
             => createObservable(entityToPush)
                 .Select(entity =>
                     entity.IsDeleted
@@ -28,17 +28,17 @@ namespace Toggl.Foundation.Sync.States.Push
                             ? create(entity)
                             : update(entity));
 
-        private IObservable<TThreadsafeModel> createObservable(TThreadsafeModel entity)
+        private IObservable<T> createObservable(T entity)
             => entity == null
-                ? Observable.Throw<TThreadsafeModel>(new ArgumentNullException(nameof(entity)))
+                ? Observable.Throw<T>(new ArgumentNullException(nameof(entity)))
                 : Observable.Return(entity);
 
-        private ITransition delete(TThreadsafeModel entity) => DeleteEntity.Transition(entity);
+        private ITransition delete(T entity) => DeleteEntity.Transition(entity);
 
-        private ITransition create(TThreadsafeModel entity) => CreateEntity.Transition(entity);
+        private ITransition create(T entity) => CreateEntity.Transition(entity);
 
-        private ITransition update(TThreadsafeModel entity) => UpdateEntity.Transition(entity);
+        private ITransition update(T entity) => UpdateEntity.Transition(entity);
 
-        private ITransition deleteLocally(TThreadsafeModel entity) => DeleteEntityLocally.Transition(entity);
+        private ITransition deleteLocally(T entity) => DeleteEntityLocally.Transition(entity);
     }
 }

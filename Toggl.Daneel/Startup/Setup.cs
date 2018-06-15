@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reactive.Concurrency;
 using Foundation;
 using MvvmCross.Core.Navigation;
@@ -12,12 +12,16 @@ using Toggl.Daneel.Presentation;
 using Toggl.Daneel.Services;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross;
+using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Services;
 using Toggl.Foundation.Suggestions;
 using Toggl.PrimeRadiant.Realm;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
+using Toggl.Ultrawave.Network;
 using UIKit;
 
 namespace Toggl.Daneel
@@ -64,8 +68,6 @@ namespace Toggl.Daneel
 
         protected override void InitializeApp(IMvxPluginManager pluginManager, IMvxApplication app)
         {
-            base.InitializeApp(pluginManager, app);
-
 #if !USE_PRODUCTION_API
             System.Net.ServicePointManager.ServerCertificateValidationCallback
                   += (sender, certificate, chain, sslPolicyErrors) => true;
@@ -80,37 +82,43 @@ namespace Toggl.Daneel
                 new MostUsedTimeEntrySuggestionProvider(database, timeService, maxNumberOfSuggestions)
             );
 
+            var appVersion = Version.Parse(version);
+            var userAgent = new UserAgent(clientName, version);
             var keyValueStorage = new UserDefaultsStorage();
             var settingsStorage = new SettingsStorage(Version.Parse(version), keyValueStorage);
 
-            var foundation = Foundation.Foundation.Create(
-                clientName,
-                version,
-                database,
-                timeService,
-                scheduler,
-                new MailService((ITopViewControllerProvider)Presenter),
-                new GoogleService(),
-                environment,
-                new LicenseProvider(),
-                analyticsService,
-                new PlatformConstants(),
-                new ApplicationShortcutCreator(),
-                suggestionProviderContainer
-            );
+            var foundation =
+                TogglFoundation
+                    .ForClient(userAgent, appVersion)
+                    .WithDatabase(database)
+                    .WithScheduler(scheduler)
+                    .WithTimeService(timeService)
+                    .WithApiEnvironment(environment)
+                    .WithGoogleService<GoogleService>()
+                    .WithLicenseProvider<LicenseProvider>()
+                    .WithAnalyticsService(analyticsService)
+                    .WithPlatformConstants<PlatformConstants>()
+                    .WithApiFactory(new ApiFactory(environment, userAgent))
+                    .WithBackgroundService(new BackgroundService(timeService))
+                    .WithApplicationShortcutCreator<ApplicationShortcutCreator>()
+                    .WithSuggestionProviderContainer(suggestionProviderContainer)
+                    .WithMailService(new MailService((ITopViewControllerProvider)Presenter))
 
-            foundation
-                .RegisterServices(
-                    new DialogService((ITopViewControllerProvider)Presenter),
-                    new BrowserService(),
-                    keyValueStorage,
-                    settingsStorage,
-                    settingsStorage,
-                    settingsStorage,
-                    navigationService,
-                    new OnePasswordService())
-                .RevokeNewUserIfNeeded()
-                .Initialize(app as App<OnboardingViewModel>, Scheduler.Default);
+                    .StartRegisteringPlatformServices()
+                    .WithBrowserService<BrowserService>()
+                    .WithKeyValueStorage(keyValueStorage)
+                    .WithUserPreferences(settingsStorage)
+                    .WithOnboardingStorage(settingsStorage)
+                    .WithNavigationService(navigationService)
+                    .WithAccessRestrictionStorage(settingsStorage)
+                    .WithPasswordManagerService<OnePasswordService>()
+                    .WithDialogService(new DialogService((ITopViewControllerProvider)Presenter))
+                    .WithErrorHandlingService(new ErrorHandlingService(navigationService, settingsStorage))
+                    .Build();
+
+            foundation.RevokeNewUserIfNeeded().Initialize();
+
+            base.InitializeApp(pluginManager, app);
         }
     }
 }

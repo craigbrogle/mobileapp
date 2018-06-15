@@ -34,7 +34,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SyncFailuresViewModel(null);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 

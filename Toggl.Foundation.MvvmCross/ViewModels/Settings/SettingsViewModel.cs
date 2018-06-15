@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading.Tasks;
 using MvvmCross.Core.Navigation;
@@ -9,103 +13,76 @@ using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Interactors;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
+using Toggl.Foundation.MvvmCross.Transformations;
 using Toggl.Foundation.MvvmCross.ViewModels.Settings;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Sync;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
+using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave.Network;
+using static Toggl.Multivac.Extensions.CommonFunctions;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
+    using WorkspaceToSelectableWorkspaceLambda = Func<IEnumerable<IThreadSafeWorkspace>, IList<SelectableWorkspaceViewModel>>;
+
     [Preserve(AllMembers = true)]
     public sealed class SettingsViewModel : MvxViewModel
     {
         private const string feedbackRecipient = "support@toggl.com";
+
+        private readonly ISubject<Unit> loggingOutSubject = new Subject<Unit>();
         private readonly CompositeDisposable disposeBag = new CompositeDisposable();
 
+        private readonly UserAgent userAgent;
+        private readonly IMailService mailService;
         private readonly ITogglDataSource dataSource;
         private readonly IDialogService dialogService;
+        private readonly IUserPreferences userPreferences;
+        private readonly IAnalyticsService analyticsService;
         private readonly IPlatformConstants platformConstants;
         private readonly IInteractorFactory interactorFactory;
-        private readonly IMvxNavigationService navigationService;
-        private readonly IUserPreferences userPreferences;
         private readonly IOnboardingStorage onboardingStorage;
-        private readonly IMailService mailService;
-        private readonly UserAgent userAgent;
-        private readonly IAnalyticsService analyticsService;
+        private readonly IMvxNavigationService navigationService;
 
-        private long workspaceId;
+        private bool isSyncing;
+        private bool isLoggingOut;
+        private IThreadSafeUser currentUser;
+        private IThreadSafePreferences currentPreferences;
 
         public string Title { get; private set; } = Resources.Settings;
 
-        public Email Email { get; private set; }
+        public IObservable<string> Name { get; }
 
-        public string Name { get; private set; } = "";
+        public IObservable<string> Email { get; }
 
-        public string Version { get; private set; } = "";
+        public IObservable<bool> IsSynced { get; }
 
-        public string WorkspaceName { get; private set; } = "";
+        public IObservable<Unit> LoggingOut { get; }
 
-        public string CurrentPlan { get; private set; } = "";
+        public IObservable<byte[]> UserAvatar { get; }
+        
+        public IObservable<string> DateFormat { get; }
+        
+        public IObservable<bool> IsRunningSync { get; }
 
-        public bool UseTwentyFourHourClock { get; set; }
+        public IObservable<string> WorkspaceName { get; }
+        
+        public IObservable<string> DurationFormat { get; }
 
-        public bool AddMobileTag { get; set; }
+        public IObservable<string> BeginningOfWeek { get; }
+        
+        public IObservable<bool> IsManualModeEnabled { get; }
 
-        public bool IsManualModeEnabled { get; set; }
+        public IObservable<bool> UseTwentyFourHourFormat { get; }
 
-        public bool IsLoggingOut { get; private set; }
+        public IObservable<IList<SelectableWorkspaceViewModel>> Workspaces { get; }
 
-        public bool IsRunningSync { get; private set; }
-
-        public bool IsSynced { get; private set; }
-
-        public DateFormat DateFormat { get; private set; }
-
-        public DurationFormat DurationFormat { get; private set; }
-
-        public BeginningOfWeek BeginningOfWeek { get; private set; }
-
-        public IMvxCommand RateCommand { get; }
-
-        public IMvxCommand HelpCommand { get; }
-
-        public IMvxCommand UpdateCommand { get; }
-
-        public IMvxAsyncCommand BackCommand { get; }
-
-        public IMvxAsyncCommand LogoutCommand { get; }
-
-        public IMvxCommand EditProfileCommand { get; }
-
-        public IMvxAsyncCommand SubmitFeedbackCommand { get; }
-
-        public IMvxAsyncCommand AboutCommand { get; }
-
-        public IMvxCommand EditSubscriptionCommand { get; }
-
-        public IMvxAsyncCommand PickWorkspaceCommand { get; }
-
-        public IMvxAsyncCommand SelectDateFormatCommand { get; }
-
-        public IMvxAsyncCommand SelectDurationFormatCommand { get; }
-
-        public IMvxAsyncCommand SelectBeginningOfWeekCommand { get; }
-
-        public IMvxCommand ToggleAddMobileTagCommand { get; }
-
-        public IMvxAsyncCommand ToggleUseTwentyFourHourClockCommand { get; }
-
-        public IMvxCommand ToggleManualModeCommand { get; }
-
-        public IMvxAsyncCommand<SelectableWorkspaceViewModel> SelectDefaultWorkspaceCommand { get; }
-
-        public MvxObservableCollection<SelectableWorkspaceViewModel> Workspaces { get; }
-            = new MvxObservableCollection<SelectableWorkspaceViewModel>();
+        public string Version => userAgent.Version;
 
         public SettingsViewModel(
             UserAgent userAgent,
@@ -141,107 +118,108 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.onboardingStorage = onboardingStorage;
             this.analyticsService = analyticsService;
 
-            disposeBag.Add(dataSource.SyncManager
-                .ProgressObservable
-                .Subscribe(async progress =>
-                {
-                    IsRunningSync = IsLoggingOut == false && progress == SyncProgress.Syncing;
-                    IsSynced = IsLoggingOut == false && progress == SyncProgress.Synced && await isSynced();
-                })
-            );
+            IsSynced = dataSource.SyncManager.ProgressObservable.SelectMany(checkSynced);
 
-            RateCommand = new MvxCommand(rate);
-            HelpCommand = new MvxCommand(help);
-            UpdateCommand = new MvxCommand(update);
-            BackCommand = new MvxAsyncCommand(back);
-            LogoutCommand = new MvxAsyncCommand(maybeLogout);
-            EditProfileCommand = new MvxCommand(editProfile);
-            EditSubscriptionCommand = new MvxCommand(editSubscription);
-            ToggleManualModeCommand = new MvxCommand(toggleManualMode);
-            SubmitFeedbackCommand = new MvxAsyncCommand(submitFeedback);
-            AboutCommand = new MvxAsyncCommand(openAboutPage);
-            ToggleAddMobileTagCommand = new MvxCommand(toggleAddMobileTag);
-            SelectDateFormatCommand = new MvxAsyncCommand(selectDateFormat);
-            SelectDurationFormatCommand = new MvxAsyncCommand(selectDurationFormat);
-            SelectBeginningOfWeekCommand = new MvxAsyncCommand(selectBeginningOfWeek);
-            PickWorkspaceCommand = new MvxAsyncCommand(pickDefaultWorkspace);
-            ToggleUseTwentyFourHourClockCommand = new MvxAsyncCommand(toggleUseTwentyFourHourClock);
-            SelectDefaultWorkspaceCommand = new MvxAsyncCommand<SelectableWorkspaceViewModel>(selectDefaultWorkspace);
-        }
+            IsRunningSync =
+                dataSource.SyncManager
+                    .ProgressObservable
+                    .Select(isRunningSync);
 
-        public override async Task Initialize()
-        {
-            var user = await dataSource.User.Current.FirstAsync();
-            var defaultWorkspace = await interactorFactory.GetDefaultWorkspace().Execute();
+            Name =
+                dataSource.User.Current
+                    .Select(user => user.Fullname)
+                    .DistinctUntilChanged();
 
-            Email = user.Email;
-            Name = user.Fullname;
-            Version = userAgent.Version;
-            workspaceId = defaultWorkspace.Id;
-            WorkspaceName = defaultWorkspace.Name;
-            IsManualModeEnabled = userPreferences.IsManualModeEnabled();
-            BeginningOfWeek = user.BeginningOfWeek;
+            Email =
+                dataSource.User.Current
+                    .Select(user => user.Email.ToString())
+                    .DistinctUntilChanged();
 
-            var workspaces = await interactorFactory.GetAllWorkspaces().Execute();
-            foreach (var workspace in workspaces)
-            {
-                Workspaces.Add(new SelectableWorkspaceViewModel(workspace, workspace.Id == workspaceId));
-            }
+            IsManualModeEnabled = userPreferences.IsManualModeEnabledObservable;
+
+            WorkspaceName =
+                dataSource.User.Current
+                    .DistinctUntilChanged(user => user.DefaultWorkspaceId)
+                    .SelectMany(_ => interactorFactory.GetDefaultWorkspace().Execute())
+                    .Select(workspace => workspace.Name);
+
+            BeginningOfWeek =
+                dataSource.User.Current
+                    .Select(user => user.BeginningOfWeek)
+                    .DistinctUntilChanged()
+                    .Select(beginningOfWeek => beginningOfWeek.ToString());
+
+            DateFormat =
+                dataSource.Preferences.Current
+                    .Select(preferences => preferences.DateFormat.Localized)
+                    .DistinctUntilChanged();
+
+            DurationFormat =
+                dataSource.Preferences.Current
+                    .Select(preferences => preferences.DurationFormat)
+                    .Select(DurationFormatToString.Convert)
+                    .DistinctUntilChanged();
+
+            UseTwentyFourHourFormat =
+                dataSource.Preferences.Current
+                    .Select(preferences => preferences.TimeOfDayFormat.IsTwentyFourHoursFormat)
+                    .DistinctUntilChanged();
+
+            UserAvatar =
+                dataSource.User.Current
+                    .Select(user => user.ImageUrl)
+                    .DistinctUntilChanged()
+                    .SelectMany(url => interactorFactory.GetUserAvatar(url).Execute());
+
+            Workspaces =
+                dataSource.User.Current
+                    .DistinctUntilChanged(user => user.DefaultWorkspaceId)
+                    .SelectMany(user => interactorFactory
+                        .GetAllWorkspaces()
+                        .Execute()
+                        .Select(selectableWorkspacesFromWorkspaces(user))
+                    );
+
+            LoggingOut = loggingOutSubject.AsObservable();
+
+            dataSource.User.Current
+                .Subscribe(user => currentUser = user)
+                .DisposedBy(disposeBag);
 
             dataSource.Preferences.Current
-                .Subscribe(updateFromPreferences);
+                .Subscribe(preferences => currentPreferences = preferences)
+                .DisposedBy(disposeBag);
+
+            IsRunningSync
+                .Subscribe(isSyncing => this.isSyncing = isSyncing)
+                .DisposedBy(disposeBag);
         }
 
-        private void updateFromPreferences(IDatabasePreferences preferences)
+        public Task GoBack() => navigationService.Close(this);
+
+        public Task OpenAboutView()
+            => navigationService.Navigate<AboutViewModel>();
+
+        public Task ShowHelpView() => 
+            navigationService.Navigate<BrowserViewModel, BrowserParameters>(
+                BrowserParameters.WithUrlAndTitle(platformConstants.HelpUrl, Resources.Help)
+            );
+
+        public async Task PickDefaultWorkspace()
         {
-            DateFormat = preferences.DateFormat;
-            DurationFormat = preferences.DurationFormat;
-            UseTwentyFourHourClock = preferences.TimeOfDayFormat.IsTwentyFourHoursFormat;
-        }
-
-        public void rate() => throw new NotImplementedException();
-
-        public void help() => navigationService
-            .Navigate<BrowserViewModel, BrowserParameters>(
-                BrowserParameters.WithUrlAndTitle(platformConstants.HelpUrl, Resources.Help));
-
-        public void update() => throw new NotImplementedException();
-
-        public void editProfile() 
-        {
-        }
-
-        public async Task pickDefaultWorkspace()
-        {
-            var parameters = WorkspaceParameters.Create(workspaceId, Resources.SetDefaultWorkspace, allowQuerying: false);
+            var defaultWorkspace = await interactorFactory.GetDefaultWorkspace().Execute();
+            var parameters = WorkspaceParameters.Create(defaultWorkspace.Id, Resources.SetDefaultWorkspace, allowQuerying: false);
             var selectedWorkspaceId =
                 await navigationService
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(parameters);
-            
+
             await changeDefaultWorkspace(selectedWorkspaceId);
         }
 
-        private async Task selectDefaultWorkspace(SelectableWorkspaceViewModel workspace)
-        {
-            foreach (var ws in Workspaces)
-                ws.Selected = ws.WorkspaceId == workspace.WorkspaceId;
-
-            await changeDefaultWorkspace(workspace.WorkspaceId);
-        }
-
-        private async Task changeDefaultWorkspace(long selectedWorkspaceId)
-        {
-            if (selectedWorkspaceId == workspaceId) return;
-
-            var workspace = await interactorFactory.GetWorkspaceById(selectedWorkspaceId).Execute();
-            workspaceId = selectedWorkspaceId;
-            WorkspaceName = workspace.Name;
-
-            await dataSource.User.UpdateWorkspace(workspaceId);
-            dataSource.SyncManager.PushSync();
-        }
-
-        private async Task submitFeedback()
+        public Task SelectDefaultWorkspace(SelectableWorkspaceViewModel workspace)
+            => changeDefaultWorkspace(workspace.WorkspaceId);
+       
+        public async Task SubmitFeedback()
         {
             var version = userAgent.ToString();
             var phone = platformConstants.PhoneModel;
@@ -272,127 +250,132 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             );
         }
 
-        public void editSubscription() => throw new NotImplementedException();
-
-        public void toggleAddMobileTag() => AddMobileTag = !AddMobileTag;
-
-        public async Task toggleUseTwentyFourHourClock()
+        public async Task ToggleUseTwentyFourHourClock()
         {
-            UseTwentyFourHourClock = !UseTwentyFourHourClock;
-            var timeFormat = UseTwentyFourHourClock
-                ? TimeFormat.TwentyFourHoursFormat
-                : TimeFormat.TwelveHoursFormat;
+            var timeFormat = currentPreferences.TimeOfDayFormat.IsTwentyFourHoursFormat
+                ? TimeFormat.TwelveHoursFormat
+                : TimeFormat.TwentyFourHoursFormat;
 
-            var preferencesDto = new EditPreferencesDTO { TimeOfDayFormat = timeFormat };
-            await updatePreferences(preferencesDto);
+            await updatePreferences(timeFormat: timeFormat);
         }
 
-        private void toggleManualMode()
+        public void ToggleManualMode()
         {
-            IsManualModeEnabled = !IsManualModeEnabled;
-        }
-
-        private void OnIsManualModeEnabledChanged()
-        {
-            if (IsManualModeEnabled)
-            {
-                userPreferences.EnableManualMode();
-            }
-            else
+            if (userPreferences.IsManualModeEnabled)
             {
                 userPreferences.EnableTimerMode();
             }
+            else
+            {
+                userPreferences.EnableManualMode();
+            }
         }
 
-        private Task back() => navigationService.Close(this);
-
-        private async Task maybeLogout()
+        public async Task TryLogout()
         {
-            if (await isSynced())
+            var synced = !isSyncing && await isSynced();
+            if (synced)
             {
                 await logout();
                 return;
             }
 
-            var (title, message) = IsRunningSync
+            var (title, message) = isSyncing
                 ? (Resources.SettingsSyncInProgressTitle, Resources.SettingsSyncInProgressMessage)
                 : (Resources.SettingsUnsyncedTitle, Resources.SettingsUnsyncedMessage);
 
-            var shouldLogout = await dialogService.Confirm(
-                title,
-                message,
-                Resources.SettingsDialogButtonSignOut,
-                Resources.Cancel
-            );
-
-            if (!shouldLogout) return;
-
-            await logout();
+            await dialogService
+                .Confirm(title, message, Resources.SettingsDialogButtonSignOut, Resources.Cancel)
+                .SelectMany(shouldLogout
+                    => shouldLogout ? logout() : Observable.Return(Unit.Default));
         }
 
-        private async Task logout()
-        {
-            IsLoggingOut = true;
-            IsSynced = false;
-            IsRunningSync = false;
-            analyticsService.TrackLogoutEvent(LogoutSource.Settings);
-            userPreferences.Reset();
-            await dataSource.Logout();
-            await navigationService.Navigate<LoginViewModel>();
-        }
-
-        private async Task<bool> isSynced()
-            => !IsRunningSync && !(await dataSource.HasUnsyncedData());
-
-        private async Task selectDateFormat()
+        public async Task SelectDateFormat()
         {
             var newDateFormat = await navigationService
-                .Navigate<SelectDateFormatViewModel, DateFormat, DateFormat>(DateFormat);
+                .Navigate<SelectDateFormatViewModel, DateFormat, DateFormat>(currentPreferences.DateFormat);
 
-            if (DateFormat == newDateFormat)
+            if (currentPreferences.DateFormat == newDateFormat)
                 return;
-            
-            var preferencesDto = new EditPreferencesDTO { DateFormat = newDateFormat };
-            var newPreferences = await updatePreferences(preferencesDto);
-            DateFormat = newPreferences.DateFormat;
+
+            await updatePreferences(dateFormat: newDateFormat);
         }
 
-        private async Task selectBeginningOfWeek()
+        public async Task SelectBeginningOfWeek()
         {
             var newBeginningOfWeek = await navigationService
-                .Navigate<SelectBeginningOfWeekViewModel, BeginningOfWeek, BeginningOfWeek>(BeginningOfWeek);
+                .Navigate<SelectBeginningOfWeekViewModel, BeginningOfWeek, BeginningOfWeek>(currentUser.BeginningOfWeek);
 
-            if (BeginningOfWeek == newBeginningOfWeek)
+            if (currentUser.BeginningOfWeek == newBeginningOfWeek)
                 return;
 
-            var userDto = new EditUserDTO { BeginningOfWeek = newBeginningOfWeek };
-            var newUser = await dataSource.User.Update(userDto);
-            BeginningOfWeek = newUser.BeginningOfWeek;
-
+            await dataSource.User.Update(new EditUserDTO { BeginningOfWeek = newBeginningOfWeek });
             dataSource.SyncManager.PushSync();
         }
 
-        private Task openAboutPage()
-            => navigationService.Navigate<AboutViewModel>();
-        
-        private async Task selectDurationFormat()
+        public async Task SelectDurationFormat()
         {
             var newDurationFormat = await navigationService
-                .Navigate<SelectDurationFormatViewModel, DurationFormat, DurationFormat>(DurationFormat);
+                .Navigate<SelectDurationFormatViewModel, DurationFormat, DurationFormat>(currentPreferences.DurationFormat);
 
-            if (DurationFormat == newDurationFormat)
+            if (currentPreferences.DurationFormat == newDurationFormat)
                 return;
 
-            var preferencesDto = new EditPreferencesDTO { DurationFormat = newDurationFormat };
-            var newPreferences = await updatePreferences(preferencesDto);
-            DurationFormat = newPreferences.DurationFormat;
+            await updatePreferences(newDurationFormat);
         }
 
-        private async Task<IDatabasePreferences> updatePreferences(EditPreferencesDTO preferencesDto)
+        private IObservable<Unit> logout()
         {
-            var newPreferences = await dataSource.Preferences.Update(preferencesDto);
-            dataSource.SyncManager.PushSync();
-            return newPreferences;
+            isLoggingOut = true;
+            loggingOutSubject.OnNext(Unit.Default);
+            analyticsService.Logout.Track(LogoutSource.Settings);
+            userPreferences.Reset();
+
+            return dataSource.Logout().Do(_ => navigationService.Navigate<LoginViewModel>());
         }
+
+        private IObservable<bool> isSynced()
+            => dataSource.HasUnsyncedData().Select(Invert);
+
+        private IObservable<bool> checkSynced(SyncProgress progress)
+        {
+            if (isLoggingOut || progress != SyncProgress.Synced)
+                return Observable.Return(false);
+
+            return isSynced();
+        }
+
+        private bool isRunningSync(SyncProgress progress)
+            => isLoggingOut == false && progress == SyncProgress.Syncing;
+
+        private async Task updatePreferences(
+            New<DurationFormat> durationFormat = default(New<DurationFormat>), 
+            New<DateFormat> dateFormat = default(New<DateFormat>), 
+            New<TimeFormat> timeFormat = default(New<TimeFormat>))
+        {
+            var preferencesDto = new EditPreferencesDTO
+            {
+                DurationFormat = durationFormat,
+                DateFormat = dateFormat,
+                TimeOfDayFormat = timeFormat
+            };
+
+            await dataSource.Preferences.Update(preferencesDto);
+            dataSource.SyncManager.PushSync();
+        }
+
+        private async Task changeDefaultWorkspace(long selectedWorkspaceId)
+        {
+            if (selectedWorkspaceId == currentUser.DefaultWorkspaceId) return;
+
+            await dataSource.User.UpdateWorkspace(selectedWorkspaceId);
+            dataSource.SyncManager.PushSync();
+        }
+
+        private WorkspaceToSelectableWorkspaceLambda selectableWorkspacesFromWorkspaces(IThreadSafeUser user)
+            => workspaces 
+                => workspaces
+                    .Select(workspace => new SelectableWorkspaceViewModel(workspace, user.DefaultWorkspaceId == workspace.Id))
+                    .ToList();
     }
 }

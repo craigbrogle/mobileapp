@@ -16,6 +16,7 @@
     <ProjectReference Include="..\Toggl.Foundation\Toggl.Foundation.csproj" />
     <ProjectReference Include="..\Toggl.Multivac\Toggl.Multivac.csproj" />
     <ProjectReference Include="..\Toggl.PrimeRadiant\Toggl.PrimeRadiant.csproj" />
+    <ProjectReference Include="..\Toggl.Ultrawave\Toggl.Ultrawave.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="PropertyChanged.Fody" Version="2.2.0" />

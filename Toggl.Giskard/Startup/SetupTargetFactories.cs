@@ -91,11 +91,6 @@ namespace Toggl.Giskard
             );
 
             registry.RegisterCustomBindingFactory<TextInputLayout>(
-                TextInputLayoutErrorAppearanceTargetBinding.BindingName,
-                view => new TextInputLayoutErrorAppearanceTargetBinding(view)
-            );
-
-            registry.RegisterCustomBindingFactory<TextInputLayout>(
                 TextInputLayoutErrorTextTargetBinding.BindingName,
                 view => new TextInputLayoutErrorTextTargetBinding(view)
             );

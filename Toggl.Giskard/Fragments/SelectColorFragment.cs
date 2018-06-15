@@ -16,14 +16,14 @@ namespace Toggl.Giskard.Fragments
     [MvxDialogFragmentPresentation(AddToBackStack = true)]
     public sealed class SelectColorFragment : MvxDialogFragment<SelectColorViewModel>
     {
-        private int customColorEnabledHeight;
-        private int customColorDisabledHeight;
+        private const int customColorEnabledHeight = 425;
+        private const int customColorDisabledHeight = 270;
 
         public SelectColorFragment() { }
 
         public SelectColorFragment(IntPtr javaReference, JniHandleOwnership transfer)
             : base (javaReference, transfer) { }
-        
+
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             base.OnCreateView(inflater, container, savedInstanceState);
@@ -31,9 +31,6 @@ namespace Toggl.Giskard.Fragments
 
             view.FindViewById<RecyclerView>(Resource.Id.SelectColorRecyclerView)
                 .SetLayoutManager(new GridLayoutManager(Context, 5));
-
-            customColorEnabledHeight = 425.DpToPixels(Context);
-            customColorDisabledHeight = 270.DpToPixels(Context);
 
             return view;
         }

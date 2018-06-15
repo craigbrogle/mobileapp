@@ -17,6 +17,9 @@ namespace Toggl.Ultrawave.Network
         public Endpoint GetSince(DateTimeOffset threshold)
             => Endpoint.Get(baseUrl, $"me/time_entries?since={threshold.ToUnixTimeSeconds()}");
 
+        public Endpoint GetBetween(DateTimeOffset start, DateTimeOffset end)
+            => Endpoint.Get(baseUrl, $"me/time_entries?start_date={start:yyyy-MM-dd}&end_date={end:yyyy-MM-dd}");
+
         public Endpoint Post(long workspaceId)
             => Endpoint.Post(baseUrl, $"workspaces/{workspaceId}/time_entries");
 

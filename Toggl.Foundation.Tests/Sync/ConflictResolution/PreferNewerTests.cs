@@ -18,8 +18,8 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
             Action resolving = () => resolver.Resolve(null, null);
             Action resolvingWithExistingLocalEntity = () => resolver.Resolve(existingEntity, null);
 
-            resolving.ShouldThrow<ArgumentNullException>();
-            resolvingWithExistingLocalEntity.ShouldThrow<ArgumentNullException>();
+            resolving.Should().Throw<ArgumentNullException>();
+            resolvingWithExistingLocalEntity.Should().Throw<ArgumentNullException>();
         }
 
         [Property]
@@ -134,6 +134,20 @@ namespace Toggl.Foundation.Tests.Sync.ConflictResolution
                 (existing, incoming) = (incoming, existing);
 
             var existingEntity = new TestModel(existing, syncStatus: SyncStatus.InSync);
+            var incomingEntity = new TestModel(incoming, deleted: null);
+
+            var mode = resolver.Resolve(existingEntity, incomingEntity);
+
+            mode.Should().Be(ConflictResolutionMode.Update);
+        }
+
+        [Property]
+        public void AlwaysOverrideNonDeletedEntityWhichNeedsRefetch(DateTimeOffset existing, DateTimeOffset incoming)
+        {
+            if (existing <= incoming)
+                (existing, incoming) = (incoming, existing);
+
+            var existingEntity = new TestModel(existing, syncStatus: SyncStatus.RefetchingNeeded);
             var incomingEntity = new TestModel(incoming, deleted: null);
 
             var mode = resolver.Resolve(existingEntity, incomingEntity);

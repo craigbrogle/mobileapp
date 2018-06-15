@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreGraphics;
 using Foundation;
 using MvvmCross.Platform.Core;
 using Toggl.Daneel.Extensions;
@@ -7,12 +8,15 @@ using UIKit;
 using CoreText;
 using Toggl.Foundation.MvvmCross.Helper;
 using MvvmCross.Plugins.Color.iOS;
+using ObjCRuntime;
 
 namespace Toggl.Daneel.Views.EditDuration
 {
     [Register(nameof(DurationField))]
     public sealed class DurationField : UITextField
     {
+        public event EventHandler LostFocus;
+
         private TimeSpan originalDuration;
 
         private bool isEditing;
@@ -80,6 +84,13 @@ namespace Toggl.Daneel.Views.EditDuration
             durationInputDelegate.FinishEditing -= finishEditing;
         }
 
+        public override bool ResignFirstResponder()
+        {
+            LostFocus.Raise(this);
+
+            return base.ResignFirstResponder();
+        }
+
         private void backspacePressed(object sender, EventArgs e)
         {
             var nextInput = input.Pop();
@@ -123,7 +134,29 @@ namespace Toggl.Daneel.Views.EditDuration
 
         private void setText(string text)
         {
-            AttributedText = new NSAttributedString(text, noAttributes);
+            AttributedText = DurationFieldTextFormatter.AttributedStringFor(text);
+        }
+
+        // Disable copy, paste, delete
+        public override bool CanPerform(Selector action, NSObject withSender) => false;
+
+        // Disable cursor movements
+        public override CGRect GetCaretRectForPosition(UITextPosition position) => base.GetCaretRectForPosition(EndOfDocument);
+
+        public override void AddGestureRecognizer(UIGestureRecognizer gestureRecognizer)
+        {
+            // Disable magnifying glass
+            if (gestureRecognizer is UILongPressGestureRecognizer)
+            {
+                return;
+            }
+            base.AddGestureRecognizer(gestureRecognizer);
+        }
+
+        public override UITextSelectionRect[] GetSelectionRects(UITextRange range)
+        {
+            // Disable text selection
+            return new UITextSelectionRect[0];
         }
 
         private class DurationInputDelegate : UITextFieldDelegate

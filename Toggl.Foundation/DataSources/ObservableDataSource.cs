@@ -62,6 +62,11 @@ namespace Toggl.Foundation.DataSources
                 .Do(updatedEntities => updatedEntities
                     .ForEach(handleConflictResolutionResult));
 
+        public override IObservable<IEnumerable<IConflictResolutionResult<TThreadsafe>>> DeleteAll(IEnumerable<TThreadsafe> entities)
+            => base.DeleteAll(entities)
+                .Do(updatedEntities => updatedEntities
+                    .ForEach(handleConflictResolutionResult));
+
         private void handleConflictResolutionResult(IConflictResolutionResult<TThreadsafe> result)
         {
             switch (result)

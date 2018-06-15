@@ -14,6 +14,7 @@ using UIKit;
 using static Toggl.Daneel.Extensions.FontExtensions;
 using Toggl.Daneel.Converters;
 using System.Reactive;
+using Toggl.Foundation.MvvmCross.Parameters;
 
 namespace Toggl.Daneel.ViewControllers
 {
@@ -218,6 +219,10 @@ namespace Toggl.Daneel.ViewControllers
             base.ViewDidAppear(animated);
 
             viewDidAppear = true;
+
+            if (ViewModel.IsDurationInitiallyFocused) {
+                DurationInput.BecomeFirstResponder();
+            }
         }
 
         protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)

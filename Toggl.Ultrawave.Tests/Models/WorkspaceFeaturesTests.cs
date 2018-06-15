@@ -4,6 +4,7 @@ using System.Linq;
 using Xunit;
 using FluentAssertions;
 using Toggl.Multivac;
+using Toggl.Multivac.Extensions;
 using Toggl.Ultrawave.Serialization;
 using Toggl.Ultrawave.Models;
 

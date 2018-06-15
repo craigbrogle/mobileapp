@@ -26,18 +26,6 @@ namespace Toggl.Giskard.Activities
 
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.SignUpActivity);
-
-            setupGoogleText();
-        }
-
-        private void setupGoogleText()
-        {
-            var text = Resources.GetString(Resource.String.common_signin_button_text_long);
-
-            FindViewById<SignInButton>(Resource.Id.SignUpWithGoogleButton)
-                .GetChildren<TextView>()
-                .First()
-                .Text = text;
         }
     }
 }

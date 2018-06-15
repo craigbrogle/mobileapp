@@ -5,7 +5,6 @@ using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Suggestions;
-using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Interactors
 {
@@ -13,13 +12,13 @@ namespace Toggl.Foundation.Interactors
     {
         #region Time Entries
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> CreateTimeEntry(ITimeEntryPrototype prototype);
+        IInteractor<IObservable<IThreadSafeTimeEntry>> CreateTimeEntry(ITimeEntryPrototype prototype);
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> StartSuggestion(Suggestion suggestion);
+        IInteractor<IObservable<IThreadSafeTimeEntry>> StartSuggestion(Suggestion suggestion);
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> ContinueTimeEntry(ITimeEntryPrototype prototype);
+        IInteractor<IObservable<IThreadSafeTimeEntry>> ContinueTimeEntry(ITimeEntryPrototype prototype);
 
-        IInteractor<IObservable<IDatabaseTimeEntry>> ContinueMostRecentTimeEntry();
+        IInteractor<IObservable<IThreadSafeTimeEntry>> ContinueMostRecentTimeEntry();
 
         IInteractor<IObservable<Unit>> DeleteTimeEntry(long id);
 
@@ -37,11 +36,11 @@ namespace Toggl.Foundation.Interactors
 
         #region Workspaces
 
-        IInteractor<IObservable<IDatabaseWorkspace>> GetDefaultWorkspace();
+        IInteractor<IObservable<IThreadSafeWorkspace>> GetDefaultWorkspace();
 
-        IInteractor<IObservable<IEnumerable<IDatabaseWorkspace>>> GetAllWorkspaces();
+        IInteractor<IObservable<IEnumerable<IThreadSafeWorkspace>>> GetAllWorkspaces();
 
-        IInteractor<IObservable<IDatabaseWorkspace>> GetWorkspaceById(long workspaceId);
+        IInteractor<IObservable<IThreadSafeWorkspace>> GetWorkspaceById(long workspaceId);
 
         IInteractor<IObservable<bool?>> AreProjectsBillableByDefault(long workspaceId);
 
@@ -69,6 +68,18 @@ namespace Toggl.Foundation.Interactors
 
         IInteractor<IObservable<IEnumerable<AutocompleteSuggestion>>> GetProjectsAutocompleteSuggestions(
             IList<string> wordsToQuery);
+
+        #endregion
+
+        #region Preferences
+
+        IInteractor<IObservable<IThreadSafePreferences>> GetPreferences();
+
+        #endregion
+
+        #region User
+
+        IInteractor<IObservable<byte[]>> GetUserAvatar(string url);
 
         #endregion
     }

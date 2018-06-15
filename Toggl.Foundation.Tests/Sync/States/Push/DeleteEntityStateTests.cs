@@ -79,7 +79,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
             calledDelete.Should().BeTrue();
         }
 
-        protected override BasePushEntityState<IDatabaseTestModel, IThreadSafeTestModel> CreateState()
+        protected override BasePushEntityState<IThreadSafeTestModel> CreateState()
             => new DeleteEntityState<ITestModel, IDatabaseTestModel, IThreadSafeTestModel>(api, dataSource);
 
         protected override void PrepareApiCallFunctionToThrow(Exception e)

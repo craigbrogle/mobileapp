@@ -20,7 +20,7 @@ namespace Toggl.Foundation.Models
 
             public long Id { get; private set; }
             public string ApiToken { get; private set; }
-            public long DefaultWorkspaceId { get; private set; }
+            public long? DefaultWorkspaceId { get; private set; }
             public Email Email { get; private set; }
             public string Fullname { get; private set; }
             public BeginningOfWeek BeginningOfWeek { get; private set; }
@@ -78,9 +78,6 @@ namespace Toggl.Foundation.Models
 
                 if (Enum.IsDefined(typeof(BeginningOfWeek), BeginningOfWeek) == false)
                     throw new InvalidOperationException($"You need to set a valid value to the {nameof(BeginningOfWeek)} property before building user.");
-
-                if (DefaultWorkspaceId == 0)
-                    throw new InvalidOperationException($"{nameof(DefaultWorkspaceId)} must be specified before building user.");
 
                 if (!Email.IsValid)
                     throw new InvalidOperationException($"{nameof(Email)} must be valid before building user.");

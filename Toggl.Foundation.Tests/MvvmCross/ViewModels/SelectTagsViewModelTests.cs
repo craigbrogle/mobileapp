@@ -73,7 +73,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SelectTagsViewModel(dataSource, navigationService, interactorFactory);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -266,7 +266,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheTagsProperty : SelectTagsViewModelTest
         {
-            private IEnumerable<TagSuggestion> getTagSuggestions(int count, IDatabaseWorkspace workspace)
+            private IEnumerable<TagSuggestion> getTagSuggestions(int count, IThreadSafeWorkspace workspace)
             {
                 for (int i = 0; i < count; i++)
                 {
@@ -286,7 +286,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 }
             }
 
-            private IDatabaseWorkspace createWorkspace(long id, string name)
+            private IThreadSafeWorkspace createWorkspace(long id, string name)
             {
                 var workspace = Substitute.For<IThreadSafeWorkspace>();
                 workspace.Id.Returns(id);

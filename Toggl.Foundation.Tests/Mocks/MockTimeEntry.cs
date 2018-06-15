@@ -28,15 +28,15 @@ namespace Toggl.Foundation.Tests.Mocks
             UserId = entity.UserId;
         }
 
-        public IDatabaseTask Task { get; set; }
+        IDatabaseTask IDatabaseTimeEntry.Task => Task;
 
-        public IDatabaseUser User { get; set; }
+        IDatabaseUser IDatabaseTimeEntry.User => User;
 
-        public IDatabaseProject Project { get; set; }
+        IDatabaseProject IDatabaseTimeEntry.Project => Project;
 
-        public IDatabaseWorkspace Workspace { get; set; }
+        IDatabaseWorkspace IDatabaseTimeEntry.Workspace => Workspace;
 
-        public IEnumerable<IDatabaseTag> Tags { get; set; }
+        IEnumerable<IDatabaseTag> IDatabaseTimeEntry.Tags => Tags;
 
         public long WorkspaceId { get; set; }
 
@@ -67,5 +67,15 @@ namespace Toggl.Foundation.Tests.Mocks
         public string LastSyncErrorMessage { get; set; }
 
         public bool IsDeleted { get; set; }
+
+        public IThreadSafeTask Task { get; }
+
+        public IThreadSafeUser User { get; }
+
+        public IThreadSafeProject Project { get; }
+
+        public IThreadSafeWorkspace Workspace { get; }
+
+        public IEnumerable<IThreadSafeTag> Tags { get; }
     }
 }

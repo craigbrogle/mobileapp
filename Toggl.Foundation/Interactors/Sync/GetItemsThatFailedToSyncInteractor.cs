@@ -2,42 +2,49 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using Toggl.Foundation.DataSources;
+using Toggl.Foundation.DataSources.Interfaces;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.Foundation.Models;
+using Toggl.Foundation.Models.Interfaces;
 
 namespace Toggl.Foundation.Interactors
 {
     public class GetItemsThatFailedToSyncInteractor : IInteractor<IObservable<IEnumerable<SyncFailureItem>>>
     {
-        private readonly ITogglDatabase database;
+        private readonly ITogglDataSource dataSource;
 
-        public GetItemsThatFailedToSyncInteractor(ITogglDatabase database)
+        public GetItemsThatFailedToSyncInteractor(ITogglDataSource dataSource)
         {
-            Ensure.Argument.IsNotNull(database, nameof(database));
+            Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
 
-            this.database = database;
+            this.dataSource = dataSource;
         }
 
         public IObservable<IEnumerable<SyncFailureItem>> Execute()
         {
             return Observable
                 .Concat (
-                    getUnsyncedItems(database.Clients),
-                    getUnsyncedItems(database.Projects),
-                    getUnsyncedItems(database.Tags)
+                    getUnsyncedItems(dataSource.Clients),
+                    getUnsyncedItems(dataSource.Projects),
+                    getUnsyncedItems(dataSource.Tags)
                 )
                 .ToList();
         }
 
-        private IObservable<SyncFailureItem> getUnsyncedItems<T>(IRepository<T> repository) where T : IDatabaseSyncable
+        private IObservable<SyncFailureItem> getUnsyncedItems<TThreadsafe, TDatabase>(
+            IDataSource<TThreadsafe, TDatabase> source)
+            where TDatabase : IDatabaseSyncable
+            where TThreadsafe : TDatabase, IThreadSafeModel
         {
-            return repository
+            return source
                 .GetAll(p => p.SyncStatus == SyncStatus.SyncFailed)
                 .SelectMany(convertToSyncFailures);
         }
 
-        private IEnumerable<SyncFailureItem> convertToSyncFailures<T>(IEnumerable<T> items) where T : IDatabaseSyncable
+        private IEnumerable<SyncFailureItem> convertToSyncFailures<T>(IEnumerable<T> items)
+            where T : IThreadSafeModel, IDatabaseSyncable
         {
             return items.Select( i => new SyncFailureItem(i));
         }

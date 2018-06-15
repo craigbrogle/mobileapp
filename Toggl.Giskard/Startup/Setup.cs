@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reactive.Concurrency;
 using Android.Content;
 using MvvmCross.Binding;
@@ -11,14 +11,18 @@ using MvvmCross.Platform.Platform;
 using MvvmCross.Platform.Plugins;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
+using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross;
+using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Foundation.Services;
 using Toggl.Foundation.Suggestions;
 using Toggl.Giskard.Presenters;
 using Toggl.Giskard.Services;
 using Toggl.PrimeRadiant.Realm;
 using Toggl.PrimeRadiant.Settings;
 using Toggl.Ultrawave;
+using Toggl.Ultrawave.Network;
 
 namespace Toggl.Giskard
 {
@@ -64,8 +68,6 @@ namespace Toggl.Giskard
 
         protected override void InitializeApp(IMvxPluginManager pluginManager, IMvxApplication app)
         {
-            base.InitializeApp(pluginManager, app);
-
             const string clientName = "Giskard";
             var packageInfo = ApplicationContext.PackageManager.GetPackageInfo(ApplicationContext.PackageName, 0);
             var version = packageInfo.VersionName;
@@ -77,37 +79,43 @@ namespace Toggl.Giskard
                 new MostUsedTimeEntrySuggestionProvider(database, timeService, maxNumberOfSuggestions)
             );
 
+            var appVersion = Version.Parse(version);
+            var userAgent = new UserAgent(clientName, version);
             var keyValueStorage = new SharedPreferencesStorage(sharedPreferences);
-            var settingsStorage = new SettingsStorage(Version.Parse(version), keyValueStorage);
+            var settingsStorage = new SettingsStorage(appVersion, keyValueStorage);
 
-            var foundation = Foundation.Foundation.Create(
-                clientName,
-                version,
-                database,
-                timeService,
-                scheduler,
-                new MailService(ApplicationContext),
-                new GoogleService(),
-                environment,
-                new LicenseProvider(),
-                analyticsService,
-                new PlatformConstants(),
-                new ApplicationShortcutCreator(ApplicationContext),
-                suggestionProviderContainer
-            );
+            var foundation =
+                TogglFoundation
+                    .ForClient(userAgent, appVersion)
+                    .WithDatabase(database)
+                    .WithScheduler(scheduler)
+                    .WithTimeService(timeService)
+                    .WithApiEnvironment(environment)
+                    .WithGoogleService<GoogleService>()
+                    .WithLicenseProvider<LicenseProvider>()
+                    .WithAnalyticsService(analyticsService)
+                    .WithPlatformConstants<PlatformConstants>()
+                    .WithMailService(new MailService(ApplicationContext))
+                    .WithApiFactory(new ApiFactory(environment, userAgent))
+                    .WithBackgroundService(new BackgroundService(timeService))
+                    .WithSuggestionProviderContainer(suggestionProviderContainer)
+                    .WithApplicationShortcutCreator(new ApplicationShortcutCreator(ApplicationContext))
 
-            foundation
-                .RegisterServices(
-                    new DialogService(),
-                    new BrowserService(), 
-                    keyValueStorage,
-                    settingsStorage,
-                    settingsStorage,
-                    settingsStorage,
-                    navigationService,
-                    new OnePasswordService())
-               .RevokeNewUserIfNeeded()
-               .Initialize(app as App<LoginViewModel>, Scheduler.Default);
+                    .StartRegisteringPlatformServices()
+                    .WithDialogService<DialogService>()
+                    .WithBrowserService<BrowserService>()
+                    .WithKeyValueStorage(keyValueStorage)
+                    .WithUserPreferences(settingsStorage)
+                    .WithOnboardingStorage(settingsStorage)
+                    .WithNavigationService(navigationService)
+                    .WithAccessRestrictionStorage(settingsStorage)
+                    .WithPasswordManagerService<OnePasswordService>()
+                    .WithErrorHandlingService(new ErrorHandlingService(navigationService, settingsStorage))
+                    .Build();
+
+            foundation.RevokeNewUserIfNeeded().Initialize();
+
+            base.InitializeApp(pluginManager, app);
         }
     }
 }

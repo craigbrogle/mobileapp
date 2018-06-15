@@ -85,7 +85,25 @@ namespace Toggl.Foundation.Tests.DataSources
                     () => new TimeEntriesDataSource(repository, timeService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
+            }
+        }
+
+        public sealed class TheCreateMethod : TimeEntryDataSourceTest
+        {
+            [Fact]
+            public async ThreadingTask CallsRepositoryWithConflictResolvers()
+            {
+                var timeEntry = new MockTimeEntry();
+                Repository.BatchUpdate(null, null, null)
+                    .ReturnsForAnyArgs(Observable.Return(new[] { new CreateResult<IDatabaseTimeEntry>(timeEntry) }));
+
+                await TimeEntriesSource.Create(timeEntry);
+
+                Repository.Received().BatchUpdate(
+                    Arg.Any<IEnumerable<(long, IDatabaseTimeEntry)>>(),
+                    Arg.Is<Func<IDatabaseTimeEntry, IDatabaseTimeEntry, ConflictResolutionMode>>(conflictResolution => conflictResolution != null),
+                    Arg.Is<IRivalsResolver<IDatabaseTimeEntry>>(resolver => resolver != null));
             }
         }
 
@@ -256,14 +274,14 @@ namespace Toggl.Foundation.Tests.DataSources
                       .Build();
 
                 var timeEntryObservable = Observable.Return(timeEntry);
-                var errorObservable = Observable.Throw<IDatabaseTimeEntry>(new EntityNotFoundException(new Exception()));
+                var errorObservable = Observable.Throw<IDatabaseTimeEntry>(new DatabaseOperationException<IDatabaseTimeEntry>(new Exception()));
                 Repository.GetById(Arg.Is(timeEntry.Id)).Returns(timeEntryObservable);
                 Repository.Update(Arg.Any<long>(), Arg.Any<IDatabaseTimeEntry>()).Returns(errorObservable);
                 var observer = Substitute.For<IObserver<Unit>>();
 
                 TimeEntriesSource.SoftDelete(timeEntry).Subscribe(observer);
 
-                observer.Received().OnError(Arg.Any<EntityNotFoundException>());
+                observer.Received().OnError(Arg.Any<DatabaseOperationException<IDatabaseTimeEntry>>());
             }
 
             [Fact, LogIfTooSlow]
@@ -273,11 +291,11 @@ namespace Toggl.Foundation.Tests.DataSources
                 otherTimeEntry.Id.Returns(12);
                 var observer = Substitute.For<IObserver<Unit>>();
                 Repository.Update(Arg.Any<long>(), Arg.Any<IThreadSafeTimeEntry>())
-                          .Returns(Observable.Throw<IDatabaseTimeEntry>(new EntityNotFoundException(new Exception())));
+                          .Returns(Observable.Throw<IDatabaseTimeEntry>(new DatabaseOperationException<IDatabaseTimeEntry>(new Exception())));
 
                 TimeEntriesSource.SoftDelete(otherTimeEntry).Subscribe(observer);
 
-                observer.Received().OnError(Arg.Any<EntityNotFoundException>());
+                observer.Received().OnError(Arg.Any<DatabaseOperationException<IDatabaseTimeEntry>>());
             }
 
             [Fact, LogIfTooSlow]

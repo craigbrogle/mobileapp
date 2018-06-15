@@ -4,6 +4,15 @@ using System.Linq;
 
 namespace Toggl.Multivac.Extensions
 {
+    public static class CommonFunctions
+    {
+        public static T Identity<T>(T x) => x;
+
+        public static bool Invert(bool x) => !x;
+
+        public static void DoNothing<T>(T x) { }
+    }
+
     public static class FunctionalExtensions
     {
         public static TResult Apply<T, TResult>(this T self, Func<T, TResult> funcToApply)

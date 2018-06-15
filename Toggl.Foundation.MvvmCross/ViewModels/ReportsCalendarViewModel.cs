@@ -129,7 +129,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     quickSelectShortcut.OnDateRangeChanged))
                 .ForEach(disposableBag.Add);
 
-            quickSelect(QuickSelectShortcuts.Single(shortcut => shortcut is CalendarThisWeekQuickSelectShortcut));
+            var initialShortcut = QuickSelectShortcuts.Single(shortcut => shortcut is CalendarThisWeekQuickSelectShortcut);
+            changeDateRange(initialShortcut.GetDateRange().WithSource(ReportsSource.Initial));
         }
 
         public void OnToggleCalendar() => selectStartOfSelectionIfNeeded();

@@ -41,7 +41,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     AnalyticsService,
                     OnboardingStorage,
                     NavigationService,
-                    ApiErrorHandlingService);
+                    ErrorHandlingService);
 
             protected override void AdditionalSetup()
             {
@@ -71,7 +71,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var analyticsSerivce = useAnalyticsService ? AnalyticsService : null;
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = userNavigationService ? NavigationService : null;
-                var apiErrorHandlingService = useApiErrorHandlingService ? ApiErrorHandlingService : null;
+                var apiErrorHandlingService = useApiErrorHandlingService ? ErrorHandlingService : null;
 
                 Action tryingToConstructWithEmptyParameters =
                     () => new SignupViewModel(
@@ -83,7 +83,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         apiErrorHandlingService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -186,6 +186,24 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.IsCountryErrorVisible.Should().BeFalse();
             }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsCountryValidShouldBeFalseWhenNetworkFailed()
+            {
+                Api.Location.Get().Returns(Observable.Throw<ILocation>(new Exception()));
+
+                await ViewModel.Initialize();
+
+                ViewModel.IsCountryValid.Should().BeFalse();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsCountryValidShouldBeTrueWhenApiSucceeds()
+            {
+                await ViewModel.Initialize();
+
+                ViewModel.IsCountryValid.Should().BeTrue();
+            }
         }
 
         public sealed class TheGoogleSignupCommand : SignupViewModelTest
@@ -229,7 +247,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.GoogleSignupCommand.Execute();
 
-                AnalyticsService.Received().TrackSignUpEvent(AuthenticationMethod.Google);
+                AnalyticsService.SignUp.Received().Track(AuthenticationMethod.Google);
             }
 
             [Fact, LogIfTooSlow]
@@ -447,9 +465,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public void TracksSignupEvent()
                 {
-                    AnalyticsService
-                        .Received()
-                        .TrackSignUpEvent(AuthenticationMethod.EmailAndPassword);
+                    AnalyticsService.SignUp.Received().Track(AuthenticationMethod.EmailAndPassword);
                 }
 
                 public sealed class WhenSignupSucceeds : SuccessfulSignupTest

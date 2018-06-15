@@ -11,10 +11,10 @@ using Toggl.Ultrawave.ApiClients.Interfaces;
 namespace Toggl.Foundation.Sync.States.Push
 {
     internal sealed class DeleteEntityState<TModel, TDatabaseModel, TThreadsafeModel>
-        : BasePushEntityState<TDatabaseModel, TThreadsafeModel>
+        : BasePushEntityState<TThreadsafeModel>
         where TModel : IIdentifiable
         where TDatabaseModel : class, TModel, IDatabaseSyncable
-        where TThreadsafeModel : TDatabaseModel, IThreadSafeModel
+        where TThreadsafeModel : class, TDatabaseModel, IThreadSafeModel
     {
         private readonly IDeletingApiClient<TModel> api;
 

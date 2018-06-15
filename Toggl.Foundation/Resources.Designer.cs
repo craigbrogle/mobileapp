@@ -233,6 +233,12 @@ namespace Toggl.Foundation {
             }
         }
         
+        public static string InaccessibleProject {
+            get {
+                return ResourceManager.GetString("InaccessibleProject", resourceCulture);
+            }
+        }
+        
         public static string SyncCompleted {
             get {
                 return ResourceManager.GetString("SyncCompleted", resourceCulture);
@@ -758,6 +764,12 @@ namespace Toggl.Foundation {
         public static string SelectCountry {
             get {
                 return ResourceManager.GetString("SelectCountry", resourceCulture);
+            }
+        }
+        
+        public static string ArchivedProjectDecorator {
+            get {
+                return ResourceManager.GetString("ArchivedProjectDecorator", resourceCulture);
             }
         }
     }

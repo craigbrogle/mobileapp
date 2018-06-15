@@ -29,7 +29,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async System.Threading.Tasks.Task ReturnsAllTasks()
             {
                 var (togglClient, user) = await SetupTestUser();
-                var project = await createProject(togglClient, user.DefaultWorkspaceId);
+                var project = await createProject(togglClient, user.DefaultWorkspaceId.Value);
                 await plans.EnsureDefaultWorkspaceIsOnPlan(user, PricingPlans.StarterMonthly);
                 var taskA = randomTask(project, user.Id);
                 await togglClient.Tasks.Create(taskA);
@@ -47,7 +47,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async System.Threading.Tasks.Task ReturnsOnlyActiveTasks()
             {
                 var (togglClient, user) = await SetupTestUser();
-                var project = await createProject(togglClient, user.DefaultWorkspaceId);
+                var project = await createProject(togglClient, user.DefaultWorkspaceId.Value);
                 await plans.EnsureDefaultWorkspaceIsOnPlan(user, PricingPlans.StarterMonthly);
                 var task = randomTask(project, user.Id);
                 await togglClient.Tasks.Create(task);
@@ -65,7 +65,7 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async System.Threading.Tasks.Task ReturnsEmptyListWhenThereAreNoActiveTasks()
             {
                 var (togglClient, user) = await SetupTestUser();
-                var project = await createProject(togglClient, user.DefaultWorkspaceId);
+                var project = await createProject(togglClient, user.DefaultWorkspaceId.Value);
                 await plans.EnsureDefaultWorkspaceIsOnPlan(user, PricingPlans.StarterMonthly);
                 await togglClient.Tasks.Create(randomTask(project, user.Id, isActive: false));
 
@@ -95,8 +95,8 @@ namespace Toggl.Ultrawave.Tests.Integration
                 {
                     Active = true,
                     Name = Guid.NewGuid().ToString(),
-                    WorkspaceId = user.DefaultWorkspaceId,
-                    ProjectId = getProject(api, user.DefaultWorkspaceId).Id,
+                    WorkspaceId = user.DefaultWorkspaceId.Value,
+                    ProjectId = getProject(api, user.DefaultWorkspaceId.Value).Id,
                     At = DateTimeOffset.UtcNow
                 };
 
@@ -121,11 +121,11 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async void CreatingTaskFailsInTheFreePlan()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var project = await createProject(togglApi, user.DefaultWorkspaceId);
+                var project = await createProject(togglApi, user.DefaultWorkspaceId.Value);
 
                 Action creatingTask = () => createTask(togglApi, project, user.Id).Wait();
 
-                creatingTask.ShouldThrow<ForbiddenException>();
+                creatingTask.Should().Throw<ForbiddenException>();
             }
 
             [Theory, LogTestInfo]
@@ -139,18 +139,18 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglApi, user) = await SetupTestUser();
                 await plans.EnsureDefaultWorkspaceIsOnPlan(user, plan);
-                var project = createProject(togglApi, user.DefaultWorkspaceId).Wait();
+                var project = createProject(togglApi, user.DefaultWorkspaceId.Value).Wait();
 
                 Action creatingTask = () => createTask(togglApi, project, user.Id).Wait();
 
-                creatingTask.ShouldNotThrow();
+                creatingTask.Should().NotThrow();
             }
 
             protected override IObservable<ITask> CallEndpointWith(ITogglApi togglApi)
             {
                 var user = togglApi.User.Get().Wait();
                 plans.EnsureDefaultWorkspaceIsOnPlan(user, PricingPlans.StarterMonthly).Wait();
-                var project = createProject(togglApi, user.DefaultWorkspaceId).Wait();
+                var project = createProject(togglApi, user.DefaultWorkspaceId.Value).Wait();
                 return createTask(togglApi, project, user.Id);
             }
         }

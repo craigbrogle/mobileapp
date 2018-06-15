@@ -59,7 +59,7 @@ namespace Toggl.PrimeRadiant.Tests.Onboarding
                     OnNext(1, true)
                 };
 
-                observer.Messages.ShouldBeEquivalentTo(expectedMessages);
+                observer.Messages.Should().BeEquivalentTo(expectedMessages);
             }
 
             [Theory, LogIfTooSlow]
@@ -73,7 +73,7 @@ namespace Toggl.PrimeRadiant.Tests.Onboarding
                     OnNext(1, false)
                 };
 
-                observer.Messages.ShouldBeEquivalentTo(expectedMessages);
+                observer.Messages.Should().BeEquivalentTo(expectedMessages);
             }
 
             [Theory, LogIfTooSlow]
@@ -87,7 +87,7 @@ namespace Toggl.PrimeRadiant.Tests.Onboarding
                     OnNext(1, false)
                 };
 
-                observer.Messages.ShouldBeEquivalentTo(expectedMessages);
+                observer.Messages.Should().BeEquivalentTo(expectedMessages);
             }
 
             [Fact, LogIfTooSlow]
@@ -102,7 +102,7 @@ namespace Toggl.PrimeRadiant.Tests.Onboarding
                     OnNext(2, false)
                 };
 
-                observer.Messages.ShouldBeEquivalentTo(expectedMessages);
+                observer.Messages.Should().BeEquivalentTo(expectedMessages);
             }
         }
         

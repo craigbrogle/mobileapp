@@ -25,7 +25,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var credentials = await User.Create();
             ValidApi = TogglApiWith(credentials);
 
-            CallingEndpointWith(ValidApi).ShouldNotThrow();
+            CallingEndpointWith(ValidApi).Should().NotThrow();
         }
 
         [Fact, LogTestInfo]
@@ -35,7 +35,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var apiTokenCredentials = Credentials.WithApiToken(user.ApiToken);
             ValidApi = TogglApiWith(apiTokenCredentials);
 
-            CallingEndpointWith(ValidApi).ShouldNotThrow();
+            CallingEndpointWith(ValidApi).Should().NotThrow();
         }
 
         [Fact, LogTestInfo]
@@ -47,7 +47,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var wrongCredentials = Credentials
                 .WithPassword(email, "123456789".ToPassword());
 
-            CallingEndpointWith(TogglApiWith(wrongCredentials)).ShouldThrow<UnauthorizedException>();
+            CallingEndpointWith(TogglApiWith(wrongCredentials)).Should().Throw<UnauthorizedException>();
         }
 
         [Fact, LogTestInfo]
@@ -59,7 +59,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var wrongCredentials = Credentials.WithPassword(email, incorrectPassword);
             ValidApi = TogglApiWith(correctCredentials);
 
-            CallingEndpointWith(TogglApiWith(wrongCredentials)).ShouldThrow<UnauthorizedException>();
+            CallingEndpointWith(TogglApiWith(wrongCredentials)).Should().Throw<UnauthorizedException>();
         }
 
         [Fact, LogTestInfo]
@@ -70,7 +70,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var wrongApiToken = Guid.NewGuid().ToString("N");
             var wrongApiTokenCredentials = Credentials.WithApiToken(wrongApiToken);
 
-            CallingEndpointWith(TogglApiWith(wrongApiTokenCredentials)).ShouldThrow<UnauthorizedException>();
+            CallingEndpointWith(TogglApiWith(wrongApiTokenCredentials)).Should().Throw<UnauthorizedException>();
         }
 
         [Fact, LogTestInfo]
@@ -79,7 +79,7 @@ namespace Toggl.Ultrawave.Tests.Integration.BaseTests
             var (validApi, _) = await SetupTestUser();
             ValidApi = validApi;
 
-            CallingEndpointWith(TogglApiWith(Credentials.None)).ShouldThrow<UnauthorizedException>();
+            CallingEndpointWith(TogglApiWith(Credentials.None)).Should().Throw<UnauthorizedException>();
         }
     }
 }

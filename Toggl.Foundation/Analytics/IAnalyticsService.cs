@@ -1,42 +1,58 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Toggl.Foundation.Analytics
 {
     public interface IAnalyticsService
     {
-        void TrackOnboardingSkipEvent(string pageName);
+        IAnalyticsEvent<AuthenticationMethod> Login { get; }
 
-        void TrackLoginEvent(AuthenticationMethod authenticationMethod);
-        void TrackLoginErrorEvent(LoginErrorSource source);
+        IAnalyticsEvent<LoginErrorSource> LoginError { get; }
 
-        void TrackSignUpEvent(AuthenticationMethod authenticationMethod);
-        void TrackSignUpErrorEvent(SignUpErrorSource source);
+        IAnalyticsEvent<AuthenticationMethod> SignUp { get; }
 
-        void TrackLogoutEvent(LogoutSource source);
-        void TrackResetPassword();
+        IAnalyticsEvent<SignUpErrorSource> SignUpError { get; }
 
-        void TrackPasswordManagerButtonClicked();
-        void TrackPasswordManagerContainsValidEmail();
-        void TrackPasswordManagerContainsValidPassword();
+        IAnalyticsEvent<string> OnboardingSkip { get; }
 
-        void TrackCurrentPage(Type viewModelType);
+        IAnalyticsEvent<LogoutSource> Logout { get; }
 
-        void TrackNonFatalException(Exception ex);
+        IAnalyticsEvent ResetPassword { get; }
 
-        void TrackStartedTimeEntry(TimeEntryStartOrigin origin);
-        void TrackDeletingTimeEntry();
+        IAnalyticsEvent PasswordManagerButtonClicked { get; }
 
-        void TrackSyncError(Exception exception);
+        IAnalyticsEvent PasswordManagerContainsValidEmail { get; }
 
-        void TrackAppShortcut(string shortcut);
+        IAnalyticsEvent PasswordManagerContainsValidPassword { get; }
 
-        void TrackEditOpensProjectSelector();
-        void TrackEditOpensTagSelector();
+        IAnalyticsEvent<Type> CurrentPage { get; }
 
-        void TrackStartOpensProjectSelector(ProjectTagSuggestionSource source);
-        void TrackStartOpensTagSelector(ProjectTagSuggestionSource source);
+        IAnalyticsEvent<TimeEntryStartOrigin> TimeEntryStarted { get; }
 
-        void TrackReportsSuccess(ReportsSource source, int totalDays, int projectsNotSyncedCount, double loadingTime);
-        void TrackReportsFailure(ReportsSource source, int totalDays, double loadingTime);
+        IAnalyticsEvent DeleteTimeEntry { get; }
+
+        IAnalyticsEvent<string> ApplicationShortcut { get; }
+
+        IAnalyticsEvent EditEntrySelectProject { get; }
+
+        IAnalyticsEvent EditEntrySelectTag { get; }
+
+        IAnalyticsEvent<ProjectTagSuggestionSource> StartEntrySelectProject { get; }
+
+        IAnalyticsEvent<ProjectTagSuggestionSource> StartEntrySelectTag { get; }
+
+        IAnalyticsEvent<ReportsSource, int, int, double> ReportsSuccess { get; }
+
+        IAnalyticsEvent<ReportsSource, int, double> ReportsFailure { get; }
+
+        IAnalyticsEvent OfflineModeDetected { get; }
+
+        IAnalyticsEvent<int> ProjectGhostsCreated { get; }
+      
+        IAnalyticsEvent<EditViewTapSource> EditViewTapped { get; }
+
+        void Track(string eventName, Dictionary<string, string> parameters = null);
+
+        void Track(Exception exception);
     }
 }

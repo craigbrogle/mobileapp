@@ -1,6 +1,5 @@
 ﻿using System;
-using Toggl.Multivac;
-using Toggl.PrimeRadiant;
+using Toggl.Foundation.DataSources;
 using static Toggl.Multivac.WorkspaceFeatureId;
 
 namespace Toggl.Foundation.Interactors
@@ -9,8 +8,8 @@ namespace Toggl.Foundation.Interactors
     {
         private readonly long workspaceId;
 
-        public IsBillableAvailableForWorkspaceInteractor(ITogglDatabase database, long workspaceId)
-            : base(database)
+        public IsBillableAvailableForWorkspaceInteractor(ITogglDataSource dataSource, long workspaceId)
+            : base(dataSource)
         {
             this.workspaceId = workspaceId;
         }

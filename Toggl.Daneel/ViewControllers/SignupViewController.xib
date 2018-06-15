@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -15,6 +15,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SignupViewController">
             <connections>
                 <outlet property="ActivityIndicator" destination="k7q-nl-nCH" id="K7q-pl-Qgd"/>
+                <outlet property="CountryDropDownCaretImageView" destination="vul-4E-5bP" id="Tw3-bX-LsP"/>
                 <outlet property="CountryNotSelectedImageView" destination="X67-rL-fUe" id="IjF-pt-t8k"/>
                 <outlet property="EmailTextField" destination="l9R-60-VBL" id="V8Z-gb-EPS"/>
                 <outlet property="ErrorLabel" destination="rbq-cx-c1j" id="eE6-Kv-7Me"/>
@@ -24,7 +25,8 @@
                 <outlet property="SelectCountryButton" destination="Mjk-wm-alH" id="XNI-eB-Vbr"/>
                 <outlet property="ShowPasswordButton" destination="zkA-aZ-W3h" id="aul-GS-Rkw"/>
                 <outlet property="SignupButton" destination="4U6-rc-Cap" id="2Mf-YT-TDo"/>
-                <outlet property="TopConstraint" destination="Xd9-Ml-Jxd" id="oNo-lX-lAR"/>
+                <outlet property="SignupShakeTriggerButton" destination="lsf-rK-ajN" id="BWH-O9-Hlb"/>
+                <outlet property="TopConstraint" destination="ZMo-YL-6bU" id="bWj-dG-8nG"/>
                 <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
             </connections>
         </placeholder>
@@ -69,6 +71,9 @@
                     <constraints>
                         <constraint firstAttribute="width" secondItem="zkA-aZ-W3h" secondAttribute="height" multiplier="1:1" id="1Se-Xy-yvn"/>
                     </constraints>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lsf-rK-ajN">
+                    <rect key="frame" x="16" y="321" width="288" height="40"/>
                 </button>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4U6-rc-Cap">
                     <rect key="frame" x="16" y="321" width="288" height="40"/>
@@ -213,13 +218,16 @@
                 <constraint firstAttribute="trailing" secondItem="NK2-6U-6cX" secondAttribute="trailing" constant="16" id="0Gf-ZF-iOt"/>
                 <constraint firstAttribute="trailing" secondItem="Hpd-gv-toK" secondAttribute="trailing" constant="16" id="5YC-Qc-C5e"/>
                 <constraint firstAttribute="trailing" secondItem="l9R-60-VBL" secondAttribute="trailing" constant="16" id="6B4-gc-vkf"/>
+                <constraint firstItem="lsf-rK-ajN" firstAttribute="bottom" secondItem="4U6-rc-Cap" secondAttribute="bottom" id="6zf-Dc-gr4"/>
                 <constraint firstItem="X67-rL-fUe" firstAttribute="centerY" secondItem="Mjk-wm-alH" secondAttribute="centerY" id="7js-1p-A48"/>
+                <constraint firstItem="lsf-rK-ajN" firstAttribute="trailing" secondItem="4U6-rc-Cap" secondAttribute="trailing" id="8A5-tx-31Q"/>
                 <constraint firstItem="zkA-aZ-W3h" firstAttribute="width" secondItem="zkA-aZ-W3h" secondAttribute="height" multiplier="1:1" id="8h3-D4-npl"/>
                 <constraint firstItem="vul-4E-5bP" firstAttribute="leading" secondItem="Mjk-wm-alH" secondAttribute="trailing" constant="4" id="Aah-Jz-cPn"/>
                 <constraint firstItem="1Kw-mQ-ODE" firstAttribute="centerX" secondItem="2" secondAttribute="centerX" id="Byx-8r-0Ge"/>
                 <constraint firstAttribute="trailing" secondItem="Tbg-EL-dza" secondAttribute="trailing" constant="16" id="FS4-ij-Nhy"/>
                 <constraint firstAttribute="trailing" secondItem="fEn-Oe-Bq6" secondAttribute="trailing" constant="16" id="Fgz-lc-dL2"/>
                 <constraint firstItem="fEn-Oe-Bq6" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="16" id="IKz-AK-cw0"/>
+                <constraint firstItem="lsf-rK-ajN" firstAttribute="leading" secondItem="4U6-rc-Cap" secondAttribute="leading" id="INk-pa-ohZ"/>
                 <constraint firstItem="Tbg-EL-dza" firstAttribute="top" secondItem="l9R-60-VBL" secondAttribute="bottom" constant="12" id="Imr-7Z-SXq"/>
                 <constraint firstItem="Tbg-EL-dza" firstAttribute="trailing" secondItem="zkA-aZ-W3h" secondAttribute="trailing" id="KKS-08-IBF"/>
                 <constraint firstItem="NK2-6U-6cX" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="16" id="NWx-Rk-GiS"/>
@@ -229,12 +237,13 @@
                 <constraint firstItem="Mjk-wm-alH" firstAttribute="leading" secondItem="X67-rL-fUe" secondAttribute="trailing" constant="4" id="W18-Wc-sXJ"/>
                 <constraint firstItem="l9R-60-VBL" firstAttribute="leading" secondItem="2" secondAttribute="leading" constant="16" id="W9Q-Tj-H7g"/>
                 <constraint firstItem="zkA-aZ-W3h" firstAttribute="bottom" secondItem="Tbg-EL-dza" secondAttribute="bottom" constant="-4" id="WE0-eg-i7D"/>
-                <constraint firstItem="Mjk-wm-alH" firstAttribute="top" secondItem="2" secondAttribute="top" constant="20" id="Xd9-Ml-Jxd"/>
+                <constraint firstItem="Mjk-wm-alH" firstAttribute="top" secondItem="aqp-41-XzD" secondAttribute="top" id="Xd9-Ml-Jxd"/>
                 <constraint firstItem="rbq-cx-c1j" firstAttribute="leading" secondItem="aqp-41-XzD" secondAttribute="leading" constant="16" id="Yny-PT-a4B"/>
+                <constraint firstItem="1Kw-mQ-ODE" firstAttribute="top" secondItem="2" secondAttribute="top" constant="84" id="ZMo-YL-6bU"/>
                 <constraint firstItem="Hpd-gv-toK" firstAttribute="top" secondItem="4U6-rc-Cap" secondAttribute="bottom" constant="24" id="bpK-lM-adc"/>
+                <constraint firstItem="lsf-rK-ajN" firstAttribute="top" secondItem="4U6-rc-Cap" secondAttribute="top" id="cgt-Ga-W2D"/>
                 <constraint firstItem="aqp-41-XzD" firstAttribute="trailing" secondItem="rbq-cx-c1j" secondAttribute="trailing" constant="16" id="cx5-LZ-vsY"/>
                 <constraint firstItem="l9R-60-VBL" firstAttribute="top" secondItem="1Kw-mQ-ODE" secondAttribute="bottom" constant="42" id="f5b-gb-fjb"/>
-                <constraint firstItem="1Kw-mQ-ODE" firstAttribute="top" secondItem="Mjk-wm-alH" secondAttribute="bottom" constant="24" id="hTg-Z2-IyY"/>
                 <constraint firstItem="vul-4E-5bP" firstAttribute="centerY" secondItem="Mjk-wm-alH" secondAttribute="centerY" id="jJw-sg-wI0"/>
                 <constraint firstItem="k7q-nl-nCH" firstAttribute="centerX" secondItem="4U6-rc-Cap" secondAttribute="centerX" id="nu2-OV-7WD"/>
                 <constraint firstItem="NK2-6U-6cX" firstAttribute="top" secondItem="Hpd-gv-toK" secondAttribute="bottom" constant="16" id="oTT-68-u7k"/>
@@ -248,7 +257,7 @@
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="aqp-41-XzD"/>
-            <point key="canvasLocation" x="35" y="51"/>
+            <point key="canvasLocation" x="-18" y="46"/>
         </view>
     </objects>
     <resources>

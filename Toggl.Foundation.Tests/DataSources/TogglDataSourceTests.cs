@@ -35,7 +35,7 @@ namespace Toggl.Foundation.Tests.DataSources
             protected ITimeService TimeService { get; } = Substitute.For<ITimeService>();
             protected ISyncManager SyncManager { get; } = Substitute.For<ISyncManager>();
             protected IBackgroundService BackgroundService { get; } = Substitute.For<IBackgroundService>();
-            protected IApiErrorHandlingService ApiErrorHandlingService { get; } = Substitute.For<IApiErrorHandlingService>();
+            protected IErrorHandlingService ErrorHandlingService { get; } = Substitute.For<IErrorHandlingService>();
             protected ISubject<SyncProgress> ProgressSubject = new Subject<SyncProgress>();
             protected TimeSpan MinimumTimeInBackgroundForFullSync = TimeSpan.FromMinutes(5);
             protected IApplicationShortcutCreator ApplicationShortcutCreator { get; } = Substitute.For<IApplicationShortcutCreator>();
@@ -43,7 +43,7 @@ namespace Toggl.Foundation.Tests.DataSources
             public TogglDataSourceTest()
             {
                 SyncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
-                DataSource = new TogglDataSource(Api, Database, TimeService, ApiErrorHandlingService, BackgroundService, _ => SyncManager, MinimumTimeInBackgroundForFullSync, ApplicationShortcutCreator);
+                DataSource = new TogglDataSource(Api, Database, TimeService, ErrorHandlingService, BackgroundService, _ => SyncManager, MinimumTimeInBackgroundForFullSync, ApplicationShortcutCreator);
             }
         }
 
@@ -202,7 +202,7 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 Action callForTheSecondTime = () => DataSource.StartSyncing();
 
-                callForTheSecondTime.ShouldThrow<InvalidOperationException>();
+                callForTheSecondTime.Should().Throw<InvalidOperationException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -226,7 +226,7 @@ namespace Toggl.Foundation.Tests.DataSources
 
                 Action startSyncing = () => DataSource.StartSyncing().Wait();
 
-                startSyncing.ShouldThrow<InvalidOperationException>();
+                startSyncing.Should().Throw<InvalidOperationException>();
             }
         }
 
@@ -350,48 +350,48 @@ namespace Toggl.Foundation.Tests.DataSources
             public void SetsTheOutdatedClientVersionFlag()
             {
                 var exception = new ClientDeprecatedException(request, response);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
+                ErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
 
                 ProgressSubject.OnError(exception);
 
-                ApiErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
-                ApiErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
+                ErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
+                ErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
             }
 
             [Fact, LogIfTooSlow]
             public void SetsTheOutdatedApiVersionFlag()
             {
                 var exception = new ApiDeprecatedException(request, response);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
+                ErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
 
                 ProgressSubject.OnError(exception);
 
-                ApiErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
-                ApiErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
+                ErrorHandlingService.Received().TryHandleDeprecationError(Arg.Is(exception));
+                ErrorHandlingService.DidNotReceive().TryHandleUnauthorizedError(Arg.Is(exception));
             }
 
             [Fact, LogIfTooSlow]
             public async ThreadingTask SetsTheUnauthorizedAccessFlag()
             {
                 var exception = new UnauthorizedException(request, response);
-                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
+                ErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
 
                 ProgressSubject.OnError(exception);
 
-                ApiErrorHandlingService.Received().TryHandleUnauthorizedError(Arg.Is(exception));
+                ErrorHandlingService.Received().TryHandleUnauthorizedError(Arg.Is(exception));
             }
 
             [Theory, LogIfTooSlow]
             [MemberData(nameof(SyncManagerTests.TheProgressObservable.ExceptionsRethrownByProgressObservableOnError), MemberType = typeof(SyncManagerTests.TheProgressObservable))]
             public void DoesNotThrowForAnyExceptionWhichCanBeThrownByTheProgressObservable(Exception exception)
             {
-                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
-                ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
+                ErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
+                ErrorHandlingService.TryHandleDeprecationError(Arg.Any<ClientDeprecatedException>()).Returns(true);
+                ErrorHandlingService.TryHandleDeprecationError(Arg.Any<ApiDeprecatedException>()).Returns(true);
 
                 Action processingError = () => ProgressSubject.OnError(exception);
 
-                processingError.ShouldNotThrow();
+                processingError.Should().NotThrow();
             }
 
             [Theory, LogIfTooSlow]
@@ -400,7 +400,7 @@ namespace Toggl.Foundation.Tests.DataSources
             {
                 Action handling = () => ProgressSubject.OnError(exception);
 
-                handling.ShouldThrow<ArgumentException>();
+                handling.Should().Throw<ArgumentException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -411,7 +411,7 @@ namespace Toggl.Foundation.Tests.DataSources
                 DataSource.StartSyncing();
                 SyncManager.ClearReceivedCalls();
                 var exception = new UnauthorizedException(request, response);
-                ApiErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
+                ErrorHandlingService.TryHandleUnauthorizedError(Arg.Any<UnauthorizedException>()).Returns(true);
 
                 ProgressSubject.OnError(exception);
                 subject.OnNext(MinimumTimeInBackgroundForFullSync + TimeSpan.FromSeconds(1));

@@ -45,7 +45,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.Converters
 
                     var result = converter.Convert(date, typeof(DateTimeOffset), null, CultureInfo.CurrentCulture);
 
-                    result.Should().Be($"{date:ddd, dd MMM}");
+                    var expectedCulture = CultureInfo.CreateSpecificCulture("en-US");
+                    result.Should().Be(date.ToString("ddd, dd MMM", expectedCulture));
                 });
             }
         }

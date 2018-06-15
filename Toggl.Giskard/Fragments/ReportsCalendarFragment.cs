@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Reactive.Disposables;
 using Android.OS;
 using Android.Support.V4.View;
 using Android.Support.V7.Widget;
@@ -12,6 +14,7 @@ using MvvmCross.Droid.Support.V7.RecyclerView;
 using MvvmCross.Droid.Views.Attributes;
 using MvvmCross.Platform;
 using MvvmCross.Platform.WeakSubscription;
+using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Giskard.Activities;
 using Toggl.Giskard.Adapters;
@@ -26,7 +29,7 @@ namespace Toggl.Giskard.Fragments
         private int rowHeight;
         private ViewPager pager;
         private int currentRowCount;
-        private IDisposable disposable;
+        private CompositeDisposable disposableBag = new CompositeDisposable();
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -51,12 +54,34 @@ namespace Toggl.Giskard.Fragments
                 .ForEach((textView, index)
                     => textView.Text = ViewModel.DayHeaderFor(index));
 
-            disposable =
-                ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.RowsInCurrentMonth), onRowCountChanged);
+            ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.RowsInCurrentMonth), onRowCountChanged)
+                .DisposedBy(disposableBag);
+
+            ViewModel.SelectedDateRangeObservable.Subscribe(onDateRangeChanged)
+                .DisposedBy(disposableBag);
 
             recalculatePagerHeight();
 
             return view;
+        }
+
+        private void onDateRangeChanged(DateRangeParameter dateRange)
+        {
+            var anyShortcutIsSelected = ViewModel.QuickSelectShortcuts.Any(shortcut => shortcut.Selected);
+            if (!anyShortcutIsSelected) return;
+
+            var dateRangeStartDate = dateRange.StartDate;
+            var monthToScroll = ViewModel.Months.IndexOf(month => month.CalendarMonth.Month == dateRangeStartDate.Month);
+            if (monthToScroll == pager.CurrentItem) return;
+
+            var dateRangeStartDateIsContaintedInCurrentMonthView = ViewModel
+                .Months[pager.CurrentItem]
+                .Days.Any(day => day.DateTimeOffset == dateRangeStartDate);
+
+            if (!dateRangeStartDateIsContaintedInCurrentMonthView || dateRangeStartDate.Month == dateRange.EndDate.Month)
+            {
+                pager.SetCurrentItem(monthToScroll, true);
+            }
         }
 
         private void onRowCountChanged(object sender, PropertyChangedEventArgs e)
@@ -77,6 +102,15 @@ namespace Toggl.Giskard.Fragments
 
             var activity = (ReportsActivity)Activity;
             activity.RecalculateCalendarHeight();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (!disposing || disposableBag == null) return;
+
+            disposableBag.Dispose();
         }
     }
 }

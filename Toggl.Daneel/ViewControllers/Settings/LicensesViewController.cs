@@ -18,7 +18,6 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewDidLoad();
 
-            TopConstraint.AdaptForIos10(NavigationController.NavigationBar);
             Title = Resources.Licenses;
 
             LicensesTableView.RowHeight = UITableView.AutomaticDimension;

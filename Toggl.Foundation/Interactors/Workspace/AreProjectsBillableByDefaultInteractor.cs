@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Linq;
+using Toggl.Foundation.DataSources;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Models;
@@ -10,8 +11,8 @@ namespace Toggl.Foundation.Interactors
     {
         private readonly long workspaceId;
 
-        public AreProjectsBillableByDefaultInteractor(ITogglDatabase database, long workspaceId)
-            : base(database)
+        public AreProjectsBillableByDefaultInteractor(ITogglDataSource dataSource, long workspaceId)
+            : base(dataSource)
         {
             this.workspaceId = workspaceId;
         }
@@ -23,7 +24,7 @@ namespace Toggl.Foundation.Interactors
                     if (!isPro)
                         return Observable.Return<bool?>(null);
 
-                    return Database.Workspaces
+                    return DataSource.Workspaces
                         .GetById(workspaceId)
                         .Select<IDatabaseWorkspace, bool?>(workspace => workspace.ProjectsBillableByDefault);
                 });

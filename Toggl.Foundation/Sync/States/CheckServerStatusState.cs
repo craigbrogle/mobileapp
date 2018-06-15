@@ -7,7 +7,7 @@ using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.Sync.States
 {
-    internal sealed class CheckServerStatusState
+    internal sealed class CheckServerStatusState : ISyncState
     {
         public StateResult Retry { get; } = new StateResult();
         public StateResult ServerIsAvailable { get; } = new StateResult();

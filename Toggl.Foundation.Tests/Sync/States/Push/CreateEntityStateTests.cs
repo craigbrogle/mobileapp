@@ -16,14 +16,14 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
     {
         private readonly ICreatingApiClient<ITestModel> api;
 
-        private readonly IBaseDataSource<IThreadSafeTestModel, IDatabaseTestModel> dataSource;
+        private readonly IBaseDataSource<IThreadSafeTestModel> dataSource;
 
         public CreateEntityStateTests()
-            : this(Substitute.For<IBaseDataSource<IThreadSafeTestModel, IDatabaseTestModel>>())
+            : this(Substitute.For<IBaseDataSource<IThreadSafeTestModel>>())
         {
         }
 
-        private CreateEntityStateTests(IBaseDataSource<IThreadSafeTestModel, IDatabaseTestModel> dataSource)
+        private CreateEntityStateTests(IBaseDataSource<IThreadSafeTestModel> dataSource)
         {
             api = Substitute.For<ICreatingApiClient<ITestModel>>();
             this.dataSource = dataSource;
@@ -32,7 +32,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [Fact, LogIfTooSlow]
         public void ReturnsSuccessfulTransitionWhenEverythingWorks()
         {
-            var state = (CreateEntityState<ITestModel, IDatabaseTestModel, IThreadSafeTestModel>)CreateState();
+            var state = (CreateEntityState<ITestModel, IThreadSafeTestModel>)CreateState();
             var entity = new TestModel(-1, SyncStatus.SyncFailed);
             var withPositiveId = new TestModel(Math.Abs(entity.Id), SyncStatus.InSync);
             api.Create(Arg.Any<ITestModel>())
@@ -52,7 +52,7 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
         [Fact, LogIfTooSlow]
         public void UpdateIsCalledWithCorrectParameters()
         {
-            var state = (CreateEntityState<ITestModel, IDatabaseTestModel, IThreadSafeTestModel>)CreateState();
+            var state = (CreateEntityState<ITestModel, IThreadSafeTestModel>)CreateState();
             var entity = new TestModel(-1, SyncStatus.SyncFailed);
             var withPositiveId = new TestModel(Math.Abs(entity.Id), SyncStatus.InSync);
             api.Create(entity)
@@ -65,8 +65,8 @@ namespace Toggl.Foundation.Tests.Sync.States.Push
                 .Overwrite(Arg.Is<IThreadSafeTestModel>(model => model.Id == entity.Id), Arg.Is<IThreadSafeTestModel>(model => model.Id == withPositiveId.Id));
         }
 
-        protected override BasePushEntityState<IDatabaseTestModel, IThreadSafeTestModel> CreateState()
-            => new CreateEntityState<ITestModel, IDatabaseTestModel, IThreadSafeTestModel>(api, dataSource, TestModel.From);
+        protected override BasePushEntityState<IThreadSafeTestModel> CreateState()
+            => new CreateEntityState<ITestModel, IThreadSafeTestModel>(api, dataSource, TestModel.From);
 
         protected override void PrepareApiCallFunctionToThrow(Exception e)
         {

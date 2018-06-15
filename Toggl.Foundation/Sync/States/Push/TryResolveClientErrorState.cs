@@ -5,14 +5,14 @@ using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.Sync.States.Push
 {
-    public sealed class TryResolveClientErrorState<TThreadsafe>
-        where TThreadsafe : class, IThreadSafeModel
+    public sealed class TryResolveClientErrorState<T> : ISyncState<(Exception Error, T Entity)>
+        where T : class, IThreadSafeModel
     {
         public StateResult UnresolvedTooManyRequests { get; } = new StateResult();
 
-        public StateResult<(Exception, TThreadsafe)> Unresolved { get; } = new StateResult<(Exception, TThreadsafe)>();
+        public StateResult<(Exception, T)> Unresolved { get; } = new StateResult<(Exception, T)>();
 
-        public IObservable<ITransition> Start((Exception Error, TThreadsafe Entity) parameter)
+        public IObservable<ITransition> Start((Exception Error, T Entity) parameter)
             => parameter.Error is ClientErrorException == false
                 ? Observable.Throw<ITransition>(new ArgumentException(nameof(parameter.Error)))
                 : parameter.Error is TooManyRequestsException

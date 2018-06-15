@@ -74,6 +74,58 @@ namespace Toggl.Ultrawave.Tests.Integration
                 => te => te.Id == model.Id && te.Description == model.Description;
         }
 
+        public sealed class TheGetAllBetweenStartAndEndDatesMethod : AuthenticatedGetEndpointBaseTests<List<ITimeEntry>>
+        {
+            private static readonly DateTimeOffset start = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(75));
+            private static readonly DateTimeOffset end = start.AddDays(60);
+
+            protected override IObservable<List<ITimeEntry>> CallEndpointWith(ITogglApi togglApi)
+                => togglApi.TimeEntries.GetAll(start, end);
+
+            [Fact]
+            public async Task DoesNotReturnTimeEntriesWhichStartBeforeTheStartParameter()
+            {
+                var (api, user) = await SetupTestUser();
+                var timeEntry = createTimeEntry(user, start.AddDays(-1));
+                await api.TimeEntries.Create(timeEntry);
+
+                var list = await api.TimeEntries.GetAll(start, end);
+
+                list.Should().BeEmpty();
+            }
+
+            [Fact]
+            public async Task DoesNotReturnTimeEntriesWhichStartAfterTheEndParameter()
+            {
+                var (api, user) = await SetupTestUser();
+                var timeEntry = createTimeEntry(user, end.AddDays(1));
+                await api.TimeEntries.Create(timeEntry);
+
+                var list = await api.TimeEntries.GetAll(start, end);
+
+                list.Should().BeEmpty();
+            }
+
+            [Fact]
+            public async Task ReturnsOnlyTheTimeEntriesWhichAreBetweenTheStartAndEndDates()
+            {
+                var (api, user) = await SetupTestUser();
+                var timeEntryA = createTimeEntry(user, start.AddDays(-1));
+                var timeEntryB = createTimeEntry(user, start.AddDays(1));
+                var timeEntryC = createTimeEntry(user, end.AddDays(1));
+                await api.TimeEntries.Create(timeEntryA);
+                await api.TimeEntries.Create(timeEntryB);
+                await api.TimeEntries.Create(timeEntryC);
+
+                var list = await api.TimeEntries.GetAll(start, end);
+
+                list.Should().HaveCount(1);
+                var item = list[0];
+                item.Start.ToUnixTimeSeconds().Should().BeGreaterOrEqualTo(start.ToUnixTimeSeconds());
+                item.Start.ToUnixTimeSeconds().Should().BeLessThan(end.ToUnixTimeSeconds());
+            }
+        }
+
         public sealed class TheCreateMethod : AuthenticatedPostEndpointBaseTests<ITimeEntry>
         {
             [Fact, LogTestInfo]
@@ -100,7 +152,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action post = () => togglClient.TimeEntries.Create(timeEntry).Wait();
 
-                post.ShouldThrow<BadRequestException>();
+                post.Should().Throw<BadRequestException>();
             }
 
             [Theory, LogTestInfo]
@@ -114,7 +166,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var timeEntry = new Ultrawave.Models.TimeEntry
                 {
                     Description = Guid.NewGuid().ToString(),
-                    WorkspaceId = user.DefaultWorkspaceId,
+                    WorkspaceId = user.DefaultWorkspaceId.Value,
                     Start = start,
                     UserId = user.Id,
                     TagIds = new List<long>(),
@@ -136,7 +188,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var timeEntry = new Ultrawave.Models.TimeEntry
                 {
                     Description = Guid.NewGuid().ToString(),
-                    WorkspaceId = user.DefaultWorkspaceId,
+                    WorkspaceId = user.DefaultWorkspaceId.Value,
                     Start = start,
                     UserId = user.Id,
                     TagIds = new List<long>(),
@@ -145,7 +197,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action creatingTimeEntry = () => CallEndpointWith(togglApi, timeEntry).Wait();
 
-                creatingTimeEntry.ShouldThrow<BadRequestException>();
+                creatingTimeEntry.Should().Throw<BadRequestException>();
             }
 
             [Fact, LogTestInfo]
@@ -155,7 +207,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var timeEntry = new Ultrawave.Models.TimeEntry
                 {
                     Description = Guid.NewGuid().ToString(),
-                    WorkspaceId = user.DefaultWorkspaceId,
+                    WorkspaceId = user.DefaultWorkspaceId.Value,
                     Start = DateTimeOffset.UtcNow,
                     UserId = user.Id,
                     TagIds = new List<long>(),
@@ -174,7 +226,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var timeEntry = new Ultrawave.Models.TimeEntry
                 {
                     Description = Guid.NewGuid().ToString(),
-                    WorkspaceId = user.DefaultWorkspaceId,
+                    WorkspaceId = user.DefaultWorkspaceId.Value,
                     Start = DateTimeOffset.UtcNow,
                     UserId = user.Id,
                     TagIds = new List<long>(),
@@ -261,7 +313,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var (togglClient, user) = await SetupTestUser();
                 var timeEntry = createTimeEntry(user);
                 var persistedTimeEntry = await togglClient.TimeEntries.Create(timeEntry);
-                var tag = await togglClient.Tags.Create(new Models.Tag { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var tag = await togglClient.Tags.Create(new Models.Tag { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 var timeEntryWithUpdates = new TimeEntry
                 {
                     Id = persistedTimeEntry.Id,
@@ -297,7 +349,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action put = () => togglClient.TimeEntries.Update(timeEntry).Wait();
 
-                put.ShouldThrow<BadRequestException>();
+                put.Should().Throw<BadRequestException>();
             }
 
             protected override IObservable<ITimeEntry> PrepareForCallingUpdateEndpoint(ITogglApi togglApi)
@@ -371,7 +423,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action deleteNonExistingTimeEntry = () => togglApi.TimeEntries.Delete(timeEntryToDelete).Wait();
 
-                deleteNonExistingTimeEntry.ShouldThrow<NotFoundException>();
+                deleteNonExistingTimeEntry.Should().Throw<NotFoundException>();
                 (await togglApi.TimeEntries.GetAll()).Should().Contain(te => te.Id == persistedTimeEntry.Id);
             }
 
@@ -385,7 +437,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action deleteNonExistingTimeEntry = () => togglApi.TimeEntries.Delete(timeEntryToDelete).Wait();
 
-                deleteNonExistingTimeEntry.ShouldThrow<ForbiddenException>();
+                deleteNonExistingTimeEntry.Should().Throw<ForbiddenException>();
                 (await togglApi.TimeEntries.GetAll()).Should().Contain(te => te.Id == persistedTimeEntry.Id);
             }
 
@@ -399,7 +451,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action deleteNonExistingTimeEntry = () => togglApi.TimeEntries.Delete(timeEntryToDelete).Wait();
 
-                deleteNonExistingTimeEntry.ShouldThrow<ForbiddenException>();
+                deleteNonExistingTimeEntry.Should().Throw<ForbiddenException>();
                 (await togglApi.TimeEntries.GetAll()).Should().Contain(te => te.Id == persistedTimeEntry.Id);
             }
 
@@ -413,7 +465,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 await togglApi.TimeEntries.Delete(persistedTimeEntry);
                 Action secondDelete = () => togglApi.TimeEntries.Delete(persistedTimeEntry).Wait();
 
-                secondDelete.ShouldThrow<NotFoundException>();
+                secondDelete.Should().Throw<NotFoundException>();
             }
 
             [Fact, LogTestInfo]
@@ -426,7 +478,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action secondDelete = () => togglApiB.TimeEntries.Delete(persistedTimeEntry).Wait();
 
-                secondDelete.ShouldThrow<ForbiddenException>();
+                secondDelete.Should().Throw<ForbiddenException>();
             }
 
             protected override IObservable<ITimeEntry> Initialize(ITogglApi togglApi)
@@ -441,16 +493,17 @@ namespace Toggl.Ultrawave.Tests.Integration
                 => togglApi.TimeEntries.Delete(timeEntry);
         }
 
-        private static TimeEntry createTimeEntry(IUser user) => new TimeEntry
-        {
-            WorkspaceId = user.DefaultWorkspaceId,
-            Billable = false,
-            Start = new DateTimeOffset(DateTime.Now - TimeSpan.FromMinutes(5)),
-            Duration = (long)TimeSpan.FromMinutes(5).TotalSeconds,
-            Description = Guid.NewGuid().ToString(),
-            TagIds = new List<long>(),
-            UserId = user.Id,
-            CreatedWith = "Ultraware Integration Tests"
-        };
+        private static TimeEntry createTimeEntry(IUser user, DateTimeOffset? start = null)
+            => new TimeEntry
+            {
+                WorkspaceId = user.DefaultWorkspaceId.Value,
+                Billable = false,
+                Start = start ?? new DateTimeOffset(DateTime.Now - TimeSpan.FromMinutes(5)),
+                Duration = (long)TimeSpan.FromMinutes(5).TotalSeconds,
+                Description = Guid.NewGuid().ToString(),
+                TagIds = new List<long>(),
+                UserId = user.Id,
+                CreatedWith = "Ultraware Integration Tests"
+            };
     }
 }

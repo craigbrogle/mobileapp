@@ -4,16 +4,14 @@ using Toggl.Foundation.DataSources.Interfaces;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
 using Toggl.Multivac.Models;
-using Toggl.PrimeRadiant;
 using Toggl.Ultrawave.ApiClients;
 
 namespace Toggl.Foundation.Sync.States.Push
 {
-    internal sealed class CreateEntityState<TModel, TDatabaseModel, TThreadsafeModel>
-        : BasePushEntityState<TDatabaseModel, TThreadsafeModel>
+    internal sealed class CreateEntityState<TModel, TThreadsafeModel>
+        : BasePushEntityState<TThreadsafeModel>
         where TModel : IIdentifiable
-        where TDatabaseModel : class, TModel, IDatabaseSyncable
-        where TThreadsafeModel : TDatabaseModel, IThreadSafeModel
+        where TThreadsafeModel : class, TModel, IThreadSafeModel
     {
         private readonly ICreatingApiClient<TModel> api;
 
@@ -23,7 +21,7 @@ namespace Toggl.Foundation.Sync.States.Push
 
         public CreateEntityState(
             ICreatingApiClient<TModel> api,
-            IBaseDataSource<TThreadsafeModel, TDatabaseModel> dataSource,
+            IBaseDataSource<TThreadsafeModel> dataSource,
             Func<TModel, TThreadsafeModel> convertToThreadsafeModel)
             : base(dataSource)
         {

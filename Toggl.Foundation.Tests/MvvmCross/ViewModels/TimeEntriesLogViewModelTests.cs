@@ -52,7 +52,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntriesLogViewModel(timeService, dataSource, interactorFactory, onboardingStorage, analyticsService, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -307,14 +307,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async ThreadingTask NavigatesToTheEditTimeEntryViewModel()
             {
-                var databaseTimeEntry = Substitute.For<IDatabaseTimeEntry>();
-                databaseTimeEntry.Duration.Returns(100);
-                var timeEntryViewModel = new TimeEntryViewModel(databaseTimeEntry, DurationFormat.Improved);
+                var threadSafeTimeEntry = Substitute.For<IThreadSafeTimeEntry>();
+                threadSafeTimeEntry.Duration.Returns(100);
+                var timeEntryViewModel = new TimeEntryViewModel(threadSafeTimeEntry, DurationFormat.Improved);
 
                 await ViewModel.EditCommand.ExecuteAsync(timeEntryViewModel);
 
                 await NavigationService.Received().Navigate<EditTimeEntryViewModel, long>(
-                    Arg.Is<long>(p => p == databaseTimeEntry.Id)
+                    Arg.Is<long>(p => p == threadSafeTimeEntry.Id)
                 );
             }
         }
@@ -343,7 +343,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async ThreadingTask ExecutesTheContinueTimeEntryInteractor()
             {
-                var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                 InteractorFactory.ContinueTimeEntry(Arg.Any<ITimeEntryPrototype>()).Returns(mockedInteractor);
                 var timeEntryViewModel = createTimeEntryViewModel();
 
@@ -356,10 +356,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public void CannotBeExecutedTwiceInARow()
             {
                 var timeEntryViewModel = createTimeEntryViewModel();
-                var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                 InteractorFactory.ContinueTimeEntry(Arg.Any<ITimeEntryPrototype>()).Returns(mockedInteractor);
                 mockedInteractor.Execute()
-                    .Returns(Observable.Never<IDatabaseTimeEntry>());
+                    .Returns(Observable.Never<IThreadSafeTimeEntry>());
 
                 ViewModel.ContinueTimeEntryCommand.ExecuteAsync(timeEntryViewModel);
                 ViewModel.ContinueTimeEntryCommand.ExecuteAsync(timeEntryViewModel);
@@ -371,8 +371,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async ThreadingTask CanBeExecutedForTheSecondTimeIfStartingTheFirstOneFinishesSuccessfully()
             {
                 var timeEntryViewModel = createTimeEntryViewModel();
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
-                var mockedInteractor = Substitute.For<IInteractor<IObservable<IDatabaseTimeEntry>>>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
+                var mockedInteractor = Substitute.For<IInteractor<IObservable<IThreadSafeTimeEntry>>>();
                 InteractorFactory.ContinueTimeEntry(Arg.Any<ITimeEntryPrototype>()).Returns(mockedInteractor);
                 mockedInteractor.Execute()
                     .Returns(Observable.Return(timeEntry));
@@ -385,7 +385,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             private TimeEntryViewModel createTimeEntryViewModel()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Duration.Returns(100);
                 timeEntry.WorkspaceId.Returns(10);
                 return new TimeEntryViewModel(timeEntry, DurationFormat.Improved);
@@ -412,7 +412,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact]
             public async ThreadingTask TracksTheEventUsingTheAnaltyticsService()
             {
-                var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                 timeEntry.Id.Returns(1);
                 timeEntry.Duration.Returns(100);
                 timeEntry.WorkspaceId.Returns(10);
@@ -420,7 +420,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.DeleteCommand.ExecuteAsync(timeEntryViewModel);
 
-                AnalyticsService.Received().TrackDeletingTimeEntry();
+                AnalyticsService.DeleteTimeEntry.Received().Track();
             }
         }
     }

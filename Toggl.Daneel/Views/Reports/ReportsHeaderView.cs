@@ -74,7 +74,7 @@ namespace Toggl.Daneel.Views.Reports
                 //Pretty stuff
                 bindingSet.Bind(PieChartView)
                           .For(v => v.Segments)
-                          .To(vm => vm.Segments);
+                          .To(vm => vm.GroupedSegments);
 
                 bindingSet.Bind(BillablePercentageView)
                           .For(v => v.Percentage)

@@ -32,13 +32,13 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TermsOfServiceViewModel(browserService, navigationService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
         public sealed class TheViewTermsOfServiceCommand : TermsOfServiceViewModelTest
         {
-            private const string termsOfServiceUrl = "https://toggl.com/legal/terms";
+            private const string termsOfServiceUrl = "https://toggl.com/legal/terms/";
 
             [Fact, LogIfTooSlow]
             public void OpensTermsOfService()
@@ -51,7 +51,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
         public sealed class TheViewPrivacyPolicyCommand : TermsOfServiceViewModelTest
         {
-            private const string privacyPolicyUrl = "https://toggl.com/legal/privacy";
+            private const string privacyPolicyUrl = "https://toggl.com/legal/privacy/";
 
             [Fact, LogIfTooSlow]
             public void OpensPrivacyPolicy()

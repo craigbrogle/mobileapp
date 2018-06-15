@@ -24,7 +24,7 @@ namespace Toggl.Ultrawave.Tests.Models
             var clonedObject = new Country(validCountry);
 
             clonedObject.Should().NotBeSameAs(validCountry);
-            clonedObject.ShouldBeEquivalentTo(validCountry, options => options.IncludingProperties());
+            clonedObject.Should().BeEquivalentTo(validCountry, options => options.IncludingProperties());
         }
 
         [Fact, LogIfTooSlow]

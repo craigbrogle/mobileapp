@@ -64,9 +64,6 @@ Global
 		Release.AppStore|Any CPU = Release.AppStore|Any CPU
 		Release.AppStore|iPhone = Release.AppStore|iPhone
 		Release.AppStore|iPhoneSimulator = Release.AppStore|iPhoneSimulator
-		Release.TestFlight|Any CPU = Release.TestFlight|Any CPU
-		Release.TestFlight|iPhone = Release.TestFlight|iPhone
-		Release.TestFlight|iPhoneSimulator = Release.TestFlight|iPhoneSimulator
 		Release|Any CPU = Release|Any CPU
 		Release|iPhone = Release|iPhone
 		Release|iPhoneSimulator = Release|iPhoneSimulator

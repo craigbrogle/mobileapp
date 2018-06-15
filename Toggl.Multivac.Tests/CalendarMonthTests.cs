@@ -34,7 +34,7 @@ namespace Toggl.Multivac.Tests
                     () => new CalendarMonth(-100, 4);
 
                 tryingToConstructWithNegativeYear
-                    .ShouldThrow<ArgumentOutOfRangeException>();
+                    .Should().Throw<ArgumentOutOfRangeException>();
             }
 
             [Theory, LogIfTooSlow]
@@ -46,7 +46,7 @@ namespace Toggl.Multivac.Tests
                     () => new CalendarMonth(2018, month);
 
                 tryingToConstructWithNegativeYear
-                    .ShouldThrow<ArgumentOutOfRangeException>();
+                    .Should().Throw<ArgumentOutOfRangeException>();
             }
 
             [Theory, LogIfTooSlow]
@@ -58,7 +58,7 @@ namespace Toggl.Multivac.Tests
                     () => new CalendarMonth(2018, month);
 
                 tryingToConstructWithNegativeYear
-                    .ShouldThrow<ArgumentOutOfRangeException>();
+                    .Should().Throw<ArgumentOutOfRangeException>();
             }
         }
 

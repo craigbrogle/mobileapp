@@ -38,7 +38,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     OnboardingStorage,
                     NavigationService,
                     PasswordManagerService,
-                    ApiErrorHandlingService);
+                    ErrorHandlingService);
         }
 
         public sealed class TheConstructor : LoginViewModelTest
@@ -58,7 +58,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var onboardingStorage = useOnboardingStorage ? OnboardingStorage : null;
                 var navigationService = userNavigationService ? NavigationService : null;
                 var passwordManagerService = usePasswordManagerService ? PasswordManagerService : null;
-                var apiErrorHandlingService = useApiErrorHandlingService ? ApiErrorHandlingService : null;
+                var apiErrorHandlingService = useApiErrorHandlingService ? ErrorHandlingService : null;
 
                 Action tryingToConstructWithEmptyParameters =
                     () => new LoginViewModel(loginManager,
@@ -69,7 +69,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                                              apiErrorHandlingService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -93,7 +93,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("person@company.com", "123")]
             [InlineData("person@company.com", "T0tally s4afe p4a$$")]
             public void ReturnsFalseWhenIsLoading(string email, string password)
-            { 
+            {
                 ViewModel.Email = Email.From(email);
                 ViewModel.Password = Password.From(password);
                 //Make sure isloading is true
@@ -220,7 +220,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                     ViewModel.LoginCommand.Execute();
 
-                    AnalyticsService.Received().TrackLoginEvent(AuthenticationMethod.EmailAndPassword);
+                    AnalyticsService.Received().Login.Track(AuthenticationMethod.EmailAndPassword);
                 }
             }
 
@@ -296,14 +296,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 }
 
                 [Fact, LogIfTooSlow]
-                public void DoesNothingWhenApiErrorHandlingServiceHandlesTheException()
+                public void DoesNothingWhenErrorHandlingServiceHandlesTheException()
                 {
                     ViewModel.Email = ValidEmail;
                     ViewModel.Password = ValidPassword;
                     var exception = new Exception();
                     LoginManager.Login(Arg.Any<Email>(), Arg.Any<Password>())
                         .Returns(Observable.Throw<ITogglDataSource>(exception));
-                    ApiErrorHandlingService.TryHandleDeprecationError(Arg.Any<Exception>())
+                    ErrorHandlingService.TryHandleDeprecationError(Arg.Any<Exception>())
                         .Returns(true);
 
                     ViewModel.LoginCommand.Execute();
@@ -365,7 +365,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 ViewModel.GoogleLoginCommand.Execute();
 
-                AnalyticsService.Received().TrackLoginEvent(AuthenticationMethod.Google);
+                AnalyticsService.Received().Login.Track(AuthenticationMethod.Google);
             }
 
             [Fact, LogIfTooSlow]
@@ -579,9 +579,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.StartPasswordManagerCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackPasswordManagerButtonClicked();
-                AnalyticsService.DidNotReceive().TrackPasswordManagerContainsValidEmail();
-                AnalyticsService.DidNotReceive().TrackPasswordManagerContainsValidPassword();
+                AnalyticsService.PasswordManagerButtonClicked.Received().Track();
+                AnalyticsService.PasswordManagerContainsValidEmail.DidNotReceive().Track();
+                AnalyticsService.PasswordManagerContainsValidPassword.DidNotReceive().Track();
             }
 
             [Fact, LogIfTooSlow]
@@ -594,9 +594,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.StartPasswordManagerCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackPasswordManagerButtonClicked();
-                AnalyticsService.Received().TrackPasswordManagerContainsValidEmail();
-                AnalyticsService.DidNotReceive().TrackPasswordManagerContainsValidPassword();
+                AnalyticsService.PasswordManagerButtonClicked.Received().Track();
+                AnalyticsService.PasswordManagerContainsValidEmail.Received().Track();
+                AnalyticsService.PasswordManagerContainsValidPassword.DidNotReceive().Track();
             }
 
             [Fact, LogIfTooSlow]
@@ -607,9 +607,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.StartPasswordManagerCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackPasswordManagerButtonClicked();
-                AnalyticsService.Received().TrackPasswordManagerContainsValidEmail();
-                AnalyticsService.Received().TrackPasswordManagerContainsValidPassword();
+                AnalyticsService.PasswordManagerButtonClicked.Received().Track();
+                AnalyticsService.PasswordManagerContainsValidEmail.Received().Track();
+                AnalyticsService.PasswordManagerContainsValidPassword.Received().Track();
             }
 
             private IObservable<PasswordManagerResult> arrangeCallToPasswordManagerWithValidCredentials()

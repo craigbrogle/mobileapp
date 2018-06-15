@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reactive.Linq;
@@ -26,10 +26,10 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglClient, user) = await SetupTestUser();
 
-                var projectA = await createNewProject(togglClient, user.DefaultWorkspaceId, createClient: true);
+                var projectA = await createNewProject(togglClient, user.DefaultWorkspaceId.Value, createClient: true);
                 var projectAPosted = await togglClient.Projects.Create(projectA);
 
-                var projectB = await createNewProject(togglClient, user.DefaultWorkspaceId);
+                var projectB = await createNewProject(togglClient, user.DefaultWorkspaceId.Value);
                 var projectBPosted = await togglClient.Projects.Create(projectB);
 
                 var projects = await CallEndpointWith(togglClient);
@@ -45,10 +45,10 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglClient, user) = await SetupTestUser();
 
-                var activeProject = await createNewProject(togglClient, user.DefaultWorkspaceId);
+                var activeProject = await createNewProject(togglClient, user.DefaultWorkspaceId.Value);
                 var activeProjectPosted = await togglClient.Projects.Create(activeProject);
 
-                var inactiveProject = await createNewProject(togglClient, user.DefaultWorkspaceId, isActive: false);
+                var inactiveProject = await createNewProject(togglClient, user.DefaultWorkspaceId.Value, isActive: false);
                 var inactiveProjectPosted = await togglClient.Projects.Create(inactiveProject);
 
                 var projects = await CallEndpointWith(togglClient);
@@ -65,10 +65,10 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 var noProjects = await CallEndpointWith(togglClient);
 
-                Project project = await createNewProject(togglClient, user.DefaultWorkspaceId, isActive: false);
+                Project project = await createNewProject(togglClient, user.DefaultWorkspaceId.Value, isActive: false);
                 await togglClient.Projects.Create(project);
 
-                project = await createNewProject(togglClient, user.DefaultWorkspaceId, isActive: false);
+                project = await createNewProject(togglClient, user.DefaultWorkspaceId.Value, isActive: false);
                 await togglClient.Projects.Create(project);
 
                 var activeProjects = await CallEndpointWith(togglClient);
@@ -86,7 +86,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     => model.At;
 
                 protected override IProject MakeUniqueModel(ITogglApi api, IUser user)
-                    => new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId };
+                    => new Project { Active = true, Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value };
 
                 protected override IObservable<IProject> PostModelToApi(ITogglApi api, IProject model)
                     => api.Projects.Create(model);
@@ -101,7 +101,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                     => Observable.Defer(async () =>
                     {
                         var user = await togglApi.User.Get();
-                        var project = await createNewProject(togglApi, user.DefaultWorkspaceId);
+                        var project = await createNewProject(togglApi, user.DefaultWorkspaceId.Value);
                         return CallEndpointWith(togglApi, project);
                     });
 
@@ -113,7 +113,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 {
                     var (togglClient, user) = await SetupTestUser();
 
-                    var project = await createNewProject(togglClient, user.DefaultWorkspaceId);
+                    var project = await createNewProject(togglClient, user.DefaultWorkspaceId.Value);
                     var persistedProject = await CallEndpointWith(togglClient, project);
 
                     persistedProject.Name.Should().Be(project.Name);
@@ -164,9 +164,9 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglApi, user) = await SetupTestUser();
 
-                Action searchingNull = () => togglApi.Projects.Search(user.DefaultWorkspaceId, null).Wait();
+                Action searchingNull = () => togglApi.Projects.Search(user.DefaultWorkspaceId.Value, null).Wait();
 
-                searchingNull.ShouldThrow<ArgumentNullException>();
+                searchingNull.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogTestInfo]
@@ -175,9 +175,9 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var (togglApi, user) = await SetupTestUser();
                 var projectIds = new long[0];
 
-                Action searchingWithEmptyIds = () => togglApi.Projects.Search(user.DefaultWorkspaceId, projectIds).Wait();
+                Action searchingWithEmptyIds = () => togglApi.Projects.Search(user.DefaultWorkspaceId.Value, projectIds).Wait();
 
-                searchingWithEmptyIds.ShouldThrow<BadRequestException>();
+                searchingWithEmptyIds.Should().Throw<BadRequestException>();
             }
 
             [Fact, LogTestInfo]
@@ -186,7 +186,7 @@ namespace Toggl.Ultrawave.Tests.Integration
                 var (togglApi, user) = await SetupTestUser();
                 var projectIds = new long[] { 1, 2, 3 };
 
-                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId, projectIds);
+                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId.Value, projectIds);
 
                 projects.Should().HaveCount(0);
             }
@@ -196,9 +196,9 @@ namespace Toggl.Ultrawave.Tests.Integration
             {
                 var (togglApiA, userA) = await SetupTestUser();
                 var (togglApiB, userB) = await SetupTestUser();
-                var projectA = await togglApiA.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = userA.DefaultWorkspaceId });
+                var projectA = await togglApiA.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = userA.DefaultWorkspaceId.Value });
 
-                var projects = await togglApiB.Projects.Search(userB.DefaultWorkspaceId, new[] { projectA.Id });
+                var projects = await togglApiB.Projects.Search(userB.DefaultWorkspaceId.Value, new[] { projectA.Id });
 
                 projects.Should().HaveCount(0);
             }
@@ -207,11 +207,11 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async ThreadingTask DoesNotFindProjectInADifferentWorkspace()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
+                var secondWorkspace = await togglApi.Workspaces.Create(Guid.NewGuid().ToString());
                 var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
                 var projectB = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
 
-                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId, new[] { projectA.Id, projectB.Id });
+                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId.Value, new[] { projectA.Id, projectB.Id });
 
                 projects.Should().HaveCount(0);
             }
@@ -220,11 +220,11 @@ namespace Toggl.Ultrawave.Tests.Integration
             public async ThreadingTask ReturnsOnlyProjectInTheSearchedWorkspace()
             {
                 var (togglApi, user) = await SetupTestUser();
-                var secondWorkspace = await WorkspaceHelper.CreateFor(user);
-                var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId });
+                var secondWorkspace = await togglApi.Workspaces.Create(Guid.NewGuid().ToString());
+                var projectA = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = user.DefaultWorkspaceId.Value });
                 var projectB = await togglApi.Projects.Create(new Project { Name = Guid.NewGuid().ToString(), WorkspaceId = secondWorkspace.Id });
 
-                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId, new[] { projectA.Id, projectB.Id });
+                var projects = await togglApi.Projects.Search(user.DefaultWorkspaceId.Value, new[] { projectA.Id, projectB.Id });
 
                 projects.Should().HaveCount(1);
                 projects.Should().Contain(p => p.Id == projectA.Id);
@@ -232,7 +232,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
             protected override IObservable<List<IProject>> CallEndpointWith(ITogglApi togglApi)
                 => togglApi.User.Get()
-                    .SelectMany(user => togglApi.Projects.Search(user.DefaultWorkspaceId, new[] { -1L }));
+                    .SelectMany(user => togglApi.Projects.Search(user.DefaultWorkspaceId.Value, new[] { -1L }));
         }
     }
 }

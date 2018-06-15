@@ -90,8 +90,6 @@ namespace Toggl.Daneel.ViewControllers
 
             if (View.Frame.Height > iPhoneSeScreenHeight)
                 TopConstraint.Constant = distanceFromTop;
-            
-            TopConstraint.AdaptForIos10(NavigationController?.NavigationBar);
         }
 
         public override void ViewDidAppear(bool animated)

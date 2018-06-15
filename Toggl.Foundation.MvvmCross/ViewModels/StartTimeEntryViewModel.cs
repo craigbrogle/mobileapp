@@ -24,6 +24,7 @@ using Toggl.Multivac.Extensions;
 using Toggl.PrimeRadiant.Models;
 using Toggl.PrimeRadiant.Settings;
 using static Toggl.Foundation.Helper.Constants;
+using Toggl.Foundation.Models.Interfaces;
 
 [assembly: MvxNavigation(typeof(StartTimeEntryViewModel), ApplicationUrls.StartTimeEntry)]
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -56,6 +57,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private StartTimeEntryParameters parameter;
 
         private bool isRunning => !Duration.HasValue;
+
+        private long defaultWorkspaceId;
 
         //Properties
         private int DescriptionByteCount
@@ -240,7 +243,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public void Init()
         {
             var now = timeService.CurrentDateTime;
-            var startTimeEntryParameters = userPreferences.IsManualModeEnabled()
+            var startTimeEntryParameters = userPreferences.IsManualModeEnabled
                 ? StartTimeEntryParameters.ForManualMode(now)
                 : StartTimeEntryParameters.ForTimerMode(now);
             Prepare(startTimeEntryParameters);
@@ -269,19 +272,20 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Duration = parameter.Duration;
 
             PlaceholderText = parameter.PlaceholderText;
-            
+
             setUpTimeSubscriptionIfNeeded();
         }
 
-        public async override Task Initialize()
+        public override async Task Initialize()
         {
             await base.Initialize();
 
+            var workspace = await interactorFactory.GetDefaultWorkspace().Execute();
             TextFieldInfo =
-                await dataSource.User.Current.FirstAsync().Select(user => TextFieldInfo.Empty(user.DefaultWorkspaceId));
+                await dataSource.User.Get().Select(user => TextFieldInfo.Empty(workspace.Id));
+            defaultWorkspaceId = workspace.Id;
 
             await setBillableValues(lastProjectId);
-
             preferencesDisposable = dataSource.Preferences.Current
                 .Subscribe(onPreferencesChanged);
 
@@ -302,7 +306,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             await reloadTags(TagIdsToReload);
         }
 
-        private void onPreferencesChanged(IDatabasePreferences preferences)
+        private void onPreferencesChanged(IThreadSafePreferences preferences)
         {
             dateFormat = preferences.DateFormat;
             timeFormat = preferences.TimeOfDayFormat;
@@ -316,12 +320,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                     if (querySymbolSuggestion.Symbol == QuerySymbols.ProjectsString)
                     {
-                        analyticsService.TrackStartOpensProjectSelector(ProjectTagSuggestionSource.TableCellButton);
+                        analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.TableCellButton);
                     }
 
                     if (querySymbolSuggestion.Symbol == QuerySymbols.TagsString)
                     {
-                        analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.TableCellButton);
+                        analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.TableCellButton);
                     }
 
                     TextFieldInfo = TextFieldInfo.WithTextAndCursor(querySymbolSuggestion.Symbol, 1);
@@ -447,6 +451,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     projectSuggestion.ProjectId,
                     projectSuggestion.ProjectName,
                     projectSuggestion.ProjectColor);
+
+            IsSuggestingProjects = false;
+            queryByTypeSubject.OnNext(AutocompleteSuggestionType.None);
         }
 
         private void setTask(TaskSuggestion taskSuggestion)
@@ -512,7 +519,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 return;
             }
 
-            analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
+            analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
             appendSymbol(QuerySymbols.TagsString);
         }
@@ -528,18 +535,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (IsSuggestingProjects)
             {
-                TextFieldInfo = TextFieldInfo.RemoveProjectQueryFromDescriptionIfNeeded();
                 IsSuggestingProjects = false;
+                TextFieldInfo = TextFieldInfo.RemoveProjectQueryFromDescriptionIfNeeded();
+                queryByTypeSubject.OnNext(AutocompleteSuggestionType.None);
                 return;
             }
 
-            analyticsService.TrackStartOpensProjectSelector(ProjectTagSuggestionSource.ButtonOverKeyboard);
+            analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.ButtonOverKeyboard);
             OnboardingStorage.ProjectOrTagWasAdded();
 
             if (TextFieldInfo.ProjectId != null)
             {
-                queryByTypeSubject.OnNext(AutocompleteSuggestionType.Projects);
                 IsSuggestingProjects = true;
+                queryByTypeSubject.OnNext(AutocompleteSuggestionType.Projects);
                 return;
             }
 
@@ -610,8 +618,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsEditingTime = true;
 
             var currentDuration = DurationParameter.WithStartAndDuration(StartTime, Duration);
+
             var selectedDuration = await navigationService
-                .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(currentDuration)
+                .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(new EditDurationParameters(currentDuration))
                 .ConfigureAwait(false);
 
             StartTime = selectedDuration.Start;
@@ -675,12 +684,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             if (!IsSuggestingTags && suggestsTags)
             {
-                analyticsService.TrackStartOpensTagSelector(ProjectTagSuggestionSource.TextField);
+                analyticsService.StartEntrySelectTag.Track(ProjectTagSuggestionSource.TextField);
             }
 
             if (!IsSuggestingProjects && suggestsProjects)
             {
-                analyticsService.TrackStartOpensProjectSelector(ProjectTagSuggestionSource.TextField);
+                analyticsService.StartEntrySelectProject.Track(ProjectTagSuggestionSource.TextField);
             }
 
             IsSuggestingTags = suggestsTags;
@@ -716,7 +725,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             var firstSuggestion = suggestions.FirstOrDefault();
             if (firstSuggestion is ProjectSuggestion)
-                return suggestions.GroupByWorkspaceAddingNoProject();
+                return suggestions
+                    .GroupByWorkspaceAddingNoProject()
+                    .OrderByDefaultWorkspaceAndName(defaultWorkspaceId);
 
             if (IsSuggestingTags)
                 suggestions = suggestions.Where(suggestion => suggestion.WorkspaceId == TextFieldInfo.WorkspaceId);

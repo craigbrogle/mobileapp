@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
-using Android.App;
+using System.Reactive.Disposables;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
@@ -13,7 +12,6 @@ using MvvmCross.Binding.Droid.BindingContext;
 using MvvmCross.Droid.Support.V4;
 using MvvmCross.Droid.Views.Attributes;
 using MvvmCross.Platform.WeakSubscription;
-using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Giskard.Adapters;
 using Toggl.Giskard.Extensions;
@@ -22,10 +20,9 @@ using Toggl.Multivac.Extensions;
 namespace Toggl.Giskard.Fragments
 {
     using System.Collections.Generic;
-    using System.Reactive;
     using System.Reactive.Linq;
-    using MvvmCross.Binding.BindingContext;
-    using Toggl.Giskard.Helper;
+    using System.Threading;
+    using Toggl.Giskard.Views;
     using static SelectTimeFragment.EditorMode;
     using static SelectTimeViewModel;
     using static SelectTimeViewModel.TemporalInconsistency;
@@ -46,8 +43,13 @@ namespace Toggl.Giskard.Fragments
 
         private EditorMode editorMode = Date;
 
-        private IDisposable onModeChangedDisposable;
-        private IDisposable onTemporalInconsistencyDisposable;
+        private readonly CompositeDisposable disposableBag = new CompositeDisposable();
+        private IDisposable on24HoursModeChangeDisposable;
+
+        private FrameLayout startTimePickerContainer;
+        private FrameLayout stopTimePickerContainer;
+        private TogglDroidTimePicker startTimePicker;
+        private TogglDroidTimePicker stopTimePicker;
 
         private LinearLayout controlButtons;
         private TabLayout tabLayout;
@@ -80,11 +82,17 @@ namespace Toggl.Giskard.Fragments
             pager.Adapter = new SelectTimePagerAdapter(BindingContext);
             tabLayout.AddOnTabSelectedListener(this);
 
-            onModeChangedDisposable =
-                ViewModel.WeakSubscribe<PropertyChangedEventArgs>(nameof(ViewModel.IsCalendarView), onIsCalendarViewChanged);
+            ViewModel.IsCalendarViewObservable
+                     .ObserveOn(SynchronizationContext.Current)
+                     .Subscribe(onIsCalendarViewChanged)
+                     .DisposedBy(disposableBag);
 
-            onTemporalInconsistencyDisposable = ViewModel.TemporalInconsistencyDetected
-                                                         .Subscribe(onTemporalInconsistency);
+            subscribeAndAddToDisposableBag(nameof(ViewModel.StopTime), onStopTimeChanged);
+            subscribeAndAddToDisposableBag(nameof(ViewModel.StartTime), onStartTimeChanged);
+
+            ViewModel.TemporalInconsistencyDetected
+                     .Subscribe(onTemporalInconsistency)
+                     .DisposedBy(disposableBag);
 
             var startPageView = this.BindingInflate(Resource.Layout.SelectDateTimeStartTimeTabHeader, null);
             var stopPageView = this.BindingInflate(Resource.Layout.SelectDateTimeStopTimeTabHeader, null);
@@ -99,16 +107,77 @@ namespace Toggl.Giskard.Fragments
                 tabLayout.GetTabAt(DurationTab).SetCustomView(durationPageView);
 
                 pager.SetCurrentItem(ViewModel.StartingTabIndex, false);
+
+                startTimePickerContainer = view.FindViewById<FrameLayout>(Resource.Id.SelectStartTimeClockViewContainer);
+                stopTimePickerContainer = view.FindViewById<FrameLayout>(Resource.Id.SelectStopTimeClockViewContainer);
+
+                on24HoursModeChangeDisposable = ViewModel.Is24HoursModeObservable
+                    .ObserveOn(SynchronizationContext.Current)
+                    .Subscribe(on24HourModeSet);
             });
+
+            setupDialogWindowPosition();
 
             return view;
         }
 
+        private void subscribeAndAddToDisposableBag(string property, EventHandler<PropertyChangedEventArgs> eventHandler)
+        {
+            ViewModel.WeakSubscribe<PropertyChangedEventArgs>(property, eventHandler)
+                .DisposedBy(disposableBag);
+        }
+
+        private void onStopTimeChanged(object sender, PropertyChangedEventArgs args)
+        {
+            if (stopTimePicker != null && ViewModel.StopTime != null)
+            {
+                stopTimePicker.Value = ViewModel.StopTime.Value;
+            }
+        }
+
+        private void onStartTimeChanged(object sender, PropertyChangedEventArgs args)
+        {
+            if (startTimePicker != null)
+            {
+                startTimePicker.Value = ViewModel.StartTime;
+            }
+        }
+
+        private void setupDialogWindowPosition()
+        {
+            var window = Dialog.Window;
+            var layoutParams = window.Attributes;
+            layoutParams.Gravity = GravityFlags.Top;
+            window.Attributes = layoutParams;
+        }
+
+        private void on24HourModeSet(bool is24HoursMode)
+        {
+            on24HoursModeChangeDisposable.Dispose();
+            updateTimePickerWidgets(is24HoursMode);
+            startTimePicker.Value = ViewModel.StartTime;
+            if (ViewModel.StopTime != null)
+            {
+                stopTimePicker.Value = ViewModel.StopTime.Value;
+            }
+        }
+
+        private void updateTimePickerWidgets(bool is24HoursMode)
+        {
+            startTimePicker = new TogglDroidTimePicker(Context, is24HoursMode);
+            stopTimePicker = new TogglDroidTimePicker(Context, is24HoursMode);
+            startTimePickerContainer.RemoveAllViews();
+            stopTimePickerContainer.RemoveAllViews();
+            startTimePickerContainer.AddView(startTimePicker);
+            stopTimePickerContainer.AddView(stopTimePicker);
+        }
+
         private Dictionary<TemporalInconsistency, int> inconsistencyMessages = new Dictionary<TemporalInconsistency, int>
         {
+            [StartTimeAfterCurrentTime] = Resource.String.StartTimeAfterCurrentTimeWarning,
             [StartTimeAfterStopTime] = Resource.String.StartTimeAfterStopTimeWarning,
             [StopTimeBeforeStartTime] = Resource.String.StopTimeBeforeStartTimeWarning,
-            [DurationTooLong] = Resource.String.DurationTooLong
+            [DurationTooLong] = Resource.String.DurationTooLong,
         };
 
         private void onTemporalInconsistency(TemporalInconsistency temporalInconsistency)
@@ -123,9 +192,9 @@ namespace Toggl.Giskard.Fragments
             toast.Show();
         }
 
-        private void onIsCalendarViewChanged(object sender, PropertyChangedEventArgs args)
+        private void onIsCalendarViewChanged(bool isCalendarView)
         {
-            editorMode = ViewModel.IsCalendarView ? Date : Time;
+            editorMode = isCalendarView ? Date : Time;
             updateLayoutHeight();
         }
 
@@ -195,8 +264,7 @@ namespace Toggl.Giskard.Fragments
 
             if (disposing == false) return;
 
-            onModeChangedDisposable.Dispose();
-            onTemporalInconsistencyDisposable?.Dispose();
+            disposableBag.Dispose();
         }
     }
 }

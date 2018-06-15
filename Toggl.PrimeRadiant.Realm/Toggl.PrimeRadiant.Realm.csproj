@@ -16,7 +16,7 @@
     <ProjectReference Include="..\Toggl.PrimeRadiant\Toggl.PrimeRadiant.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Realm" Version="2.1.0" />
+    <PackageReference Include="Realm" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Models\RealmConstructors.cs">

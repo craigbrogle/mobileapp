@@ -1,10 +1,12 @@
-﻿using Toggl.PrimeRadiant.Models;
+﻿using System.Collections.Generic;
+using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Models.Interfaces
 {
     public partial interface IThreadSafeClient
         : IThreadSafeModel, IDatabaseClient
     {
+        new IThreadSafeWorkspace Workspace { get; }
     }
 
     public partial interface IThreadSafePreferences
@@ -15,21 +17,41 @@ namespace Toggl.Foundation.Models.Interfaces
     public partial interface IThreadSafeProject
         : IThreadSafeModel, IDatabaseProject
     {
+        new IThreadSafeClient Client { get; }
+
+        new IThreadSafeWorkspace Workspace { get; }
+
+        new IEnumerable<IThreadSafeTask> Tasks { get; }
     }
 
     public partial interface IThreadSafeTag
         : IThreadSafeModel, IDatabaseTag
     {
+        new IThreadSafeWorkspace Workspace { get; }
     }
 
     public partial interface IThreadSafeTask
         : IThreadSafeModel, IDatabaseTask
     {
+        new IThreadSafeUser User { get; }
+
+        new IThreadSafeProject Project { get; }
+
+        new IThreadSafeWorkspace Workspace { get; }
     }
 
     public partial interface IThreadSafeTimeEntry
         : IThreadSafeModel, IDatabaseTimeEntry
     {
+        new IThreadSafeTask Task { get; }
+
+        new IThreadSafeUser User { get; }
+
+        new IThreadSafeProject Project { get; }
+
+        new IThreadSafeWorkspace Workspace { get; }
+
+        new IEnumerable<IThreadSafeTag> Tags { get; }
     }
 
     public partial interface IThreadSafeUser
@@ -50,5 +72,8 @@ namespace Toggl.Foundation.Models.Interfaces
     public partial interface IThreadSafeWorkspaceFeatureCollection
         : IThreadSafeModel, IDatabaseWorkspaceFeatureCollection
     {
+        new IThreadSafeWorkspace Workspace { get; }
+
+        new IEnumerable<IThreadSafeWorkspaceFeature> DatabaseFeatures { get; }
     }
 }

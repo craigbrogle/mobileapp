@@ -37,7 +37,7 @@ namespace Toggl.Multivac.Tests
 
                 Action fromFormat = () => TimeFormat.FromLocalizedTimeFormat(format);
 
-                fromFormat.ShouldThrow<ArgumentException>();
+                fromFormat.Should().Throw<ArgumentException>();
             }
         }
     }

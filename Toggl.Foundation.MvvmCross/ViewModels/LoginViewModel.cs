@@ -7,6 +7,7 @@ using PropertyChanged;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Exceptions;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
@@ -25,7 +26,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IOnboardingStorage onboardingStorage;
         private readonly IMvxNavigationService navigationService;
         private readonly IPasswordManagerService passwordManagerService;
-        private readonly IApiErrorHandlingService apiErrorHandlingService;
+        private readonly IErrorHandlingService errorHandlingService;
 
         private IDisposable loginDisposable;
 
@@ -70,21 +71,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IOnboardingStorage onboardingStorage,
             IMvxNavigationService navigationService,
             IPasswordManagerService passwordManagerService,
-            IApiErrorHandlingService apiErrorHandlingService)
+            IErrorHandlingService errorHandlingService)
         {
             Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
             Ensure.Argument.IsNotNull(passwordManagerService, nameof(passwordManagerService));
-            Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
+            Ensure.Argument.IsNotNull(errorHandlingService, nameof(errorHandlingService));
 
             this.loginManager = loginManager;
             this.analyticsService = analyticsService;
             this.onboardingStorage = onboardingStorage;
             this.navigationService = navigationService;
             this.passwordManagerService = passwordManagerService;
-            this.apiErrorHandlingService = apiErrorHandlingService;
+            this.errorHandlingService = errorHandlingService;
 
             SignupCommand = new MvxAsyncCommand(signup);
             GoogleLoginCommand = new MvxCommand(googleLogin);
@@ -108,7 +109,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             loginDisposable =
                 loginManager
                     .Login(Email, Password)
-                    .Do(_ => analyticsService.TrackLoginEvent(AuthenticationMethod.EmailAndPassword))
+                    .Track(analyticsService.Login, AuthenticationMethod.EmailAndPassword)
                     .Subscribe(onDataSource, onError, onCompleted);
         }
 
@@ -128,7 +129,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsLoading = false;
             onCompleted();
 
-            if (apiErrorHandlingService.TryHandleDeprecationError(exception))
+            if (errorHandlingService.TryHandleDeprecationError(exception))
                 return;
 
             switch (exception)
@@ -168,17 +169,17 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         private async Task startPasswordManager()
         {
-            analyticsService.TrackPasswordManagerButtonClicked();
+            analyticsService.PasswordManagerButtonClicked.Track();
 
             var loginInfo = await passwordManagerService.GetLoginInformation();
 
             Email = loginInfo.Email;
             if (!Email.IsValid) return;
-            analyticsService.TrackPasswordManagerContainsValidEmail();
+            analyticsService.PasswordManagerContainsValidEmail.Track();
 
             Password = loginInfo.Password;
             if (!Password.IsValid) return;
-            analyticsService.TrackPasswordManagerContainsValidPassword();
+            analyticsService.PasswordManagerContainsValidPassword.Track();
 
             login();
         }
@@ -190,7 +191,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (IsLoading)
                 return;
-            
+
             var emailParameter = EmailParameter.With(Email);
             emailParameter = await navigationService
                 .Navigate<ForgotPasswordViewModel, EmailParameter, EmailParameter>(emailParameter);
@@ -206,13 +207,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             loginDisposable = loginManager
                 .LoginWithGoogle()
-                .Do(_ => analyticsService.TrackLoginEvent(AuthenticationMethod.Google))
+                .Track(analyticsService.Login, AuthenticationMethod.Google)
                 .Subscribe(onDataSource, onError, onCompleted);
         }
 
         private Task signup()
         {
-            if (IsLoading) 
+            if (IsLoading)
                 return Task.CompletedTask;
 
             var parameter = CredentialsParameter.With(Email, Password);

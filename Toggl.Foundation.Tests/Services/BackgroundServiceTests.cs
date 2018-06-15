@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.Services
             {
                 Action constructor = () => new BackgroundService(null);
 
-                constructor.ShouldThrow<ArgumentNullException>();
+                constructor.Should().Throw<ArgumentNullException>();
             }
         }
 

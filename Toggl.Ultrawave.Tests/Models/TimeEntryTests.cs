@@ -40,7 +40,7 @@ namespace Toggl.Ultrawave.Tests.Models
                 var clonedObject = new TimeEntry(validTimeEntry);
 
                 clonedObject.Should().NotBeSameAs(validTimeEntry);
-                clonedObject.ShouldBeEquivalentTo(validTimeEntry,
+                clonedObject.Should().BeEquivalentTo(validTimeEntry,
                     options => options.IncludingProperties().Excluding(te => te.CreatedWith));
             }
 

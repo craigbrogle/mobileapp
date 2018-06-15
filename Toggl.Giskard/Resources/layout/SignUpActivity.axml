@@ -16,17 +16,29 @@
         local:MvxBind="Click PickCountryCommand"
         android:padding="8dp"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true">
+        <ImageView
+            local:MvxBind="Visibility Visibility(IsCountryErrorVisible)"
+            android:src="@drawable/error_baddata"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/SignUpCountryName"
             local:MvxBind="Text CountryButtonTitle"
+            android:textSize="15sp"
+            android:textStyle="normal"
+            android:textColor="@color/defaultText"
+            android:lineSpacingExtra="3sp"
+            android:fontFamily="sans-serif"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true" />
         <ImageView
             android:src="@drawable/dropdown"
+            android:layout_marginStart="7dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
@@ -51,6 +63,7 @@
         <EditText
             local:MvxBind="Text EmailToString(Email)"
             android:inputType="textEmailAddress"
+            android:backgroundTint="@color/textEditBackgroundTint"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </android.support.design.widget.TextInputLayout>
@@ -67,6 +80,7 @@
         <android.support.design.widget.TextInputEditText
             local:MvxBind="Text PasswordToString(Password)"
             android:inputType="textPassword"
+            android:backgroundTint="@color/textEditBackgroundTint"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </android.support.design.widget.TextInputLayout>
@@ -84,10 +98,10 @@
         android:layout_below="@id/SignUpPassword" />
     <Button
         android:id="@+id/SignUpButton"
-        local:MvxBind="Click SignupCommand; Text If(IsLoading, '', 'Sign up for free'); TextColor ButtonEnabledTextColor(SignupEnabled)"
+        local:MvxBind="Click SignupCommand; Text If(IsLoading, '', 'Sign up for free')"
         android:text="@string/SignUpForFree"
         android:background="@color/buttonBlue"
-        android:textColor="@android:color/white"
+        android:textColor="@color/BlueButtonTextColor"
         android:foreground="?attr/selectableItemBackground"
         android:layout_height="36dp"
         android:layout_marginLeft="24dp"
@@ -133,16 +147,33 @@
         android:layout_width="match_parent"
         android:layout_alignTop="@id/SignUpOrLabel"
         android:layout_toLeftOf="@id/SignUpOrLabel" />
-    <com.google.android.gms.common.SignInButton
+    <LinearLayout
         android:id="@+id/SignUpWithGoogleButton"
         local:MvxBind="Click GoogleSignupCommand"
-        android:scaleType="fitStart"
+        android:elevation="2dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:background="@android:color/white"
+        android:layout_height="36dp"
         android:layout_marginLeft="24dp"
         android:layout_marginRight="24dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/SignUpOrLabel" />
+        android:layout_width="match_parent"
+        android:layout_below="@+id/SignUpOrLabel">
+        <ImageView
+            android:src="@drawable/logo_googleg_48_dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:textSize="13sp"
+            android:textStyle="normal"
+            android:paddingStart="18dp"
+            android:letterSpacing="0.02"
+            android:textColor="#8a000000"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/SignUpWithGoogle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
     <android.support.v7.widget.CardView
         local:MvxBind="Click LoginCommand"
         local:cardCornerRadius="8dp"

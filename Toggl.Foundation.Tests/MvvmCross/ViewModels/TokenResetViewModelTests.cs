@@ -29,11 +29,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             protected override TokenResetViewModel CreateViewModel()
                 => new TokenResetViewModel(
-                    LoginManager, 
+                    LoginManager,
                     DataSource,
                     DialogService,
                     NavigationService,
-                    UserPreferences, 
+                    UserPreferences,
                     OnboardingStorage,
                     AnalyticsService);
         }
@@ -43,10 +43,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Theory, LogIfTooSlow]
             [ClassData(typeof(SevenParameterConstructorTestData))]
             public void ThrowsIfAnyOfTheArgumentsIsNull(
-                bool userLoginManager, 
-                bool userNavigationService, 
-                bool useDataSource, 
-                bool useDialogService, 
+                bool userLoginManager,
+                bool userNavigationService,
+                bool useDataSource,
+                bool useDialogService,
                 bool useUserPreferences,
                 bool useOnboardingStorage,
                 bool useAnalyticsService
@@ -64,7 +64,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TokenResetViewModel(loginManager, dataSource, dialogService, navigationService, userPreferences, onboardingStorage, analyticsService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -214,7 +214,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 DialogService.Confirm(
                     Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
-                    .Returns(Task.FromResult(false));
+                    .Returns(Observable.Return(false));
                 DataSource.HasUnsyncedData().Returns(Observable.Return(true));
                 await ViewModel.Initialize();
 
@@ -228,7 +228,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 ViewModel.SignOutCommand.Execute();
 
-                AnalyticsService.Received().TrackLogoutEvent(Analytics.LogoutSource.TokenReset);
+                AnalyticsService.Logout.Received().Track(Analytics.LogoutSource.TokenReset);
             }
         }
     }

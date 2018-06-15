@@ -43,10 +43,6 @@ namespace Toggl.Giskard.Presenters
         {
             switch (hint)
             {
-                case CardVisibilityHint cardHint when CurrentActivity is MainActivity mainActivity:
-                    mainActivity.OnTimeEntryCardVisibilityChanged(cardHint.Visible);
-                    return;
-
                 case ToggleCalendarVisibilityHint calendarHint when CurrentActivity is ReportsActivity reportsActivity:
                     reportsActivity.ToggleCalendarState(calendarHint.ForceHide);
                     return;

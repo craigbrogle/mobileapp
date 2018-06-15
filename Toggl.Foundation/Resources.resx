@@ -109,6 +109,9 @@ Please try again.</value>
     <data name="NoProject">
         <value>No Project</value>
     </data>
+    <data name="InaccessibleProject">
+        <value>(inaccessible project)</value>
+    </data>
     <data name="SyncCompleted">
         <value>Synced</value>
     </data>
@@ -377,5 +380,8 @@ account is not set up</value>
     </data>
     <data name="SelectCountry">
         <value>Select country...</value>
+    </data>
+    <data name="ArchivedProjectDecorator">
+        <value>(archived)</value>
     </data>
 </root>

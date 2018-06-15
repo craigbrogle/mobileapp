@@ -1,4 +1,6 @@
-﻿using Toggl.Multivac.Models;
+﻿using System;
+using System.Collections.Generic;
+using Toggl.Multivac.Models;
 using Toggl.Ultrawave.ApiClients.Interfaces;
 
 namespace Toggl.Ultrawave.ApiClients
@@ -10,5 +12,6 @@ namespace Toggl.Ultrawave.ApiClients
           IPullingApiClient<ITimeEntry>,
           IPullingChangedApiClient<ITimeEntry>
     {
+        IObservable<List<ITimeEntry>> GetAll(DateTimeOffset start, DateTimeOffset end);
     }
 }

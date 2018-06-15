@@ -61,7 +61,7 @@ namespace Toggl.Foundation.DataSources
         }
 
         public override IObservable<IThreadSafeTimeEntry> Create(IThreadSafeTimeEntry entity)
-            => Repository.UpdateWithConflictResolution(entity.Id, entity, alwaysCreate)
+            => Repository.UpdateWithConflictResolution(entity.Id, entity, alwaysCreate, RivalsResolver)
                 .OfType<CreateResult<IDatabaseTimeEntry>>()
                 .Select(result => result.Entity)
                 .Select(Convert)

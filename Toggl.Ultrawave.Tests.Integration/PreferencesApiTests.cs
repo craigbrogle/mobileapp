@@ -106,7 +106,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action updatingWithWongFormat = () => togglClient.Preferences.Update(newPreferences).Wait();
 
-                updatingWithWongFormat.ShouldThrow<BadRequestException>();
+                updatingWithWongFormat.Should().Throw<BadRequestException>();
             }
 
             [Theory, LogTestInfo]
@@ -135,7 +135,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action updatingWithWongFormat = () => togglClient.Preferences.Update(newPreferences).Wait();
 
-                updatingWithWongFormat.ShouldThrow<BadRequestException>();
+                updatingWithWongFormat.Should().Throw<BadRequestException>();
             }
 
             [Theory, LogTestInfo]
@@ -164,7 +164,7 @@ namespace Toggl.Ultrawave.Tests.Integration
 
                 Action updatingWithWongFormat = () => togglClient.Preferences.Update(newPreferences).Wait();
 
-                updatingWithWongFormat.ShouldThrow<BadRequestException>();
+                updatingWithWongFormat.Should().Throw<BadRequestException>();
             }
 
             [Theory, LogTestInfo]

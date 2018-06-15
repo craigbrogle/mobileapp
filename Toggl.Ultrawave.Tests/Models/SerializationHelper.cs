@@ -12,7 +12,7 @@ namespace Toggl.Ultrawave.Tests
             var actual = serializer.Deserialize<T>(validJson);
 
             actual.Should().NotBeNull();
-            actual.ShouldBeEquivalentTo(validObject);
+            actual.Should().BeEquivalentTo(validObject);
         }
 
         internal static void CanBeSerialized<T>(string validJson, T validObject, SerializationReason reason = SerializationReason.Default)

@@ -1,15 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center"
     android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:background="@drawable/OnboardingGradient"
+    android:background="@color/lightGray"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ImageView
-        android:src="@drawable/toggl_logo"
-        android:layout_width="88dp"
-        android:layout_marginTop="24dp"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true" />
+        android:src="@drawable/logo_splash"
+        android:layout_width="92dp"
+        android:layout_height="92dp" />
 </LinearLayout>

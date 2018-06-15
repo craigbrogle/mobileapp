@@ -46,7 +46,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new SelectProjectViewModel(dataSource, interactorFactory, navigationService, dialogService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -194,7 +194,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<string>()
-                ).Returns(true);
+                ).Returns(Observable.Return(true));
 
                 long workspaceId = 420;
                 ViewModel.SelectProjectCommand
@@ -285,7 +285,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                        Resources.DifferentWorkspaceAlertTitle,
                        Resources.DifferentWorkspaceAlertMessage,
                        Resources.Ok,
-                       Resources.Cancel).Returns(true);
+                       Resources.Cancel).Returns(Observable.Return(true));
 
             private async Task ensureReturnsWorkspaceIdOfSuggestion(AutocompleteSuggestion suggestion)
             {

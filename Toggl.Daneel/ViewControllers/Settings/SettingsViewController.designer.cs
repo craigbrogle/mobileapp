@@ -46,6 +46,9 @@ namespace Toggl.Daneel.ViewControllers
 		UIKit.UILabel FormatSettingsTitle { get; set; }
 
 		[Outlet]
+		UIKit.UIView HelpView { get; set; }
+
+		[Outlet]
 		Toggl.Daneel.Views.ActivityIndicatorView LoggingOutActivityIndicatorView { get; set; }
 
 		[Outlet]
@@ -242,6 +245,11 @@ namespace Toggl.Daneel.ViewControllers
 				SyncingActivityIndicatorView = null;
 			}
 
+			if (HelpView != null) {
+				HelpView.Dispose ();
+				HelpView = null;
+			}
+
 			if (SyncingIndicator != null) {
 				SyncingIndicator.Dispose ();
 				SyncingIndicator = null;
@@ -272,6 +280,11 @@ namespace Toggl.Daneel.ViewControllers
 				TwentyFourHourClockView = null;
 			}
 
+			if (VersionLabel != null) {
+				VersionLabel.Dispose ();
+				VersionLabel = null;
+			}
+
 			if (WorkspaceLabel != null) {
 				WorkspaceLabel.Dispose ();
 				WorkspaceLabel = null;
@@ -280,11 +293,6 @@ namespace Toggl.Daneel.ViewControllers
 			if (WorkspaceView != null) {
 				WorkspaceView.Dispose ();
 				WorkspaceView = null;
-			}
-
-			if (VersionLabel != null) {
-				VersionLabel.Dispose ();
-				VersionLabel = null;
 			}
 		}
 	}

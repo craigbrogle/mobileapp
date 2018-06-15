@@ -11,7 +11,7 @@ namespace Toggl.Foundation.Interactors
 {
     public sealed partial class InteractorFactory : IInteractorFactory
     {
-        public IInteractor<IObservable<IDatabaseTimeEntry>> CreateTimeEntry(ITimeEntryPrototype prototype)
+        public IInteractor<IObservable<IThreadSafeTimeEntry>> CreateTimeEntry(ITimeEntryPrototype prototype)
             => new CreateTimeEntryInteractor(
                 idProvider,
                 timeService,
@@ -21,7 +21,7 @@ namespace Toggl.Foundation.Interactors
                 prototype.StartTime,
                 prototype.Duration);
 
-        public IInteractor<IObservable<IDatabaseTimeEntry>> ContinueTimeEntry(ITimeEntryPrototype prototype)
+        public IInteractor<IObservable<IThreadSafeTimeEntry>> ContinueTimeEntry(ITimeEntryPrototype prototype)
             => new CreateTimeEntryInteractor(
                 idProvider,
                 timeService,
@@ -32,7 +32,7 @@ namespace Toggl.Foundation.Interactors
                 null,
                 TimeEntryStartOrigin.Continue);
 
-        public IInteractor<IObservable<IDatabaseTimeEntry>> StartSuggestion(Suggestion suggestion)
+        public IInteractor<IObservable<IThreadSafeTimeEntry>> StartSuggestion(Suggestion suggestion)
             => new CreateTimeEntryInteractor(
                 idProvider,
                 timeService,
@@ -43,7 +43,7 @@ namespace Toggl.Foundation.Interactors
                 null,
             TimeEntryStartOrigin.Suggestion);
 
-        public IInteractor<IObservable<IDatabaseTimeEntry>> ContinueMostRecentTimeEntry()
+        public IInteractor<IObservable<IThreadSafeTimeEntry>> ContinueMostRecentTimeEntry()
             => new ContinueMostRecentTimeEntryInteractor(
                 idProvider,
                 timeService,

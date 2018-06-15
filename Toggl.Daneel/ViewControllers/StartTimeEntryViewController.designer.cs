@@ -70,12 +70,20 @@ namespace Toggl.Daneel.ViewControllers
 
 		[Outlet]
 		Toggl.Daneel.Views.EditDuration.DurationField TimeInput { get; set; }
+
+		[Outlet]
+		UIKit.UILabel TimeLabel { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
 			if (AddProjectOnboardingBubble != null) {
 				AddProjectOnboardingBubble.Dispose ();
 				AddProjectOnboardingBubble = null;
+			}
+
+			if (TimeLabel != null) {
+				TimeLabel.Dispose ();
+				TimeLabel = null;
 			}
 
 			if (BillableButton != null) {

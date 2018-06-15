@@ -27,7 +27,7 @@ namespace Toggl.Foundation.Tests.Sync
 
                 Action callingMethod = () => CallMethod(stateResult, stateFactory);
 
-                callingMethod.ShouldThrow<ArgumentNullException>();
+                callingMethod.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -39,11 +39,11 @@ namespace Toggl.Foundation.Tests.Sync
                 Action callingMethodSecondTime =
                     () => CallMethod(stateResult, Substitute.For<TStateFactory>());
 
-                callingMethodSecondTime.ShouldThrow<Exception>();
+                callingMethodSecondTime.Should().Throw<Exception>();
             }
 
             [Fact, LogIfTooSlow]
-            public void DoesNotCallProvidedStateFactory()
+            public void DoesNotCallProvidedStatesStartMethod()
             {
                 var factoryWasCalled = false;
 
@@ -54,23 +54,23 @@ namespace Toggl.Foundation.Tests.Sync
         }
 
         public sealed class TheConfigureTransitionMethod
-            : ConfigureTransitionMethodTests<StateResult, Func<IObservable<ITransition>>>
+            : ConfigureTransitionMethodTests<StateResult, ISyncState>
         {
-            protected override void CallMethod(StateResult result, Func<IObservable<ITransition>> factory)
+            protected override void CallMethod(StateResult result, ISyncState factory)
                 => Provider.ConfigureTransition(result, factory);
 
-            protected override Func<IObservable<ITransition>> ToStateFactory(Action action)
-                => () => { action(); return null; };
+            protected override ISyncState ToStateFactory(Action action)
+                => new TestSyncState(() => { action(); return null; });
         }
 
         public sealed class TheGenericConfigureTransitionMethod
-            : ConfigureTransitionMethodTests<StateResult<object>, Func<object, IObservable<ITransition>>>
+            : ConfigureTransitionMethodTests<StateResult<object>, ISyncState<object>>
         {
-            protected override void CallMethod(StateResult<object> result, Func<object, IObservable<ITransition>> factory)
+            protected override void CallMethod(StateResult<object> result, ISyncState<object> factory)
                 => Provider.ConfigureTransition(result, factory);
 
-            protected override Func<object, IObservable<ITransition>> ToStateFactory(Action action)
-                => _ => { action(); return null; };
+            protected override ISyncState<object> ToStateFactory(Action action)
+                => new TestSyncState<object>(_ => { action(); return null; });
         }
 
         public sealed class TheGetTransitionHandlerMethod
@@ -82,7 +82,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 Action callingMethodWithNull = () => provider.GetTransitionHandler(null);
 
-                callingMethodWithNull.ShouldThrow<ArgumentNullException>();
+                callingMethodWithNull.Should().Throw<ArgumentNullException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -96,8 +96,8 @@ namespace Toggl.Foundation.Tests.Sync
             [Fact, LogIfTooSlow]
             public void ReturnsNullIfTheStateResultIsUnknown()
             {
-                provider.ConfigureTransition(new StateResult(), () => null);
-                provider.ConfigureTransition(new StateResult<object>(), _ => null);
+                provider.ConfigureTransition(new StateResult(), state(() => null));
+                provider.ConfigureTransition(new StateResult<object>(), state(_ => null));
 
                 var handler = provider.GetTransitionHandler(Substitute.For<IStateResult>());
 
@@ -109,7 +109,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 var stateResult = new StateResult();
                 var expectedResult = Substitute.For<IObservable<ITransition>>();
-                provider.ConfigureTransition(stateResult, () => expectedResult);
+                provider.ConfigureTransition(stateResult, state(() => expectedResult));
 
                 var handler = provider.GetTransitionHandler(stateResult);
                 var actualResult = handler(null);
@@ -122,7 +122,7 @@ namespace Toggl.Foundation.Tests.Sync
             {
                 var stateResult = new StateResult<object>();
                 var expectedResult = Substitute.For<IObservable<ITransition>>();
-                provider.ConfigureTransition(stateResult, _ => expectedResult);
+                provider.ConfigureTransition(stateResult, state(_ => expectedResult));
 
                 var handler = provider.GetTransitionHandler(stateResult);
                 var actualResult = handler(stateResult.Transition(null));
@@ -136,13 +136,18 @@ namespace Toggl.Foundation.Tests.Sync
                 var stateResult = new StateResult<object>();
                 var expectedArgument = new object();
                 object actualArgument = null;
-                provider.ConfigureTransition(stateResult, obj => { actualArgument = obj; return null; });
+                provider.ConfigureTransition(stateResult, state(obj => { actualArgument = obj; return null; }));
 
                 var handler = provider.GetTransitionHandler(stateResult);
                 handler(stateResult.Transition(expectedArgument));
 
                 actualArgument.Should().Be(expectedArgument);
             }
+
+            private ISyncState state(Func<IObservable<ITransition>> start)
+                => new TestSyncState(start);
+            private ISyncState<object> state(Func<object, IObservable<ITransition>> start)
+                => new TestSyncState<object>(start);
         }
     }
 }

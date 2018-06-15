@@ -115,7 +115,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                     async () => await observable;
 
                 theObservableReturnedWhenTheApiFails
-                    .ShouldThrow<DeserializationException<string>>()
+                    .Should().Throw<DeserializationException<string>>()
                     .Which.Json.Should().Be(rawResponse);
             }
 
@@ -168,7 +168,7 @@ namespace Toggl.Ultrawave.Tests.ApiClients
                     async () => await observable;
 
                 theObservableReturnedWhenTheValidatorThrows
-                    .ShouldThrow<TestException>()
+                    .Should().Throw<TestException>()
                     .WithMessage(exampleExceptionMessage);
             }
         }

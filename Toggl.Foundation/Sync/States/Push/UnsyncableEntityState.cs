@@ -8,19 +8,18 @@ using Toggl.Ultrawave.Exceptions;
 
 namespace Toggl.Foundation.Sync.States.Push
 {
-    internal sealed class UnsyncableEntityState<TDatabaseModel, TThreadsafeModel>
-        where TDatabaseModel : IDatabaseSyncable
-        where TThreadsafeModel : TDatabaseModel, IThreadSafeModel
+    internal sealed class UnsyncableEntityState<T> : ISyncState<(Exception Reason, T Entity)>
+        where T : IThreadSafeModel
     {
-        private readonly IBaseDataSource<TThreadsafeModel, TDatabaseModel> dataSource;
+        private readonly IBaseDataSource<T> dataSource;
 
-        private readonly Func<TThreadsafeModel, string, TThreadsafeModel> createUnsyncableFrom;
+        private readonly Func<T, string, T> createUnsyncableFrom;
 
-        public StateResult<TThreadsafeModel> MarkedAsUnsyncable { get; } = new StateResult<TThreadsafeModel>();
+        public StateResult<T> MarkedAsUnsyncable { get; } = new StateResult<T>();
 
         public UnsyncableEntityState(
-            IBaseDataSource<TThreadsafeModel, TDatabaseModel> dataSource,
-            Func<TThreadsafeModel, string, TThreadsafeModel> createUnsyncableFrom)
+            IBaseDataSource<T> dataSource,
+            Func<T, string, T> createUnsyncableFrom)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(createUnsyncableFrom, nameof(createUnsyncableFrom));
@@ -29,26 +28,26 @@ namespace Toggl.Foundation.Sync.States.Push
             this.createUnsyncableFrom = createUnsyncableFrom;
         }
 
-        public IObservable<ITransition> Start((Exception Reason, TThreadsafeModel Entity) failedPush)
+        public IObservable<ITransition> Start((Exception Reason, T Entity) failedPush)
             => failedPush.Reason == null || failedPush.Entity == null
                 ? failBecauseOfNullArguments(failedPush)
                 : failedPush.Reason is ApiException apiException
                     ? markAsUnsyncable(failedPush.Entity, apiException.LocalizedApiErrorMessage)
                     : failBecauseOfUnexpectedError(failedPush.Reason);
 
-        private IObservable<ITransition> failBecauseOfNullArguments((Exception Reason, TThreadsafeModel Entity) failedPush)
-            => Observable.Throw<Transition<TThreadsafeModel>>(new ArgumentNullException(
+        private IObservable<ITransition> failBecauseOfNullArguments((Exception Reason, T Entity) failedPush)
+            => Observable.Throw<Transition<T>>(new ArgumentNullException(
                 failedPush.Reason == null
                     ? nameof(failedPush.Reason)
                     : nameof(failedPush.Entity)));
 
         private IObservable<ITransition> failBecauseOfUnexpectedError(Exception reason)
-            => Observable.Throw<Transition<TThreadsafeModel>>(reason);
+            => Observable.Throw<Transition<T>>(reason);
 
-        private IObservable<ITransition> markAsUnsyncable(TThreadsafeModel entity, string reason)
+        private IObservable<ITransition> markAsUnsyncable(T entity, string reason)
             => dataSource
                 .OverwriteIfOriginalDidNotChange(entity, createUnsyncableFrom(entity, reason))
-                .Select(updated => updated is UpdateResult<TThreadsafeModel> updateResult ? updateResult.Entity : entity)
+                .Select(updated => updated is UpdateResult<T> updateResult ? updateResult.Entity : entity)
                 .Select(unsyncable => MarkedAsUnsyncable.Transition(unsyncable));
     }
 }

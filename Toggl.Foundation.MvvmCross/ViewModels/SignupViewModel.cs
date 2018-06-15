@@ -8,6 +8,7 @@ using MvvmCross.Core.ViewModels;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Exceptions;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Interactors.Location;
 using Toggl.Foundation.Login;
@@ -30,7 +31,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IAnalyticsService analyticsService;
         private readonly IOnboardingStorage onboardingStorage;
         private readonly IMvxNavigationService navigationService;
-        private readonly IApiErrorHandlingService apiErrorHandlingService;
+        private readonly IErrorHandlingService errorHandlingService;
 
         private IDisposable getCountrySubscription;
         private IDisposable signupDisposable;
@@ -41,6 +42,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public string CountryButtonTitle { get; private set; } = Resources.SelectCountry;
 
         public bool IsCountryErrorVisible { get; private set; } = false;
+
+        public bool IsCountryValid => countryId.HasValue;
 
         public Email Email { get; set; } = Email.Empty;
 
@@ -78,21 +81,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IAnalyticsService analyticsService,
             IOnboardingStorage onboardingStorage,
             IMvxNavigationService navigationService,
-            IApiErrorHandlingService apiErrorHandlingService)
+            IErrorHandlingService errorHandlingService)
         {
             Ensure.Argument.IsNotNull(apiFactory, nameof(apiFactory));
             Ensure.Argument.IsNotNull(loginManager, nameof(loginManager));
             Ensure.Argument.IsNotNull(analyticsService, nameof(analyticsService));
             Ensure.Argument.IsNotNull(onboardingStorage, nameof(onboardingStorage));
             Ensure.Argument.IsNotNull(navigationService, nameof(navigationService));
-            Ensure.Argument.IsNotNull(apiErrorHandlingService, nameof(apiErrorHandlingService));
+            Ensure.Argument.IsNotNull(errorHandlingService, nameof(errorHandlingService));
 
             this.apiFactory = apiFactory;
             this.loginManager = loginManager;
             this.analyticsService = analyticsService;
             this.onboardingStorage = onboardingStorage;
             this.navigationService = navigationService;
-            this.apiErrorHandlingService = apiErrorHandlingService;
+            this.errorHandlingService = errorHandlingService;
 
             LoginCommand = new MvxAsyncCommand(login);
             GoogleSignupCommand = new MvxCommand(googleSignup);
@@ -139,7 +142,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void setCountryErrorIfNeeded()
         {
             if (countryId.HasValue) return;
-                
+
             IsCountryErrorVisible = true;
         }
 
@@ -147,7 +150,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (!termsOfServiceAccepted)
                 termsOfServiceAccepted = await navigationService.Navigate<bool>(typeof(TermsOfServiceViewModel));
-            
+
             if (!termsOfServiceAccepted)
                 return;
 
@@ -156,7 +159,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             signupDisposable =
                 loginManager
                     .SignUp(Email, Password, true, (int)countryId.Value)
-                    .Do(_ => analyticsService.TrackSignUpEvent(AuthenticationMethod.EmailAndPassword))
+                    .Track(analyticsService.SignUp, AuthenticationMethod.EmailAndPassword)
                     .Subscribe(onDataSource, onError, onCompleted);
         }
 
@@ -175,7 +178,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsLoading = false;
             onCompleted();
 
-            if (apiErrorHandlingService.TryHandleDeprecationError(exception))
+            if (errorHandlingService.TryHandleDeprecationError(exception))
                 return;
 
             switch (exception)
@@ -209,7 +212,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             signupDisposable = loginManager
                 .SignUpWithGoogle()
-                .Do(_ => analyticsService.TrackSignUpEvent(AuthenticationMethod.Google))
+                .Track(analyticsService.SignUp, AuthenticationMethod.Google)
                 .Subscribe(onDataSource, onError, onCompleted);
         }
 
@@ -232,7 +235,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var selectedCountry = allCountries
                 .Single(country => country.Id == selectedCountryId.Value);
-            
+
             IsCountryErrorVisible = false;
             countryId = selectedCountry.Id;
             CountryButtonTitle = selectedCountry.Name;

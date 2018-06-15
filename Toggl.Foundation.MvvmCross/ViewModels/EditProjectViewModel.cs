@@ -11,7 +11,6 @@ using Toggl.Foundation.DataSources;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Multivac;
-using Toggl.PrimeRadiant.Models;
 using static Toggl.Foundation.Helper.Constants;
 using static Toggl.Multivac.Extensions.StringExtensions;
 using Toggl.Multivac.Extensions;

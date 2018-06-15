@@ -2,6 +2,7 @@
 using System.Reactive.Linq;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
+using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Multivac;
@@ -11,7 +12,7 @@ using Toggl.PrimeRadiant.Models;
 
 namespace Toggl.Foundation.Interactors
 {
-    public class ContinueMostRecentTimeEntryInteractor : IInteractor<IObservable<IDatabaseTimeEntry>>
+    public class ContinueMostRecentTimeEntryInteractor : IInteractor<IObservable<IThreadSafeTimeEntry>>
     {
         private readonly IIdProvider idProvider;
         private readonly ITimeService timeService;
@@ -35,14 +36,14 @@ namespace Toggl.Foundation.Interactors
             this.analyticsService = analyticsService;
         }
 
-        public IObservable<IDatabaseTimeEntry> Execute()
+        public IObservable<IThreadSafeTimeEntry> Execute()
             => dataSource.TimeEntries
                 .GetAll(te => !te.IsDeleted)
                 .Select(timeEntries => timeEntries.MaxBy(te => te.Start))
                 .Select(newTimeEntry)
                 .SelectMany(dataSource.TimeEntries.Create)
                 .Do(_ => dataSource.SyncManager.PushSync())
-                .Do(_ => analyticsService.TrackStartedTimeEntry(TimeEntryStartOrigin.ContinueMostRecent));
+                .Track(analyticsService.TimeEntryStarted, TimeEntryStartOrigin.ContinueMostRecent);
 
         private IThreadSafeTimeEntry newTimeEntry(IThreadSafeTimeEntry timeEntry)
             => TimeEntry.Builder

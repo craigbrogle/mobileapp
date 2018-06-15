@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentAssertions;
+using Toggl.PrimeRadiant;
 using Xunit;
 
 namespace Toggl.Multivac.Tests
@@ -17,7 +18,7 @@ namespace Toggl.Multivac.Tests
                     () => Ensure.Argument.IsNotNull<string>(null, argumentName);
 
                 whenTheCalledArgumentIsNull
-                    .ShouldThrow<ArgumentException>()
+                    .Should().Throw<ArgumentException>()
                     .WithMessage("Value cannot be null.\nParameter name: argument");
             }
 
@@ -27,7 +28,7 @@ namespace Toggl.Multivac.Tests
                 Action whenTheCalledArgumentIsNull =
                     () => Ensure.Argument.IsNotNull("something", "argument");
 
-                whenTheCalledArgumentIsNull.ShouldNotThrow();
+                whenTheCalledArgumentIsNull.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -36,7 +37,7 @@ namespace Toggl.Multivac.Tests
                 Action whenTheCalledArgumentIsNull =
                     () => Ensure.Argument.IsNotNull(0, "argument");
 
-                whenTheCalledArgumentIsNull.ShouldNotThrow();
+                whenTheCalledArgumentIsNull.Should().NotThrow();
             }
         }
 
@@ -49,7 +50,7 @@ namespace Toggl.Multivac.Tests
                     () => Ensure.Argument.IsNotNullOrWhiteSpaceString("", "argument");
 
                 whenTheCalledArgumentIsNull
-                    .ShouldThrow<ArgumentException>()
+                    .Should().Throw<ArgumentException>()
                     .WithMessage("String cannot be empty.\nParameter name: argument");
             }
 
@@ -60,7 +61,7 @@ namespace Toggl.Multivac.Tests
                     () => Ensure.Argument.IsNotNullOrWhiteSpaceString(" ", "argument");
 
                 whenTheCalledArgumentIsNull
-                    .ShouldThrow<ArgumentException>()
+                    .Should().Throw<ArgumentException>()
                     .WithMessage("String cannot be empty.\nParameter name: argument");
             }
 
@@ -73,7 +74,7 @@ namespace Toggl.Multivac.Tests
                     () => Ensure.Argument.IsNotNullOrWhiteSpaceString(null, argumentName);
 
                 whenTheCalledArgumentIsNull
-                    .ShouldThrow<ArgumentException>()
+                    .Should().Throw<ArgumentException>()
                     .WithMessage("Value cannot be null.\nParameter name: argument");
             }
 
@@ -83,7 +84,7 @@ namespace Toggl.Multivac.Tests
                 Action whenTheCalledArgumentIsNull =
                     () => Ensure.Argument.IsNotNullOrWhiteSpaceString("something", "argument");
 
-                whenTheCalledArgumentIsNull.ShouldNotThrow();
+                whenTheCalledArgumentIsNull.Should().NotThrow();
             }
         }
 
@@ -96,9 +97,9 @@ namespace Toggl.Multivac.Tests
 
                 Action whenTheCalledArgumentIsNull =
                     () => Ensure.Argument.IsAbsoluteUri(new Uri("/something", UriKind.Relative), argumentName);
-                
+
                 whenTheCalledArgumentIsNull
-                    .ShouldThrow<ArgumentException>()
+                    .Should().Throw<ArgumentException>()
                     .WithMessage("Uri must be absolute.\nParameter name: argument");
             }
 
@@ -108,7 +109,7 @@ namespace Toggl.Multivac.Tests
                 Action whenTheCalledArgumentIsNull =
                     () => Ensure.Argument.IsAbsoluteUri(new Uri("http://www.toggl.com", UriKind.Absolute), "argument");
 
-                whenTheCalledArgumentIsNull.ShouldNotThrow();
+                whenTheCalledArgumentIsNull.Should().NotThrow();
             }
 
             [Fact, LogIfTooSlow]
@@ -118,8 +119,33 @@ namespace Toggl.Multivac.Tests
                     () => Ensure.Argument.IsAbsoluteUri(null, "argument");
 
                 whenTheCalledArgumentIsNull
-                    .ShouldThrow<ArgumentException>()
+                    .Should().Throw<ArgumentException>()
                     .WithMessage("Value cannot be null.\nParameter name: argument"); ;
+            }
+        }
+
+        public sealed class TheArgumentIsADefinedEnumValueMethod
+        {
+            [Fact, LogIfTooSlow]
+            public void ThrowsWhenTheArgumentIsNotADefinedEnumValue()
+            {
+                const string argumentName = "argument";
+
+                Action whenTheCalledArgumentIsNotADefinedEnumValue =
+                    () => Ensure.Argument.IsADefinedEnumValue<SyncStatus>((SyncStatus)10, argumentName);
+
+                whenTheCalledArgumentIsNotADefinedEnumValue
+                    .Should().Throw<ArgumentException>()
+                    .WithMessage("Invalid enum value.\nParameter name: argument");
+            }
+
+            [Fact, LogIfTooSlow]
+            public void DoesNotThrowWhenTheArgumentIsNotNull()
+            {
+                Action whenTheCalledArgumentIsNotADefinedEnumValue =
+                    () => Ensure.Argument.IsADefinedEnumValue<SyncStatus>(SyncStatus.SyncNeeded, "argument");
+
+                whenTheCalledArgumentIsNotADefinedEnumValue.Should().NotThrow();
             }
         }
     }

@@ -87,7 +87,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 Action tryingToConstructWithEmptyParameters =
                     () => new EditTimeEntryViewModel(timeService, dataSource, interactorFactory, navigationService, onboardingStorage, dialogService, analyticsService);
 
-                tryingToConstructWithEmptyParameters.ShouldThrow<ArgumentNullException>();
+                tryingToConstructWithEmptyParameters.Should().Throw<ArgumentNullException>();
             }
         }
 
@@ -187,10 +187,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ShowsTheConfirmationDialogIfTheStartTimeChanges()
             {
                 var newStartTime = TheTimeEntry.Start.AddHours(1);
+                var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
                 NavigationService
-                    .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(
-                        Arg.Any<DateTimePickerParameters>())
-                    .Returns(newStartTime);
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
+                    .Returns(newDurationParameter);
 
                 await ViewModel.SelectStartTimeCommand.ExecuteAsync();
                 await ViewModel.CloseCommand.ExecuteAsync();
@@ -236,7 +237,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ClosesTheViewIfUserClicksOnTheDiscardButton()
             {
-                DialogService.ConfirmDestructiveAction(ActionType.DiscardEditingChanges).Returns(true);
+                DialogService
+                    .ConfirmDestructiveAction(ActionType.DiscardEditingChanges)
+                    .Returns(Observable.Return(true));
 
                 ViewModel.Billable = !ViewModel.Billable;
                 await ViewModel.CloseCommand.ExecuteAsync();
@@ -247,7 +250,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task DoesNotCloseTheViewIfUserClicksOnTheContinueEditingButton()
             {
-                DialogService.ConfirmDestructiveAction(ActionType.DiscardEditingChanges).Returns(false);
+                DialogService
+                    .ConfirmDestructiveAction(ActionType.DiscardEditingChanges)
+                    .Returns(Observable.Return(false));
 
                 ViewModel.Billable = !ViewModel.Billable;
                 await ViewModel.CloseCommand.ExecuteAsync();
@@ -261,7 +266,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             protected void PrepareActionSheet(bool confirm)
             {
                 DialogService.ConfirmDestructiveAction(ActionType.DeleteExistingTimeEntry)
-                    .Returns(Task.FromResult(confirm));
+                    .Returns(Observable.Return(confirm));
             }
 
             [Fact, LogIfTooSlow]
@@ -315,7 +320,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 {
                     await ViewModel.DeleteCommand.ExecuteAsync();
 
-                    AnalyticsService.Received().TrackDeletingTimeEntry();
+                    AnalyticsService.Received().DeleteTimeEntry.Track();
                 }
             }
 
@@ -402,12 +407,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-3), null);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ConfigureEditedTimeEntry(now);
                 ViewModel.Prepare(Id);
 
-                ViewModel.EditDurationCommand.ExecuteAsync().Wait();
+                ViewModel.SelectDurationCommand.ExecuteAsync().Wait();
 
                 ViewModel.StartTime.Should().Be(parameterToReturn.Start);
             }
@@ -419,12 +424,68 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var duration = TimeSpan.FromHours(1);
                 var parameterToReturn = DurationParameter.WithStartAndDuration(start, duration);
                 NavigationService
-                    .Navigate<EditDurationViewModel, DurationParameter, DurationParameter>(Arg.Any<DurationParameter>())
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
                     .Returns(parameterToReturn);
                 ConfigureEditedTimeEntry(now);
                 ViewModel.Prepare(Id);
 
-                ViewModel.EditDurationCommand.ExecuteAsync().Wait();
+                ViewModel.SelectDurationCommand.ExecuteAsync().Wait();
+
+                ViewModel.Duration.Should().Be(parameterToReturn.Duration.Value);
+            }
+
+            [Fact, LogIfTooSlow]
+            public void TracksDurationTap()
+            {
+                ConfigureEditedTimeEntry(DateTimeOffset.Now);
+                ViewModel.Prepare(Id);
+                ViewModel.Initialize().Wait();
+
+                var newStartTime = TheTimeEntry.Start.AddHours(1);
+                var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
+                    .Returns(newDurationParameter);
+
+                ViewModel.SelectDurationCommand.Execute();
+
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.Duration));
+            }
+        }
+
+        public sealed class TheEditDurationAndShowNumpadCommand : EditTimeEntryViewModelTest
+        {
+            [Property]
+            public void SetsTheStartTimeToTheValueReturnedByTheSelectDateTimeDialogViewModelWhenEditingARunningTimeEntry(DateTimeOffset now)
+            {
+                var parameterToReturn = DurationParameter.WithStartAndDuration(now.AddHours(-3), null);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
+                    .Returns(parameterToReturn);
+                ConfigureEditedTimeEntry(now);
+                ViewModel.Prepare(Id);
+
+                ViewModel.SelectDurationCommand.ExecuteAsync().Wait();
+
+                ViewModel.StartTime.Should().Be(parameterToReturn.Start);
+            }
+
+            [Property]
+            public void SetsTheStopTimeToTheValueReturnedByTheSelectDateTimeDialogViewModelWhenEditingACompletedTimeEntry(DateTimeOffset now)
+            {
+                var start = now.AddHours(-4);
+                var duration = TimeSpan.FromHours(1);
+                var parameterToReturn = DurationParameter.WithStartAndDuration(start, duration);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(Arg.Any<EditDurationParameters>())
+                    .Returns(parameterToReturn);
+                ConfigureEditedTimeEntry(now);
+                ViewModel.Prepare(Id);
+
+                ViewModel.SelectDurationCommand.ExecuteAsync().Wait();
 
                 ViewModel.Duration.Should().Be(parameterToReturn.Duration.Value);
             }
@@ -619,6 +680,32 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
+        public sealed class TheToggleBillableCommand : EditTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void TracksBillableTap()
+            {
+                ViewModel.ToggleBillableCommand.Execute();
+
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.Billable));
+            }
+        }
+
+        public sealed class TheStartEditingDescriptionCommand : EditTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void TracksDescriptionTap()
+            {
+                ViewModel.StartEditingDescriptionCommand.Execute();
+
+                AnalyticsService.Received()
+                     .EditViewTapped
+                     .Track(Arg.Is(EditViewTapSource.Description));
+            }
+        }
+
         public sealed class TheSelectTagsCommand : EditTimeEntryViewModelTest
         {
             [Property]
@@ -722,7 +809,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 await ViewModel.SelectTagsCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackEditOpensTagSelector();
+                AnalyticsService.Received().EditEntrySelectTag.Track();
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.Tags));
             }
 
             private IThreadSafeTag createTag(long id)
@@ -884,7 +974,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 string projectColor = null,
                 string clientName = null,
                 long? taskId = null,
-                string taskName = null)
+                string taskName = null,
+                bool active = true)
             {
                 long timeEntryId = 10;
                 prepareTimeEntry(timeEntryId);
@@ -916,7 +1007,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
 
             private IThreadSafeProject prepareProject(
-                long projectId, string projectName, string projectColor, string clientName, long workspaceId)
+                long projectId, string projectName, string projectColor, string clientName, long workspaceId, bool active = true)
             {
                 var project = Substitute.For<IThreadSafeProject>();
                 project.Id.Returns(projectId);
@@ -924,6 +1015,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 project.Color.Returns(projectColor);
                 project.Client.Name.Returns(clientName);
                 project.WorkspaceId.Returns(workspaceId);
+                project.Active.Returns(active);
                 DataSource.Projects.GetById(Arg.Is(projectId))
                     .Returns(Observable.Return(project));
                 return project;
@@ -1058,7 +1150,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.SelectProjectCommand.ExecuteAsync();
 
-                AnalyticsService.Received().TrackEditOpensProjectSelector();
+                AnalyticsService.Received().EditEntrySelectProject.Track();
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.Project));
             }
         }
 
@@ -1227,6 +1322,74 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 await ViewModel.SelectStartDateCommand.ExecuteAsync();
 
                 TheTimeEntry.Duration.Should().Be((long)duration.TotalSeconds);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartDateTap()
+            {
+                ConfigureEditedTimeEntry(DateTimeOffset.Now);
+                ViewModel.Prepare(Id);
+                ViewModel.Initialize().Wait();
+
+                var newStartTime = TheTimeEntry.Start.AddHours(1);
+                NavigationService
+                    .Navigate<SelectDateTimeViewModel, DateTimePickerParameters, DateTimeOffset>(
+                        Arg.Any<DateTimePickerParameters>())
+                    .Returns(newStartTime);
+
+                await ViewModel.SelectStartDateCommand.ExecuteAsync();
+
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.StartDate));
+            }
+        }
+
+        public sealed class TheSelectStartTimeCommand : EditTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async Task TracksStartTimeTap()
+            {
+                ConfigureEditedTimeEntry(DateTimeOffset.Now);
+                ViewModel.Prepare(Id);
+                ViewModel.Initialize().Wait();
+
+                var newStartTime = TheTimeEntry.Start.AddHours(1);
+                var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
+                    .Returns(newDurationParameter);
+
+                await ViewModel.SelectStartTimeCommand.ExecuteAsync();
+
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.StartTime));
+            }
+        }
+
+        public sealed class TheSelectStopTimeCommand : EditTimeEntryViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async Task TracksStopTimeTap()
+            {
+                ConfigureEditedTimeEntry(DateTimeOffset.Now);
+                ViewModel.Prepare(Id);
+                ViewModel.Initialize().Wait();
+
+                var newStartTime = TheTimeEntry.Start.AddHours(1);
+                var newDurationParameter = DurationParameter.WithStartAndDuration(newStartTime, null);
+                NavigationService
+                    .Navigate<EditDurationViewModel, EditDurationParameters, DurationParameter>(
+                        Arg.Any<EditDurationParameters>())
+                    .Returns(newDurationParameter);
+
+                await ViewModel.SelectStopTimeCommand.ExecuteAsync();
+
+                AnalyticsService.Received()
+                                .EditViewTapped
+                                .Track(Arg.Is(EditViewTapSource.StopTime));
             }
         }
     }

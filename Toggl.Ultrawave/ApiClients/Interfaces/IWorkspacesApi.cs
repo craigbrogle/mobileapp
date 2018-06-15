@@ -7,5 +7,7 @@ namespace Toggl.Ultrawave.ApiClients
         : IPullingApiClient<IWorkspace>
     {
         IObservable<IWorkspace> GetById(long id);
+
+        IObservable<IWorkspace> Create(string name);
     }
 }

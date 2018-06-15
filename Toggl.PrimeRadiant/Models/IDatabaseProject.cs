@@ -5,7 +5,7 @@ namespace Toggl.PrimeRadiant.Models
 {
     public interface IDatabaseProject : IProject, IDatabaseSyncable
     {
-        IDatabaseClient Client { get; } 
+        IDatabaseClient Client { get; }
 
         IDatabaseWorkspace Workspace { get; }
 

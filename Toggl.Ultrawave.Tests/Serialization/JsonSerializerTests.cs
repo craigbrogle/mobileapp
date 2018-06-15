@@ -53,7 +53,7 @@ namespace Toggl.Ultrawave.Tests.Serialization
 
                 Action serialization = () => serializar.Serialize(new ThrowingModel());
 
-                serialization.ShouldThrow<SerializationException>();
+                serialization.Should().Throw<SerializationException>();
             }
         }
 
@@ -83,7 +83,7 @@ namespace Toggl.Ultrawave.Tests.Serialization
 
                 Action deserialization = () => serializar.Deserialize<TestModel>(invalidJson);
 
-                deserialization.ShouldThrow<DeserializationException>();
+                deserialization.Should().Throw<DeserializationException>();
             }
         }
     }

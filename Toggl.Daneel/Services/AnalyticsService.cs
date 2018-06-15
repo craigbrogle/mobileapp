@@ -13,20 +13,22 @@ namespace Toggl.Daneel.Services
         private const string exceptionEventName = "HandledException";
         private const string exceptionTypeParameter = "ExceptionType";
         private const string exceptionMessageParameter = "ExceptionMessage";
-        
+
         private const int maxAppCenterStringLength = 64;
 
-        protected override void NativeTrackEvent(string eventName, Dictionary<string, string> parameters)
+        public override void Track(string eventName, Dictionary<string, string> parameters = null)
         {
+            parameters = parameters ?? new Dictionary<string, string>();
+
             AppCenterAnalytics.TrackEvent(eventName, trimLongParameters(parameters));
 
             var convertedDictionary = convertDictionary(parameters);
             FirebaseAnalytics.LogEvent(new NSString(eventName), convertedDictionary);
         }
 
-        protected override void NativeTrackException(Exception exception)
+        public override void Track(Exception exception)
         {
-            NativeTrackEvent(exceptionEventName, new Dictionary<string, string>
+            Track(exceptionEventName, new Dictionary<string, string>
             {
                 [exceptionTypeParameter] = exception.GetType().FullName,
                 [exceptionMessageParameter] = exception.Message

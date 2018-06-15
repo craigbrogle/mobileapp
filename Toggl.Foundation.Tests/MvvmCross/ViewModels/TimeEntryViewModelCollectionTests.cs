@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using FluentAssertions;
 using NSubstitute;
+using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
@@ -30,7 +31,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Enumerable.Range(0, 10)
                     .Select(i =>
                     {
-                        var timeEntry = Substitute.For<IDatabaseTimeEntry>();
+                        var timeEntry = Substitute.For<IThreadSafeTimeEntry>();
                         timeEntry.Duration.Returns((long)TimeSpan.FromHours(1).TotalSeconds);
                         timeEntry.Start.Returns(Noon.AddHours(-i - 1));
                         return timeEntry;
@@ -49,7 +50,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntryViewModelCollection(DateTime.Now, null, DurationFormat.Improved);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
 
             [Theory, LogIfTooSlow]
@@ -63,7 +64,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     () => new TimeEntryViewModelCollection(dateTime, Enumerable.Empty<TimeEntryViewModel>(), DurationFormat.Improved);
 
                 tryingToConstructWithNonLocalDateTime
-                    .ShouldThrow<ArgumentException>();
+                    .Should().Throw<ArgumentException>();
             }
         }
 

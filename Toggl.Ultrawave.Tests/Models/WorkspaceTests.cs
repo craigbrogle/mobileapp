@@ -25,7 +25,7 @@ namespace Toggl.Ultrawave.Tests.Models
                 var clonedObject = Activator.CreateInstance(typeof(Workspace), completeObject);
 
                 clonedObject.Should().NotBeSameAs(completeObject);
-                clonedObject.ShouldBeEquivalentTo(completeObject, options => options.IncludingProperties());
+                clonedObject.Should().BeEquivalentTo(completeObject, options => options.IncludingProperties());
             }
 
             [Theory, LogIfTooSlow]

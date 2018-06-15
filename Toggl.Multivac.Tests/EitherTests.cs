@@ -17,7 +17,7 @@ namespace Toggl.Multivac.Tests
                     () => { var a = either.Left; };
 
                 accessingLeftInARightObject
-                    .ShouldThrow<InvalidOperationException>();
+                    .Should().Throw<InvalidOperationException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -28,7 +28,7 @@ namespace Toggl.Multivac.Tests
                 Action accessingLeftInALeftObject =
                     () => { var a = either.Left; };
 
-                accessingLeftInALeftObject.ShouldNotThrow();
+                accessingLeftInALeftObject.Should().NotThrow();
             }
         }
 
@@ -62,7 +62,7 @@ namespace Toggl.Multivac.Tests
                     () => { var a = either.Right; };
 
                 accessingRightInALeftObject
-                    .ShouldThrow<InvalidOperationException>();
+                    .Should().Throw<InvalidOperationException>();
             }
 
             [Fact, LogIfTooSlow]
@@ -73,7 +73,7 @@ namespace Toggl.Multivac.Tests
                 Action accessingRightInARightObject =
                     () => { var a = either.Right; };
 
-                accessingRightInARightObject.ShouldNotThrow();
+                accessingRightInARightObject.Should().NotThrow();
             }
         }
 

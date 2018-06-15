@@ -14,6 +14,7 @@ using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Shortcuts;
 using UIKit;
+using Toggl.Daneel.Extensions;
 
 
 namespace Toggl.Daneel
@@ -93,9 +94,17 @@ namespace Toggl.Daneel
 
         public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
         {
-            analyticsService.TrackAppShortcut(shortcutItem.LocalizedTitle);
+            analyticsService.ApplicationShortcut.Track(shortcutItem.LocalizedTitle);
 
-            var shortcutType = (ShortcutType)(int)(NSNumber)shortcutItem.UserInfo[nameof(ApplicationShortcut.Type)];
+            var key = new NSString(nameof(ApplicationShortcut.Type));
+            if (!shortcutItem.UserInfo.ContainsKey(key))
+                return;
+
+            var shortcutNumber = shortcutItem.UserInfo[key] as NSNumber;
+            if (shortcutNumber == null)
+                return;
+
+            var shortcutType = (ShortcutType)(int)shortcutNumber;
 
             switch (shortcutType)
             {
@@ -141,11 +150,12 @@ namespace Toggl.Daneel
             UINavigationBar.Appearance.BackIndicatorTransitionMaskImage = image;
 
             //Title and background
+            var barBackgroundColor = Color.NavigationBar.BackgroundColor.ToNativeColor();
             UINavigationBar.Appearance.ShadowImage = new UIImage();
-            UINavigationBar.Appearance.BarTintColor = UIColor.Clear;
-            UINavigationBar.Appearance.BackgroundColor = UIColor.Clear;
+            UINavigationBar.Appearance.BarTintColor = barBackgroundColor;
+            UINavigationBar.Appearance.BackgroundColor = barBackgroundColor;
             UINavigationBar.Appearance.TintColor = Color.NavigationBar.BackButton.ToNativeColor();
-            UINavigationBar.Appearance.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+            UINavigationBar.Appearance.SetBackgroundImage(ImageExtension.ImageWithColor(barBackgroundColor), UIBarMetrics.Default);
             UINavigationBar.Appearance.TitleTextAttributes = new UIStringAttributes
             {
                 Font = UIFont.SystemFontOfSize(14, UIFontWeight.Medium),

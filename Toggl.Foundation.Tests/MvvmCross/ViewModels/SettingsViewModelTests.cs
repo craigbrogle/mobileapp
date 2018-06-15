@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FsCheck;
 using FsCheck.Xunit;
+using Microsoft.Reactive.Testing;
 using NSubstitute;
 using Toggl.Foundation.DTOs;
 using Toggl.Foundation.Models.Interfaces;
@@ -15,6 +17,7 @@ using Toggl.Foundation.MvvmCross.ViewModels.Settings;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Tests.Generators;
+using Toggl.Foundation.Tests.Mocks;
 using Toggl.Multivac;
 using Xunit;
 
@@ -24,18 +27,28 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
     {
         public abstract class SettingsViewModelTest : BaseViewModelTests<SettingsViewModel>
         {
-            protected ISubject<SyncProgress> ProgressSubject;
+            protected TestScheduler TestScheduler { get; } = new TestScheduler();
 
-            protected override void AdditionalSetup()
-            {
-                ProgressSubject = new Subject<SyncProgress>();
-                var syncManager = Substitute.For<ISyncManager>();
-                syncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
-                DataSource.SyncManager.Returns(syncManager);
-            }
+            protected ISubject<IThreadSafeUser> UserSubject;
+            protected ISubject<SyncProgress> ProgressSubject;
+            protected ISubject<IThreadSafePreferences> PreferencesSubject;
 
             protected override SettingsViewModel CreateViewModel()
-                => new SettingsViewModel(
+            {
+                UserSubject = new Subject<IThreadSafeUser>();
+                ProgressSubject = new Subject<SyncProgress>();
+                PreferencesSubject = new Subject<IThreadSafePreferences>();
+
+                DataSource.User.Current.Returns(UserSubject.AsObservable());
+                DataSource.Preferences.Current.Returns(PreferencesSubject.AsObservable());
+                DataSource.SyncManager.ProgressObservable.Returns(ProgressSubject.AsObservable());
+
+                UserSubject.OnNext(new MockUser());
+                PreferencesSubject.OnNext(new MockPreferences());
+
+                SetupObservables();
+
+                return new SettingsViewModel(
                     UserAgent,
                     MailService,
                     DataSource,
@@ -46,6 +59,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     OnboardingStorage,
                     NavigationService,
                     AnalyticsService);
+            }
+
+            protected virtual void SetupObservables()
+            {
+            }
         }
 
         public sealed class TheConstructor : SettingsViewModelTest
@@ -90,103 +108,143 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                         analyticsService);
 
                 tryingToConstructWithEmptyParameters
-                    .ShouldThrow<ArgumentNullException>();
+                    .Should().Throw<ArgumentNullException>();
             }
         }
 
         public sealed class TheFlags : SettingsViewModelTest
         {
             [Property]
-            public void SetsIsRunningSyncCorrectly(NonEmptyArray<SyncProgress> statuses)
+            public void DoesNotEverSetBothIsRunningSyncAndIsSyncedBothToTrue(NonEmptyArray<SyncProgress> statuses)
             {
+                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
+                var syncedObserver = TestScheduler.CreateObserver<bool>();
+                var syncingObserver = TestScheduler.CreateObserver<bool>();
+                var viewModel = CreateViewModel();
+                viewModel.IsSynced.Subscribe(syncedObserver);
+                viewModel.IsRunningSync.Subscribe(syncingObserver);
+
                 foreach (var state in statuses.Get)
                 {
+                    syncedObserver.Messages.Clear();
+                    syncingObserver.Messages.Clear();
+
                     ProgressSubject.OnNext(state);
-                    ViewModel.IsRunningSync.Should().Be(state == SyncProgress.Syncing);
+
+                    var isSynced = syncedObserver.Messages.Single().Value.Value;
+                    var isRunningSync = syncingObserver.Messages.Single().Value.Value;
+
+                    (isRunningSync && isSynced).Should().BeFalse();
                 }
             }
 
             [Property]
-            public void SetsIsSyncedCorrectly(NonEmptyArray<SyncProgress> statuses)
+            public void EmitTheAppropriateIsRunningSyncValues(NonEmptyArray<SyncProgress> statuses)
             {
+                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
+                var observer = TestScheduler.CreateObserver<bool>();
+                var viewModel = CreateViewModel();
+
+                viewModel.IsRunningSync.Subscribe(observer);
+
+                foreach (var state in statuses.Get)
+                {
+                    observer.Messages.Clear();
+                    
+                    ProgressSubject.OnNext(state);
+
+                    var isRunningSync = observer.Messages.Single().Value.Value;
+                    isRunningSync.Should().Be(state == SyncProgress.Syncing);
+                }
+            }
+
+            [Property]
+            public void EmitTheAppropriateIsSyncedValues(NonEmptyArray<SyncProgress> statuses)
+            {
+                var observer = TestScheduler.CreateObserver<bool>();
+                var viewModel = CreateViewModel();
+
+                viewModel.IsSynced.Subscribe(observer);
+
                 foreach (var state in statuses.Get)
                 {
                     if (state == SyncProgress.Unknown)
                         continue;
+                    
+                    observer.Messages.Clear();
 
                     ProgressSubject.OnNext(state);
-                    ViewModel.IsSynced.Should().Be(state == SyncProgress.Synced);
-                }
-            }
 
-            [Property]
-            public void DoesNotEverSetBothIsRunningSyncAndIsSyncedBothToTrue(NonEmptyArray<SyncProgress> statuses)
-            {
-                foreach (var state in statuses.Get)
-                {
-                    ProgressSubject.OnNext(state);
-                    (ViewModel.IsRunningSync && ViewModel.IsSynced).Should().BeFalse();
-                }
-            }
-
-            [Property]
-            public void DoesNotSetTheIsLoggingOutFlagIfTheLogoutCommandIsNotExecuted(
-                NonEmptyArray<SyncProgress> statuses)
-            {
-                foreach (var state in statuses.Get)
-                {
-                    ProgressSubject.OnNext(state);
-                    ViewModel.IsLoggingOut.Should().BeFalse();
-                }
-            }
-
-            [Property]
-            public void DoesNotUnsetTheIsLoggingOutFlagAfterItIsSetNoMatterWhatStatusesAreObserved(
-                NonEmptyArray<SyncProgress> statuses)
-            {
-                DataSource.Logout().Returns(Observable.Never<Unit>());
-
-                ViewModel.LogoutCommand.ExecuteAsync();
-
-                foreach (var state in statuses.Get)
-                {
-                    ProgressSubject.OnNext(state);
-                    ViewModel.IsLoggingOut.Should().BeTrue();
-                }
-            }
-
-            [Property]
-            public void SetsTheIsRunningSyncAndIsSyncedFlagsToFalseAfterTheIsLoggingInFlagIsSetAndDoesNotSetThemToTrueNoMatterWhatStatusesAreObserved(NonEmptyArray<SyncProgress> statuses)
-            {
-                DataSource.Logout().Returns(Observable.Never<Unit>());
-
-                ViewModel.LogoutCommand.ExecuteAsync();
-
-                foreach (var state in statuses.Get)
-                {
-                    ProgressSubject.OnNext(state);
-                    ViewModel.IsRunningSync.Should().BeFalse();
-                    ViewModel.IsSynced.Should().BeFalse();
+                    var isSynced = observer.Messages.Single().Value.Value;
+                    isSynced.Should().Be(state == SyncProgress.Synced);
                 }
             }
         }
 
-        public sealed class TheLogoutCommand : SettingsViewModelTest
+        public sealed class TheEmailObservable : SettingsViewModelTest
         {
             [Fact, LogIfTooSlow]
-            public async Task SetsTheIsLoggingOutFlagToTrue()
+            public void EmitsWheneverTheUserEmailChanges()
             {
-                doNotShowConfirmationDialog();
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                var observer = TestScheduler.CreateObserver<string>();
+                ViewModel.Email.Subscribe(observer);
 
-                ViewModel.IsLoggingOut.Should().BeTrue();
+                UserSubject.OnNext(new MockUser { Email = Email.From("newmail@mail.com") });
+                UserSubject.OnNext(new MockUser { Email = Email.From("newmail@mail.com") });
+                UserSubject.OnNext(new MockUser { Email = Email.From("differentmail@mail.com") });
+
+                observer.Messages.Count.Should().Be(2);
+            }
+        }
+
+        public sealed class TheUserAvatarObservable : SettingsViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public void EmitsWheneverTheUserImageChanges()
+            {
+                var observer = TestScheduler.CreateObserver<byte[]>();
+                ViewModel.UserAvatar.Subscribe(observer);
+
+                UserSubject.OnNext(new MockUser { ImageUrl = "http://toggl.com/image.jpg" });
+                UserSubject.OnNext(new MockUser { ImageUrl = "http://toggl.com/image.jpg" });
+                UserSubject.OnNext(new MockUser { ImageUrl = "http://toggl.com/image2.jpg" });
+
+                observer.Messages.Count.Should().Be(2);
             }
 
+            [Fact, LogIfTooSlow]
+            public void CallsTheImageDownloadInteractor()
+            {
+                var observer = TestScheduler.CreateObserver<byte[]>();
+                ViewModel.UserAvatar.Subscribe(observer);
+
+                UserSubject.OnNext(new MockUser { ImageUrl = "http://toggl.com/image.jpg" });
+                UserSubject.OnNext(new MockUser { ImageUrl = "http://toggl.com/image.jpg" });
+                UserSubject.OnNext(new MockUser { ImageUrl = "http://toggl.com/image2.jpg" });
+
+                InteractorFactory.Received(2).GetUserAvatar(Arg.Any<string>());
+            }
+        }
+
+        public sealed class TheTryLogoutMethod : SettingsViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async Task EmitsOneIsLoggingOutEvent()
+            {
+                var observer = TestScheduler.CreateObserver<Unit>();
+                ViewModel.LoggingOut.Subscribe(observer);
+
+                doNotShowConfirmationDialog();
+                await ViewModel.TryLogout();
+
+                observer.Messages.Single();
+            }
+            
             [Fact, LogIfTooSlow]
             public async Task CallsLogoutOnTheDataSource()
             {
                 doNotShowConfirmationDialog();
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
                 await DataSource.Received().Logout();
             }
@@ -195,7 +253,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task ResetsUserPreferences()
             {
                 doNotShowConfirmationDialog();
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
                 UserPreferences.Received().Reset();
             }
@@ -204,45 +262,19 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task NavigatesToTheLoginScreen()
             {
                 doNotShowConfirmationDialog();
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
                 await NavigationService.Received().Navigate<LoginViewModel>();
             }
 
             [Fact, LogIfTooSlow]
-            public void ChecksIfThereAreUnsyncedDataWhenTheSyncProcessFinishes()
+            public async Task ChecksIfThereAreUnsyncedDataWhenTheSyncProcessFinishes()
             {
                 ProgressSubject.OnNext(SyncProgress.Synced);
 
-                DataSource.Received().HasUnsyncedData();
-            }
+                await ViewModel.TryLogout();
 
-            [Fact, LogIfTooSlow]
-            public void SetsTheIsSyncedFlagAfterTheSyncProcessHasFinishedAndThereIsNoTimeEntryToPush()
-            {
-                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
-                ProgressSubject.OnNext(SyncProgress.Synced);
-
-                ViewModel.IsSynced.Should().BeTrue();
-            }
-
-            [Fact, LogIfTooSlow]
-            public void UnsetsTheIsSyncedFlagWhenTheSyncProcessIsNotRunningButThrereIsSomeTimeEntryToPush()
-            {
-                DataSource.HasUnsyncedData().Returns(Observable.Return(true));
-                ProgressSubject.OnNext(SyncProgress.Synced);
-
-                ViewModel.IsSynced.Should().BeFalse();
-            }
-
-            [Fact, LogIfTooSlow]
-            public void UnsetsTheIsSyncedFlagWhenThereIsNothingToPushButTheSyncProcessStartsAgain()
-            {
-                DataSource.HasUnsyncedData().Returns(Observable.Return(false));
-                ProgressSubject.OnNext(SyncProgress.Synced);
-                ProgressSubject.OnNext(SyncProgress.Syncing);
-
-                ViewModel.IsSynced.Should().BeFalse();
+                await DataSource.Received().HasUnsyncedData();
             }
 
             [Fact, LogIfTooSlow]
@@ -250,7 +282,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 doNotShowConfirmationDialog();
 
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
                 await DialogService.DidNotReceiveWithAnyArgs().Confirm("", "", "", "");
             }
@@ -261,7 +293,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 DataSource.HasUnsyncedData().Returns(Observable.Return(false));
                 ProgressSubject.OnNext(SyncProgress.Syncing);
 
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
                 await DialogService.ReceivedWithAnyArgs().Confirm("", "", "", "");
             }
@@ -272,7 +304,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 DataSource.HasUnsyncedData().Returns(Observable.Return(true));
                 ProgressSubject.OnNext(SyncProgress.Syncing);
 
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
                 await DialogService.ReceivedWithAnyArgs().Confirm("", "", "", "");
             }
@@ -285,11 +317,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<string>()).Returns(false);
+                    Arg.Any<string>()).Returns(Observable.Return(false));
 
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
-                ViewModel.IsLoggingOut.Should().BeFalse();
                 await DataSource.DidNotReceive().Logout();
                 await NavigationService.DidNotReceive().Navigate<LoginViewModel>();
             }
@@ -302,11 +333,10 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     Arg.Any<string>(),
                     Arg.Any<string>(),
                     Arg.Any<string>(),
-                    Arg.Any<string>()).Returns(true);
+                    Arg.Any<string>()).Returns(Observable.Return(true));
 
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
-                ViewModel.IsLoggingOut.Should().BeTrue();
                 await DataSource.Received().Logout();
                 await NavigationService.Received().Navigate<LoginViewModel>();
             }
@@ -315,9 +345,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task TracksLogoutEvent()
             {
                 doNotShowConfirmationDialog();
-                await ViewModel.LogoutCommand.ExecuteAsync();
+                await ViewModel.TryLogout();
 
-                AnalyticsService.Received().TrackLogoutEvent(Analytics.LogoutSource.Settings);
+                AnalyticsService.Logout.Received().Track(Analytics.LogoutSource.Settings);
             }
 
             private void doNotShowConfirmationDialog()
@@ -327,19 +357,25 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
-        public sealed class ThePickWorkspaceCommand : SettingsViewModelTest
+        public sealed class ThePickDefaultWorkspaceMethod : SettingsViewModelTest
         {
             private const long workspaceId = 10;
             private const long defaultWorkspaceId = 11;
             private const string workspaceName = "My custom workspace";
-            private readonly IThreadSafeWorkspace workspace = Substitute.For<IThreadSafeWorkspace>();
+            private readonly IThreadSafeWorkspace workspace;
             private readonly IThreadSafeWorkspace defaultWorkspace = Substitute.For<IThreadSafeWorkspace>();
 
-            public ThePickWorkspaceCommand()
+            protected override void SetupObservables()
             {
-                workspace.Id.Returns(workspaceId);
-                workspace.Name.Returns(workspaceName);
-                defaultWorkspace.Id.Returns(defaultWorkspaceId);
+                DataSource.User.Current.Returns(Observable.Return(new MockUser()));
+            }
+
+            public ThePickDefaultWorkspaceMethod()
+            {
+                defaultWorkspace = new MockWorkspace { Id = defaultWorkspaceId };
+                workspace = new MockWorkspace { Id = workspaceId, Name = workspaceName };
+
+                UserSubject.OnNext(new MockUser());
 
                 InteractorFactory.GetDefaultWorkspace().Execute()
                     .Returns(Observable.Return(defaultWorkspace));
@@ -352,23 +388,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
             [Fact, LogIfTooSlow]
             public async Task CallsTheSelectWorkspaceViewModel()
-            {
-                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+            {   
+                await ViewModel.PickDefaultWorkspace();
 
                 await NavigationService.Received()
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(Arg.Any<WorkspaceParameters>());
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task SetsTheReturnedWorkspaceNameAsTheWorkspaceNameProperty()
-            {
-                NavigationService
-                    .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(Arg.Any<WorkspaceParameters>())
-                    .Returns(Task.FromResult(workspaceId));
-
-                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
-
-                ViewModel.WorkspaceName.Should().Be(workspaceName);
             }
 
             [Fact, LogIfTooSlow]
@@ -378,7 +402,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(Arg.Any<WorkspaceParameters>())
                     .Returns(Task.FromResult(workspaceId));
 
-                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+                await ViewModel.PickDefaultWorkspace();
 
                 await DataSource.User.Received().UpdateWorkspace(Arg.Is(workspaceId));
             }
@@ -390,78 +414,52 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Navigate<SelectWorkspaceViewModel, WorkspaceParameters, long>(Arg.Any<WorkspaceParameters>())
                     .Returns(Task.FromResult(workspaceId));
 
-                await ViewModel.PickWorkspaceCommand.ExecuteAsync();
+                await ViewModel.PickDefaultWorkspace();
 
                 await DataSource.SyncManager.Received().PushSync();
             }
         }
 
-        public sealed class TheBackCommand : SettingsViewModelTest
+        public sealed class TheGoBackMethod : SettingsViewModelTest
         {
             [Fact, LogIfTooSlow]
             public async Task ClosesTheViewModel()
             {
-                await ViewModel.BackCommand.ExecuteAsync();
+                await ViewModel.GoBack();
 
                 await NavigationService.Received().Close(ViewModel);
             }
         }
 
-        public sealed class TheToggleAddMobileTagCommand : SettingsViewModelTest
+        public sealed class TheToggleManualModeMethod : SettingsViewModelTest
         {
-            [Fact, LogIfTooSlow]
-            public void TogglesTheCurrentValueOfTheToggleAddMobileTagProperty()
+            public TheToggleManualModeMethod()
             {
-                var expected = !ViewModel.AddMobileTag;
-
-                ViewModel.ToggleAddMobileTagCommand.Execute();
-
-                ViewModel.AddMobileTag.Should().Be(expected);
+                PreferencesSubject.OnNext(new MockPreferences());
             }
-        }
 
-        public sealed class TheToggleManualModeCommand : SettingsViewModelTest
-        {
             [Fact, LogIfTooSlow]
-            public async Task ChangesManualModeToTimerMode()
+            public void CallsEnableTimerModeIfCurrentlyInManualMode()
             {
-                UserPreferences.IsManualModeEnabled().Returns(true);
+                UserPreferences.IsManualModeEnabled.Returns(true);
 
-                await ViewModel.Initialize();
-                ViewModel.ToggleManualModeCommand.Execute();
+                ViewModel.ToggleManualMode();
 
-                ViewModel.IsManualModeEnabled.Should().BeFalse();
                 UserPreferences.Received().EnableTimerMode();
             }
 
             [Fact, LogIfTooSlow]
-            public async Task ChangesTimerModeToManualMode()
+            public void CallsEnableManualModeIfCurrentlyInTimerMode()
             {
-                UserPreferences.IsManualModeEnabled().Returns(true);
+                UserPreferences.IsManualModeEnabled.Returns(false);
 
-                await ViewModel.Initialize();
-                ViewModel.ToggleManualModeCommand.Execute();
+                ViewModel.ToggleManualMode();
 
-                ViewModel.IsManualModeEnabled.Should().BeFalse();
-                UserPreferences.Received().EnableTimerMode();
+                UserPreferences.Received().EnableManualMode();
             }
         }
 
-
-        public sealed class TheToggleUseTwentyFourHourClockCommand : SettingsViewModelTest
-        {
-            [Fact, LogIfTooSlow]
-            public void TogglesTheCurrentValueOfTheToggleUseTwentyFourHourClockProperty()
-            {
-                var expected = !ViewModel.UseTwentyFourHourClock;
-
-                ViewModel.ToggleUseTwentyFourHourClockCommand.Execute();
-
-                ViewModel.UseTwentyFourHourClock.Should().Be(expected);
-            }
-        }
-
-        public sealed class TheHelpCommand : SettingsViewModelTest
+        public sealed class TheShowHelpViewMethod : SettingsViewModelTest
         {
             [Property]
             public void NavigatesToBrowserViewModelWithUrlFromPlatformConstants(
@@ -470,7 +468,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var helpUrl = nonEmptyString.Get;
                 PlatformConstants.HelpUrl.Returns(helpUrl);
 
-                ViewModel.HelpCommand.Execute();
+                ViewModel.ShowHelpView();
 
                 NavigationService.Received().Navigate<BrowserViewModel, BrowserParameters>(
                     Arg.Is<BrowserParameters>(parameter => parameter.Url == helpUrl));
@@ -479,14 +477,14 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public void NavigatesToBrowserViewModelWithHelpTitle()
             {
-                ViewModel.HelpCommand.Execute();
+                ViewModel.ShowHelpView();
 
                 NavigationService.Received().Navigate<BrowserViewModel, BrowserParameters>(
                     Arg.Is<BrowserParameters>(parameter => parameter.Title == Resources.Help));
             }
         }
 
-        public sealed class TheSubmitFeedbackCommand : SettingsViewModelTest
+        public sealed class TheSubmitFeedbackMethod : SettingsViewModelTest
         {
             [Property]
             public void SendsAnEmailToTogglSupport(
@@ -497,7 +495,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 PlatformConstants.PhoneModel.Returns(phoneModel);
                 PlatformConstants.OperatingSystem.Returns(os);
 
-                ViewModel.SubmitFeedbackCommand.Execute();
+                ViewModel.SubmitFeedback();
 
                 MailService
                     .Received()
@@ -515,7 +513,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var subject = nonEmptyString.Get;
                 PlatformConstants.FeedbackEmailSubject.Returns(subject);
 
-                ViewModel.SubmitFeedbackCommand.ExecuteAsync().Wait();
+                ViewModel.SubmitFeedback().Wait();
 
                 MailService.Received()
                     .Send(
@@ -532,7 +530,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 PlatformConstants.OperatingSystem.Returns("iOS 4.2.0");
                 var expectedMessage = $"\n\nVersion: {UserAgent.ToString()}\nPhone: {PlatformConstants.PhoneModel}\nOS: {PlatformConstants.OperatingSystem}";
 
-                await ViewModel.SubmitFeedbackCommand.ExecuteAsync();
+                await ViewModel.SubmitFeedback();
 
                 await MailService.Received().Send(
                     Arg.Any<string>(),
@@ -551,7 +549,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Send(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
                     .Returns(Task.FromResult(result));
 
-                ViewModel.SubmitFeedbackCommand.Execute();
+                ViewModel.SubmitFeedback();
 
                 DialogService
                     .Received()
@@ -573,7 +571,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Send(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
                     .Returns(Task.FromResult(result));
 
-                await ViewModel.SubmitFeedbackCommand.ExecuteAsync();
+                await ViewModel.SubmitFeedback();
 
                 await DialogService
                     .DidNotReceive()
@@ -581,51 +579,25 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
-        public sealed class TheInitializeMethod : SettingsViewModelTest
+        public sealed class TheVersionProperty : SettingsViewModelTest
         {
-            [Fact]
-            public async Task InitializesFormatsFromPreferencesDataSource()
-            {
-                var preferences = createPreferences();
-                DataSource.Preferences.Current.Returns(Observable.Return(preferences));
-
-                await ViewModel.Initialize();
-
-                ViewModel.DateFormat.Should().Be(preferences.DateFormat);
-                ViewModel.UseTwentyFourHourClock.Should().Be(preferences.TimeOfDayFormat.IsTwentyFourHoursFormat);
-                ViewModel.DurationFormat.Should().Be(preferences.DurationFormat);
-            }
-
             [Fact, LogIfTooSlow]
-            public async Task InitializesVersion()
+            public void ForwardsTheValueFromTheUserAgentUsedInConstruction()
             {
-                await ViewModel.Initialize();
-
                 ViewModel.Version.Should().Be(UserAgent.Version);
-            }
-
-            private IThreadSafePreferences createPreferences()
-            {
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DateFormat.Returns(DateFormat.FromLocalizedDateFormat("MM.DD.YYYY"));
-                preferences.DurationFormat.Returns(DurationFormat.Classic);
-                preferences.TimeOfDayFormat.Returns(TimeFormat.TwelveHoursFormat);
-                return preferences;
             }
         }
 
-        public sealed class TheSelectDateFormatCommand : SettingsViewModelTest
+        public sealed class TheSelectDateFormatMethod : SettingsViewModelTest
         {
             [Fact, LogIfTooSlow]
             public async Task NavigatesToSelectDateFormatViewModelPassingCurrentDateFormat()
             {
                 var dateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DateFormat.Returns(dateFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(preferences));
-                await ViewModel.Initialize();
+                var preferences = new MockPreferences { DateFormat = dateFormat };
+                PreferencesSubject.OnNext(preferences);
 
-                await ViewModel.SelectDateFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDateFormat();
 
                 await NavigationService
                     .Received()
@@ -637,20 +609,18 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
                 var newDateFormat = DateFormat.FromLocalizedDateFormat("DD.MM.YYYY");
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DateFormat.Returns(oldDateFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(preferences));
+                var preferences = new MockPreferences { DateFormat = oldDateFormat };
+                PreferencesSubject.OnNext(preferences);
                 NavigationService
                     .Navigate<SelectDateFormatViewModel, DateFormat, DateFormat>(Arg.Any<DateFormat>())
                     .Returns(Task.FromResult(newDateFormat));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectDateFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDateFormat();
 
                 await DataSource
                     .Preferences
                     .Received()
-                    .Update(Arg.Is<EditPreferencesDTO>(dto => dto.DateFormat == newDateFormat));
+                    .Update(Arg.Is<EditPreferencesDTO>(dto => dto.DateFormat.Equals(New<DateFormat>.Value(newDateFormat))));
             }
 
             [Fact, LogIfTooSlow]
@@ -658,11 +628,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
                 var newDateFormat = DateFormat.FromLocalizedDateFormat("DD.MM.YYYY");
-                var oldPreferences = Substitute.For<IThreadSafePreferences>();
-                oldPreferences.DateFormat.Returns(oldDateFormat);
-                var newPreferences = Substitute.For<IThreadSafePreferences>();
-                newPreferences.DateFormat.Returns(newDateFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(oldPreferences));
+                var oldPreferences = new MockPreferences { DateFormat = oldDateFormat };
+                var newPreferences = new MockPreferences { DateFormat = newDateFormat };
+                PreferencesSubject.OnNext(oldPreferences);
                 NavigationService
                     .Navigate<SelectDateFormatViewModel, DateFormat, DateFormat>(Arg.Any<DateFormat>())
                     .Returns(Task.FromResult(newDateFormat));
@@ -670,11 +638,11 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Preferences
                     .Update(Arg.Any<EditPreferencesDTO>())
                     .Returns(Observable.Return(newPreferences));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectDateFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDateFormat();
 
-                ViewModel.DateFormat.Should().Be(newDateFormat);
+                await DataSource.Preferences.Received()
+                    .Update(Arg.Is<EditPreferencesDTO>(dto => dto.DateFormat.ValueOr(oldDateFormat) == newDateFormat));
             }
 
             [Fact, LogIfTooSlow]
@@ -682,79 +650,58 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDateFormat = DateFormat.FromLocalizedDateFormat("MM-DD-YYYY");
                 var newDateFormat = DateFormat.FromLocalizedDateFormat("DD.MM.YYYY");
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DateFormat.Returns(oldDateFormat);
-                DataSource.Preferences.Get().Returns(Observable.Return(preferences));
+                var preferences = new MockPreferences { DateFormat = oldDateFormat };
+                PreferencesSubject.OnNext(preferences);
                 NavigationService
                     .Navigate<SelectDateFormatViewModel, DateFormat, DateFormat>(Arg.Any<DateFormat>())
                     .Returns(Task.FromResult(newDateFormat));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectDateFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDateFormat();
 
                 await DataSource.SyncManager.Received().PushSync();
             }
         }
 
-        public sealed class TheToggleUseTwentyFourHourClock : SettingsViewModelTest
+        public sealed class TheToggleUseTwentyFourHourClockMethod : SettingsViewModelTest
         {
             [Theory, LogIfTooSlow]
             [InlineData(true)]
             [InlineData(false)]
             public async Task ChangesTheValueOfTheUseTwentyFourHourHourClock(bool originalValue)
             {
-                await ViewModel.Initialize();
-                ViewModel.UseTwentyFourHourClock = originalValue;
+                var timeFormat = originalValue ? TimeFormat.TwentyFourHoursFormat : TimeFormat.TwelveHoursFormat;
+                PreferencesSubject.OnNext(new MockPreferences { TimeOfDayFormat = timeFormat });
 
-                await ViewModel.ToggleUseTwentyFourHourClockCommand.ExecuteAsync();
-
-                ViewModel.UseTwentyFourHourClock.Should().Be(!originalValue);
-            }
-
-            [Theory, LogIfTooSlow]
-            [InlineData(true)]
-            [InlineData(false)]
-            public async Task UpdatesTheValueInTheDataSource(bool originalValue)
-            {
-                await ViewModel.Initialize();
-                ViewModel.UseTwentyFourHourClock = originalValue;
-
-                await ViewModel.ToggleUseTwentyFourHourClockCommand.ExecuteAsync();
+                await ViewModel.ToggleUseTwentyFourHourClock();
 
                 await DataSource.Preferences.Received().Update(Arg.Is<EditPreferencesDTO>(
-                    dto => dto.TimeOfDayFormat.HasValue
-                        && dto.TimeOfDayFormat.Value.IsTwentyFourHoursFormat != originalValue));
+                    dto => dto.TimeOfDayFormat.ValueOr(default(TimeFormat)).IsTwentyFourHoursFormat != originalValue));
             }
 
-            [Theory, LogIfTooSlow]
-            [InlineData(true)]
-            [InlineData(false)]
-            public async Task InitiatesPushSync(bool originalValue)
+            [Fact, LogIfTooSlow]
+            public async Task InitiatesPushSync()
             {
-                var preferences = Substitute.For<IThreadSafePreferences>();
+                var preferences = new MockPreferences();
+                PreferencesSubject.OnNext(preferences);
                 var observable = Observable.Return(preferences);
                 DataSource.Preferences.Update(Arg.Any<EditPreferencesDTO>()).Returns(observable);
-                await ViewModel.Initialize();
-                ViewModel.UseTwentyFourHourClock = originalValue;
 
-                await ViewModel.ToggleUseTwentyFourHourClockCommand.ExecuteAsync();
+                await ViewModel.ToggleUseTwentyFourHourClock();
 
                 await DataSource.SyncManager.Received().PushSync();
             }
         }
 
-        public sealed class TheSelectDurationFormatCommand : SettingsViewModelTest
+        public sealed class TheSelectDurationFormatMethod : SettingsViewModelTest
         {
             [Fact, LogIfTooSlow]
             public async Task NavigatesToSelectDurationFormatViewModelPassingCurrentDurationFormat()
             {
                 var durationFormat = DurationFormat.Improved;
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DurationFormat.Returns(durationFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(preferences));
-                await ViewModel.Initialize();
+                var preferences = new MockPreferences { DurationFormat = durationFormat };
+                PreferencesSubject.OnNext(preferences);
 
-                await ViewModel.SelectDurationFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDurationFormat();
 
                 await NavigationService
                     .Received()
@@ -766,20 +713,18 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDurationFormat = DurationFormat.Decimal;
                 var newDurationFormat = DurationFormat.Improved;
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DurationFormat.Returns(oldDurationFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(preferences));
+                var preferences = new MockPreferences { DurationFormat = oldDurationFormat };
+                PreferencesSubject.OnNext(preferences);
                 NavigationService
                     .Navigate<SelectDurationFormatViewModel, DurationFormat, DurationFormat>(Arg.Any<DurationFormat>())
                     .Returns(Task.FromResult(newDurationFormat));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectDurationFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDurationFormat();
 
                 await DataSource
                     .Preferences
                     .Received()
-                    .Update(Arg.Is<EditPreferencesDTO>(dto => dto.DurationFormat == newDurationFormat));
+                    .Update(Arg.Is<EditPreferencesDTO>(dto => dto.DurationFormat.Equals(New<DurationFormat>.Value(newDurationFormat))));
             }
 
             [Fact, LogIfTooSlow]
@@ -787,17 +732,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDurationFormat = DurationFormat.Decimal;
                 var newDurationFormat = DurationFormat.Improved;
-                var preferences = Substitute.For<IThreadSafePreferences>();
-                preferences.DurationFormat.Returns(oldDurationFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(preferences));
+                var preferences = new MockPreferences { DurationFormat = oldDurationFormat };
+                PreferencesSubject.OnNext(preferences);
                 NavigationService
                     .Navigate<SelectDurationFormatViewModel, DurationFormat, DurationFormat>(Arg.Any<DurationFormat>())
                     .Returns(Task.FromResult(newDurationFormat));
                 var syncManager = Substitute.For<ISyncManager>();
                 DataSource.SyncManager.Returns(syncManager);
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectDurationFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDurationFormat();
 
                 await syncManager.Received().PushSync();
             }
@@ -807,11 +750,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldDurationFormat = DurationFormat.Decimal;
                 var newDurationFormat = DurationFormat.Improved;
-                var oldPreferences = Substitute.For<IThreadSafePreferences>();
-                oldPreferences.DurationFormat.Returns(oldDurationFormat);
-                var newPreferences = Substitute.For<IThreadSafePreferences>();
-                newPreferences.DurationFormat.Returns(newDurationFormat);
-                DataSource.Preferences.Current.Returns(Observable.Return(oldPreferences));
+                var oldPreferences = new MockPreferences { DurationFormat = oldDurationFormat };
+                var newPreferences = new MockPreferences { DurationFormat = newDurationFormat };
+                PreferencesSubject.OnNext(oldPreferences);
                 NavigationService
                     .Navigate<SelectDurationFormatViewModel, DurationFormat, DurationFormat>(Arg.Any<DurationFormat>())
                     .Returns(Task.FromResult(newDurationFormat));
@@ -819,26 +760,24 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Preferences
                     .Update(Arg.Any<EditPreferencesDTO>())
                     .Returns(Observable.Return(newPreferences));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectDurationFormatCommand.ExecuteAsync();
+                await ViewModel.SelectDurationFormat();
 
-                ViewModel.DurationFormat.Should().Be(newDurationFormat);
+                await DataSource.Preferences.Received()
+                    .Update(Arg.Is<EditPreferencesDTO>(dto => dto.DurationFormat.ValueOr(oldDurationFormat) == newDurationFormat));
             }
         }
 
-        public sealed class TheSelectBeginningOfWeekCommand : SettingsViewModelTest
+        public sealed class TheSelectBeginningOfWeekMethod : SettingsViewModelTest
         {
             [Fact, LogIfTooSlow]
             public async Task NavigatesToSelectBeginningOfWeekViewModelPassingCurrentBeginningOfWeek()
             {
                 var beginningOfWeek = BeginningOfWeek.Friday;
-                var user = Substitute.For<IThreadSafeUser>();
-                user.BeginningOfWeek.Returns(beginningOfWeek);
-                DataSource.User.Current.Returns(Observable.Return(user));
-                await ViewModel.Initialize();
+                var user = new MockUser { BeginningOfWeek = beginningOfWeek };
+                UserSubject.OnNext(user);
 
-                await ViewModel.SelectBeginningOfWeekCommand.ExecuteAsync();
+                await ViewModel.SelectBeginningOfWeek();
 
                 await NavigationService
                     .Received()
@@ -853,13 +792,12 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 var user = Substitute.For<IThreadSafeUser>();
                 user.BeginningOfWeek.Returns(oldBeginningOfWeek);
-                DataSource.User.Current.Returns(Observable.Return(user));
+                UserSubject.OnNext(user);
                 NavigationService
                     .Navigate<SelectBeginningOfWeekViewModel, BeginningOfWeek, BeginningOfWeek>(Arg.Any<BeginningOfWeek>())
                     .Returns(Task.FromResult(newBeginningOfWeek));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectBeginningOfWeekCommand.ExecuteAsync();
+                await ViewModel.SelectBeginningOfWeek();
 
                 await DataSource
                     .User
@@ -872,17 +810,15 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldBeginningOfWeek = BeginningOfWeek.Tuesday;
                 var newBeginningOfWeek = BeginningOfWeek.Sunday;
-                var user = Substitute.For<IThreadSafeUser>();
-                user.BeginningOfWeek.Returns(oldBeginningOfWeek);
-                DataSource.User.Current.Returns(Observable.Return(user));
+                var user = new MockUser { BeginningOfWeek = oldBeginningOfWeek };
+                UserSubject.OnNext(user);
                 NavigationService
                     .Navigate<SelectBeginningOfWeekViewModel, BeginningOfWeek, BeginningOfWeek>(Arg.Any<BeginningOfWeek>())
                     .Returns(Task.FromResult(newBeginningOfWeek));
                 var syncManager = Substitute.For<ISyncManager>();
                 DataSource.SyncManager.Returns(syncManager);
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectBeginningOfWeekCommand.ExecuteAsync();
+                await ViewModel.SelectBeginningOfWeek();
 
                 await syncManager.Received().PushSync();
             }
@@ -892,12 +828,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 var oldBeginningOfWeek = BeginningOfWeek.Tuesday;
                 var newBeginningOfWeek = BeginningOfWeek.Sunday;
-
-                var oldUser = Substitute.For<IThreadSafeUser>();
-                oldUser.BeginningOfWeek.Returns(oldBeginningOfWeek);
-                var newUser = Substitute.For<IThreadSafeUser>();
-                newUser.BeginningOfWeek.Returns(newBeginningOfWeek);
-                DataSource.User.Current.Returns(Observable.Return(oldUser));
+                var oldUser = new MockUser { BeginningOfWeek = oldBeginningOfWeek };
+                var newUser = new MockUser { BeginningOfWeek = newBeginningOfWeek };
+                UserSubject.OnNext(oldUser);
                 NavigationService
                     .Navigate<SelectBeginningOfWeekViewModel, BeginningOfWeek, BeginningOfWeek>(Arg.Any<BeginningOfWeek>())
                     .Returns(Task.FromResult(newBeginningOfWeek));
@@ -905,20 +838,21 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .User
                     .Update(Arg.Any<EditUserDTO>())
                     .Returns(Observable.Return(newUser));
-                await ViewModel.Initialize();
 
-                await ViewModel.SelectBeginningOfWeekCommand.ExecuteAsync();
+                await ViewModel.SelectBeginningOfWeek();
 
-                ViewModel.BeginningOfWeek.Should().Be(newBeginningOfWeek);
+                await DataSource.User.Received().Update(
+                    Arg.Is<EditUserDTO>(dto => dto.BeginningOfWeek == newBeginningOfWeek
+                ));
             }
         }
 
-        public sealed class TheAboutCommand : SettingsViewModelTest
+        public sealed class TheOpenAboutViewMethod : SettingsViewModelTest
         {
             [Fact, LogIfTooSlow]
             public async Task NavigatesToTheAboutPage()
             {
-                await ViewModel.AboutCommand.ExecuteAsync();
+                await ViewModel.OpenAboutView();
 
                 await NavigationService.Received().Navigate<AboutViewModel>();
             }

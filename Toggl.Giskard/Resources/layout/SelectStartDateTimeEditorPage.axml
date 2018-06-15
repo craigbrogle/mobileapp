@@ -39,29 +39,29 @@
             android:layout_width="16dp"
             android:layout_height="16dp" />
         <TextView
-            local:MvxBind="Text DateTimeOffsetTimeFormat(StartTime, TimeFormat)"
+            local:MvxBind="Text StripAmPm(DateTimeOffsetTimeFormat(StartTime, TimeFormat))"
             tools:text="12:20"
             android:textSize="11sp"
             android:textColor="@color/halfTransparentWhite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
+            local:MvxBind="Text StartTimeAmPmLabel"
             tools:text="AM"
             android:textSize="11sp"
             android:textColor="@color/halfTransparentWhite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>
-    <toggl.giskard.views.togglDroidDatePicker
-        android:id="@+id/SelectDateTimeCalendarView"
-        local:MvxBind="Value StartDatePart; Visibility Visibility(IsCalendarView); Boundaries StartTimeBoundaries"
+    <toggl.giskard.views.TogglDroidDatePicker
+        android:id="@+id/SelectStartTimeCalendarView"
+        local:MvxBind="Value StartTime; Visibility Visibility(IsCalendarView); Boundaries StartTimeBoundaries"
         android:layout_marginTop="96dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-    <mvvmcross.binding.droid.views.MvxTimePicker
-        android:id="@+id/SelectDateTimeClockView"
-        android:headerBackground="@color/popupBlueBackground"
-        local:MvxBind="Value StartTimePart; Visibility Visibility(!IsCalendarView)"
+    <FrameLayout
+        android:id="@+id/SelectStartTimeClockViewContainer"
+        local:MvxBind="Visibility Visibility(!IsCalendarView)"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     <LinearLayout

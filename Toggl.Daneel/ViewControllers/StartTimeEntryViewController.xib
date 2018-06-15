@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -29,6 +29,7 @@
                 <outlet property="SuggestionsTableView" destination="04s-S8-twa" id="name-outlet-04s-S8-twa"/>
                 <outlet property="TagsButton" destination="H7M-A1-mmK" id="name-outlet-H7M-A1-mmK"/>
                 <outlet property="TimeInput" destination="tdV-by-Ya6" id="JmR-yT-R0o"/>
+                <outlet property="TimeLabel" destination="AGP-BI-wWT" id="a5Q-a7-f1r"/>
                 <outlet property="view" destination="2" id="RRd-Eg-VrN"/>
             </connections>
         </placeholder>
@@ -48,7 +49,7 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="fRW-HL-ddX" userLabel="Duration View">
                     <rect key="frame" x="139" y="6" width="97" height="28"/>
                     <subviews>
-                        <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="0:00:00" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="tdV-by-Ya6" customClass="DurationField">
+                        <textField hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" text="0:00:00" textAlignment="center" adjustsFontSizeToFit="NO" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="tdV-by-Ya6" customClass="DurationField">
                             <rect key="frame" x="29" y="0.0" width="56" height="28"/>
                             <nil key="textColor"/>
                             <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
@@ -61,12 +62,20 @@
                                 <constraint firstAttribute="height" constant="16" id="tbx-ja-iGu"/>
                             </constraints>
                         </imageView>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0:00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AGP-BI-wWT" userLabel="Time Label">
+                            <rect key="frame" x="42" y="5" width="31.5" height="17"/>
+                            <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
                     </subviews>
                     <color key="backgroundColor" red="0.95686274509803915" green="0.95686274509803915" blue="0.95686274509803915" alpha="1" colorSpace="calibratedRGB"/>
                     <constraints>
+                        <constraint firstItem="AGP-BI-wWT" firstAttribute="centerX" secondItem="tdV-by-Ya6" secondAttribute="centerX" id="AYR-3Z-2Py"/>
                         <constraint firstAttribute="trailing" secondItem="tdV-by-Ya6" secondAttribute="trailing" constant="12" id="CPK-tC-IiF"/>
                         <constraint firstItem="tdV-by-Ya6" firstAttribute="leading" secondItem="V5n-Ok-a1Z" secondAttribute="trailing" constant="6" id="P9T-l9-eyJ"/>
                         <constraint firstItem="V5n-Ok-a1Z" firstAttribute="leading" secondItem="fRW-HL-ddX" secondAttribute="leading" constant="10" id="W2w-3n-ExN"/>
+                        <constraint firstItem="AGP-BI-wWT" firstAttribute="centerY" secondItem="tdV-by-Ya6" secondAttribute="centerY" id="aez-Vi-cSg"/>
                         <constraint firstAttribute="centerY" secondItem="fRW-HL-ddX" secondAttribute="centerY" id="fiS-eR-319"/>
                         <constraint firstAttribute="height" constant="28" id="jey-UF-KSL"/>
                         <constraint firstItem="tdV-by-Ya6" firstAttribute="centerY" secondItem="fRW-HL-ddX" secondAttribute="centerY" id="jgk-uW-zJA"/>
@@ -86,7 +95,7 @@
                         <constraint firstAttribute="height" constant="68" id="u0i-Qv-oYj"/>
                     </constraints>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences" spellCheckingType="no" keyboardType="twitter"/>
+                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences" autocorrectionType="no" spellCheckingType="no" keyboardType="twitter"/>
                 </textView>
                 <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jGg-N9-yt7" customClass="AutocompleteTextViewPlaceholder">
                     <rect key="frame" x="21" y="51" width="333" height="31"/>
